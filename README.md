@@ -1,143 +1,42 @@
-# MLOps Crew — Phishing Email Detection System
+# Project Title
 
-A machine learning system to detect phishing emails, built with MLOps best practices using DVC for data versioning, and structured with the SE489 MLOps cookiecutter template.
+## 1. Team Information
 
----
+- [✅] Team Name: MLOps Crew
+- [✅] Team Members (Name & Email):
+    1. Anushree Bachhav ()
+    2. Krishna Kalakonda ()
+    3. Muhammad Anas ()
+    4. Kirtankumar Parekh ([kparekh2@depaul.edu](mailto:kparekh2@depaul.edu))
+- [✅] Course & Section: [SE489] ML Engineering for Production (MLOps)
 
-## Getting Started
+## 2. Project Overview
 
-### 1. Clone the repo
-```bash
-git clone https://github.com/Anush-ree/mlops_crew.git
-cd mlops_crew
-```
+- [ ] Brief summary of the project (2-3 sentences)
+- [ ] Problem statement and motivation
+- [ ] Main objectives
 
-### 2. Set up the environment
-```bash
-make install
-```
+## 3. Project Architecture Diagram
 
-For dev tools (linting, pre-commit hooks):
-```bash
-make dev
-```
+- [ ] Insert or link to your architecture diagram (e.g., draw.io, PNG, etc.)
 
-### 3. Set up DVC credentials
-Ask the project owner for:
-- Access to the shared Google Drive folder (`phishing-data`)
-- The DVC credentials (`gdrive_client_id` and `gdrive_client_secret`)
+## 4. Phase Deliverables
 
-Then configure DVC locally (these are NOT committed to git):
-```bash
-dvc remote modify --local storage gdrive_client_id "<client_id>"
-dvc remote modify --local storage gdrive_client_secret "<client_secret>"
-```
+- [ ] [PHASE1.md](./PHASE1.md): Project Design & Model Development
+- [ ] [PHASE2.md](./PHASE2.md): Enhancing ML Operations
+- [ ] [PHASE3.md](./PHASE3.md): Continuous ML & Deployment
 
-### 4. Pull the data
-```bash
-dvc pull
-```
-This downloads all datasets from Google Drive into `data/raw/archive/`.
+## 5. Setup Instructions
 
----
+- [ ] How to set up the environment (conda/pip, requirements.txt, Docker, etc.)
+- [ ] How to run the code and reproduce results
 
-## Project Structure
+## 6. Contribution Summary
 
-```
-mlops_crew/
-├── data/
-│   ├── raw/
-│   │   └── archive/          ← raw datasets (managed by DVC, not in git)
-│   └── processed/            ← cleaned/processed data (managed by DVC)
-├── mlops_crew/
-│   ├── data/                 ← data processing scripts
-│   ├── models/               ← model training scripts
-│   └── predict_model.py      ← inference scripts
-├── tests/                    ← unit tests
-├── notebooks/                ← exploratory notebooks
-├── .dvc/                     ← DVC configuration
-├── Makefile                  ← common commands
-└── requirements.txt          ← dependencies
-```
+- [ ] Briefly describe each team member's contributions
+
+## 7. References
+
+- [ ] List of datasets, frameworks, and major third-party tools used
 
 ---
-
-## Dataset
-
-| File | Description |
-|------|-------------|
-| `SpamAssasin.csv` | SpamAssassin public email corpus |
-| `CEAS_08.csv` | CEAS 2008 spam competition dataset |
-| `Enron.csv` | Enron email dataset |
-| `Ling.csv` | Ling spam dataset |
-| `Nazario.csv` | Nazario phishing dataset |
-| `Nigerian_Fraud.csv` | Nigerian fraud email dataset |
-| `phishing_email.csv` | General phishing email dataset |
-
-> **Note:** Raw data is stored on Google Drive via DVC and is **not** committed to this repo. Run `dvc pull` to download it.
-
----
-
-## Available Commands
-
-| Command | Description |
-|---------|-------------|
-| `make install` | Install all dependencies |
-| `make dev` | Install dev dependencies + pre-commit hooks |
-| `make test` | Run test suite |
-| `make lint` | Lint code with ruff |
-| `make format` | Auto-format code with ruff |
-| `make clean` | Remove build/cache artifacts |
-| `dvc pull` | Download data from Google Drive |
-| `dvc push` | Upload data to Google Drive |
-
----
-
-## Team Workflow
-
-### First time setup
-```bash
-git clone https://github.com/Anush-ree/mlops_crew.git
-cd mlops_crew
-make install
-```
-
-Configure DVC credentials locally (ask project owner for the values — these are stored locally only and never committed to git):
-```bash
-dvc remote modify --local storage gdrive_client_id "<client_id>"
-dvc remote modify --local storage gdrive_client_secret "<client_secret>"
-```
-
-Then pull the data:
-```bash
-dvc pull
-```
-
-### Day-to-day workflow
-```bash
-git pull                  # get latest code
-dvc pull                  # get latest data
-# ... make changes ...
-git add .
-git commit -m "your message"
-git push
-dvc push                  # if you changed/added data
-```
-
----
-
-## Tech Stack
-
-- **Python 3.13**
-- **DVC** — data version control
-- **Google Drive** — remote data storage
-- **Ruff** — linting and formatting
-- **Pytest** — testing
-- **Pre-commit** — code quality hooks
-- **MkDocs** — documentation
-
----
-
-## Contact
-
-For DVC credentials or Google Drive access, contact the project owner.

@@ -1,0 +1,21 @@
+site_name: phishing_email_detection
+site_description: "A phishing email detection system that can detect whether incoming email is a phishing email or a regular email."
+site_author: "kirtan"
+
+theme:
+  name: material
+  features:
+    - navigation.sections
+    - navigation.top
+    - search.highlight
+
+nav:
+  - Home: index.md
+  - Getting Started: getting_started.md
+  - API Reference: api.md
+
+markdown_extensions:
+  - admonition
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - toc
