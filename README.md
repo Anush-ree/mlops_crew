@@ -5,7 +5,7 @@
 - [✅] Team Name: MLOps Crew
 - [✅] Team Members (Name & Email):
     1. Anushree Bachhav ()
-    2. Krishna Kalakonda ()
+    2. Krishna Kalakonda ([kkalakon@depaul.edu](mailto:kkalakon@depaul.edu))
     3. Muhammad Anas ()
     4. Kirtankumar Parekh ([kparekh2@depaul.edu](mailto:kparekh2@depaul.edu))
 - [✅] Course & Section: [SE489] ML Engineering for Production (MLOps)
