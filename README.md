@@ -4,10 +4,10 @@
 ### 1. Team Informaton
 
 - Team NameMLOps Crew
-- Team Members (Name & Email):
-       Anushree Bachhav []
-       Krishna Kalakonda []
-       Muhammad Anas [MuhammadAnasPSI2@gmail.com]
+- Team Members:
+       Anushree Bachhav,
+       Krishna Kalakonda,
+       Muhammad Anas [MuhammadAnasPSI2@gmail.com],
        Kirtankumar Parekh [[kparekh2@depaul.edu](mailto:kparekh2@depaul.edu)]
 
 ## 2. Project Overview
