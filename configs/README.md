@@ -5,6 +5,7 @@ Store Hydra configuration files and experiment configurations here.
 ## Structure
 
 Organize configs by component:
+
 - `model/` — Model architecture and hyperparameters
 - `data/` — Data loading and preprocessing configs
 - `training/` — Training loops and optimization settings

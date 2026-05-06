@@ -1,6 +1,7 @@
 """phishing_email_detection.
 
-A phishing email detection system that can detect whether incoming email is a phishing email or a regular email.
+A phishing email detection system that can detect whether incoming
+email is a phishing email or a regular email.
 """
 
 from importlib.metadata import PackageNotFoundError, version

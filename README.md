@@ -1,14 +1,16 @@
 # Phishing Email Detection
-##SE489 · ML Engineering for Production (MLOps) · DePaul University
 
-### 1. Team Informaton
+## SE489 · ML Engineering for Production (MLOps) · DePaul University
 
-- Team NameMLOps Crew
-- Team Members:
-       Anushree Bachhav,
-       Krishna Kalakonda,
-       Muhammad Anas [MuhammadAnasPSI2@gmail.com],
-       Kirtankumar Parekh [[kparekh2@depaul.edu](mailto:kparekh2@depaul.edu)]
+## 1. Team Informaton
+
+- [✅] Team Name: MLOps Crew
+- [✅] Team Members (Name & Email):
+    1. Anushree Bachhav ()
+    2. Krishna Kalakonda ([kkalakon@depaul.edu](mailto:kkalakon@depaul.edu))
+    3. Muhammad Anas ([MuhammadAnasPSI2@gmail.com](MuhammadAnasPSI2@gmail.com))
+    4. Kirtankumar Parekh ([kparekh2@depaul.edu](mailto:kparekh2@depaul.edu))
+- [✅] Course & Section: [SE489] ML Engineering for Production (MLOps)
 
 ## 2. Project Overview
 
@@ -25,8 +27,7 @@ Success metrics: Recall, F1 score, Accuracy, Inference latency
 
 ## 3. Project Architecture Diagram
 
--<img width="776" height="662" alt="image" src="https://github.com/user-attachments/assets/2aa3ed2a-427e-4ddb-b2e8-58e3d4a225c6" />
-
+- <img width="776" height="662" alt="image" src="https://github.com/user-attachments/assets/2aa3ed2a-427e-4ddb-b2e8-58e3d4a225c6" />
 
 ## 4. Phase Deliverables
 
@@ -37,25 +38,43 @@ Success metrics: Recall, F1 score, Accuracy, Inference latency
 ## 5. Setup Instructions
 
 ### Prerequisites
+
 Python 3.11+
 Git
-###Install
-bashgit clone https://github.com/Anush-ree/mlops_crew.git
+
+#### Install
+
+```bash
+git clone <https://github.com/Anush-ree/mlops_crew.git>
 cd mlops_crew
 python -m venv .venv
-source .venv/bin/activate        
+source .venv/bin/activate
 pip install -e ".[dev]"
-####Pre-commit hooks
-bashpre-commit install
-### Common commands
-bashmake setup    # install all dependencies
+```
+
+#### Pre-commit hooks
+
+```bash
+pre-commit install
+```
+
+#### Common commands
+
+```bash
+make setup    # install all dependencies
 make train    # run the training pipeline
 make test     # run tests
 make lint     # run ruff linter
 make format   # auto-format code
-### Reproduce results
-bashmake setup
+```
+
+#### Reproduce results
+
+```bash
+make setup
 make train
+```
+
 This will preprocess the data, train the baseline model, and print evaluation metrics to the console. MLflow logs will appear in mlruns/
 
 ## 6. Contribution Summary
@@ -70,5 +89,3 @@ This will preprocess the data, train the baseline model, and print evaluation me
 - Dataset: Phishing Email Dataset (SpamAssassin, Enron, Nazario, Ling, CEAS, Nigerian)
 - Source: Kaggle
 - Use: Primary training & evaluation data
-
-
