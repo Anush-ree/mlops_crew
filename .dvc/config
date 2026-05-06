@@ -1,4 +1,6 @@
 [core]
     remote = storage
-['remote "storage"']
+['remote "gdrive_backup"']
     url = gdrive://1Ai0Mp59YmxdesufVcR0mZEHb1bDFOib9
+['remote "storage"']
+    url = s3://mlops-crew-data/dvc-store
