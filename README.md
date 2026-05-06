@@ -27,7 +27,7 @@ Success metrics: Recall, F1 score, Accuracy, Inference latency
 
 ## 3. Project Architecture Diagram
 
-- <img width="776" height="662" alt="image" src="https://github.com/user-attachments/assets/2aa3ed2a-427e-4ddb-b2e8-58e3d4a225c6" />
+<img width="776" height="662" alt="image" src="https://github.com/user-attachments/assets/2aa3ed2a-427e-4ddb-b2e8-58e3d4a225c6" />
 
 ## 4. Phase Deliverables
 
@@ -39,13 +39,13 @@ Success metrics: Recall, F1 score, Accuracy, Inference latency
 
 ### Prerequisites
 
-Python 3.11+
+Python 3.11+<br>
 Git
 
 #### Install
 
 ```bash
-git clone <https://github.com/Anush-ree/mlops_crew.git>
+git clone https://github.com/Anush-ree/mlops_crew.git
 cd mlops_crew
 python -m venv .venv
 source .venv/bin/activate
