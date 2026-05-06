@@ -13,12 +13,14 @@ logger = get_logger(__name__)
 
 
 def predict(model_path: Path, input_path: Path, output_path: Path) -> None:
-    """Load a trained model and write predictions for ``input_path`` to ``output_path``."""
+    """Load a trained model and write predictions for
+    ``input_path`` to ``output_path``."""
     logger.info("Loading model from %s", model_path)
     model = Model.load(model_path)
 
     logger.info("Scoring %s", input_path)
-    _ = model  # replace with: df = pd.read_csv(input_path); preds = model.predict(df)
+    # replace with: df = pd.read_csv(input_path); preds = model.predict(df)
+    _ = model
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     logger.info("Writing predictions to %s", output_path)
@@ -26,9 +28,12 @@ def predict(model_path: Path, input_path: Path, output_path: Path) -> None:
 
 def main() -> None:
     """CLI entrypoint for batch prediction."""
-    parser = argparse.ArgumentParser(description="Generate predictions from a trained model")
-    parser.add_argument("--model-path", type=Path, default=MODELS_DIR / "model.joblib")
-    parser.add_argument("--input", type=Path, default=PROCESSED_DATA_DIR / "test.csv")
+    parser = argparse.ArgumentParser(
+        description="Generate predictions from a trained model")
+    parser.add_argument("--model-path", type=Path,
+                        default=MODELS_DIR / "model.joblib")
+    parser.add_argument("--input", type=Path,
+                        default=PROCESSED_DATA_DIR / "test.csv")
     parser.add_argument("--output", type=Path, default=Path("predictions.csv"))
     args = parser.parse_args()
 
