@@ -6,7 +6,8 @@
 
 - [✅] Team Name: MLOps Crew
 - [✅] Team Members (Name & Email):
-    1. Anushree Bachhav ()
+    1. Anushree Bachhav (abachhav@depaul.edu)
+    (mailto:abachhav@depaul.edu)
     2. Krishna Kalakonda ([kkalakon@depaul.edu](mailto:kkalakon@depaul.edu))
     3. Muhammad Anas ([MuhammadAnasPSI2@gmail.com](MuhammadAnasPSI2@gmail.com))
     4. Kirtankumar Parekh ([kparekh2@depaul.edu](mailto:kparekh2@depaul.edu))
@@ -77,9 +78,20 @@ make train
 
 This will preprocess the data, train the baseline model, and print evaluation metrics to the console. MLflow logs will appear in mlruns/
 
+### Data Access (DVC + AWS S3)
+
+ Data is versioned with DVC and stored on AWS S3. Request AWS credentials then run.
+```bash
+git pull                 # get latest config
+uv pip install dvc-s3   # install DVC S3 plugin
+aws configure           # enter credentials + region: us-east-2
+dvc pull                # download data from S3
+```
+Google Drive is kept as a backup remote (gdrive_backup) in case S3 is unavailable.
+
 ## 6. Contribution Summary
 
-- Anushree Bachhav: Project proposal, repository structure, cookiecutter setup, environment configuration 
+- Anushree Bachhav: Project proposal, repository structure, cookiecutter setup, environment configuration, data versioning with DVC, cloud storage setup (AWS S3 + Google Drive backup)
 - Muhammad Anas: Data cleaning, EDA, normalization, train/val/test splits, data documentation 
 - Krishna Kalakonda: Model evaluation, baseline performance documentation, architecture diagram 
 - Kirtankumar Parekh: Model training, experiment tracking, Makefile, CONTRIBUTING.md, repo maintenance
