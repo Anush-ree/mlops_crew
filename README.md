@@ -27,7 +27,7 @@ Success metrics: Recall, F1 score, Accuracy, Inference latency
 
 ## 3. Project Architecture Diagram
 
--<img width="776" height="662" alt="image" src="https://github.com/user-attachments/assets/2aa3ed2a-427e-4ddb-b2e8-58e3d4a225c6" />
+- <img width="776" height="662" alt="image" src="https://github.com/user-attachments/assets/2aa3ed2a-427e-4ddb-b2e8-58e3d4a225c6" />
 
 ## 4. Phase Deliverables
 
@@ -44,31 +44,37 @@ Git
 
 #### Install
 
-bashgit clone <https://github.com/Anush-ree/mlops_crew.git>
- 782baac (Update README.md)
+```bash
+git clone <https://github.com/Anush-ree/mlops_crew.git>
 cd mlops_crew
 python -m venv .venv
 source .venv/bin/activate
 pip install -e ".[dev]"
+```
 
 #### Pre-commit hooks
 
-bashpre-commit install
+```bash
+pre-commit install
+```
 
 #### Common commands
 
-782baac (Update README.md)
-bashmake setup    # install all dependencies
+```bash
+make setup    # install all dependencies
 make train    # run the training pipeline
 make test     # run tests
 make lint     # run ruff linter
 make format   # auto-format code
+```
 
 #### Reproduce results
 
-782baac (Update README.md)
-bashmake setup
+```bash
+make setup
 make train
+```
+
 This will preprocess the data, train the baseline model, and print evaluation metrics to the console. MLflow logs will appear in mlruns/
 
 ## 6. Contribution Summary
