@@ -29,11 +29,10 @@ def predict(model_path: Path, input_path: Path, output_path: Path) -> None:
 def main() -> None:
     """CLI entrypoint for batch prediction."""
     parser = argparse.ArgumentParser(
-        description="Generate predictions from a trained model")
-    parser.add_argument("--model-path", type=Path,
-                        default=MODELS_DIR / "model.joblib")
-    parser.add_argument("--input", type=Path,
-                        default=PROCESSED_DATA_DIR / "test.csv")
+        description="Generate predictions from a trained model"
+    )
+    parser.add_argument("--model-path", type=Path, default=MODELS_DIR / "model.joblib")
+    parser.add_argument("--input", type=Path, default=PROCESSED_DATA_DIR / "test.csv")
     parser.add_argument("--output", type=Path, default=Path("predictions.csv"))
     args = parser.parse_args()
 
