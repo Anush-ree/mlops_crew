@@ -27,7 +27,8 @@ Success metrics: Recall, F1 score, Accuracy, Inference latency
 
 ## 3. Project Architecture Diagram
 
-- [ ] Insert or link to your architecture diagram (e.g., draw.io, PNG, etc.)
+-<img width="776" height="662" alt="image" src="https://github.com/user-attachments/assets/2aa3ed2a-427e-4ddb-b2e8-58e3d4a225c6" />
+
 
 ## 4. Phase Deliverables
 
