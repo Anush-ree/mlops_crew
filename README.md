@@ -5,10 +5,10 @@
 
 - Team NameMLOps Crew
 - Team Members (Name & Email):
-    1. Anushree Bachhav []
-    2. Krishna Kalakonda []
-    3. Muhammad Anas [MuhammadAnasPSI2@gmail.com]
-    4. Kirtankumar Parekh [[kparekh2@depaul.edu](mailto:kparekh2@depaul.edu)]
+       Anushree Bachhav []
+       Krishna Kalakonda []
+       Muhammad Anas [MuhammadAnasPSI2@gmail.com]
+       Kirtankumar Parekh [[kparekh2@depaul.edu](mailto:kparekh2@depaul.edu)]
 
 ## 2. Project Overview
 
@@ -36,10 +36,10 @@ Success metrics: Recall, F1 score, Accuracy, Inference latency
 
 ## 5. Setup Instructions
 
-####Prerequisites
+### Prerequisites
 Python 3.11+
 Git
-####Install
+###Install
 bashgit clone https://github.com/Anush-ree/mlops_crew.git
 cd mlops_crew
 python -m venv .venv
@@ -47,23 +47,23 @@ source .venv/bin/activate
 pip install -e ".[dev]"
 ####Pre-commit hooks
 bashpre-commit install
-####Common commands
+### Common commands
 bashmake setup    # install all dependencies
 make train    # run the training pipeline
 make test     # run tests
 make lint     # run ruff linter
 make format   # auto-format code
-####Reproduce results
+### Reproduce results
 bashmake setup
 make train
 This will preprocess the data, train the baseline model, and print evaluation metrics to the console. MLflow logs will appear in mlruns/
 
 ## 6. Contribution Summary
 
-- Anushree Bachhav: Project proposal, repository structure, cookiecutter setup, environment configuration (Phase 1 §1–2)
-- Muhammad Anas: Data cleaning, EDA, normalization, train/val/test splits, data documentation (Phase 1 §4)
-- Krishna Kalakonda: Model evaluation, baseline performance documentation, architecture diagram (Phase 1 §5–6)
-- Kirtankumar Parekh: Model training, experiment tracking, Makefile, CONTRIBUTING.md, repo maintenance (Phase 1 §5–6)
+- Anushree Bachhav: Project proposal, repository structure, cookiecutter setup, environment configuration 
+- Muhammad Anas: Data cleaning, EDA, normalization, train/val/test splits, data documentation 
+- Krishna Kalakonda: Model evaluation, baseline performance documentation, architecture diagram 
+- Kirtankumar Parekh: Model training, experiment tracking, Makefile, CONTRIBUTING.md, repo maintenance
 
 ## 7. References
 
