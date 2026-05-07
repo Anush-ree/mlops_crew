@@ -1,90 +1,76 @@
-# PHASE 1: Project Design & Model Development
+# Phase 1: Project Design & Model Development
 
-## Overview
+## Problem & Goal
 
-Phase 1 establishes the foundation for your MLOps project. This phase covers project planning, initial code organization, team collaboration setup, data handling, baseline model development, and comprehensive documentation. By the end of this phase, you should have a well-organized repository with a trained baseline model and clear documentation for future team members.
+Phishing emails are one of the most common attack vectors. Rule-based filters
+miss modern phishing content, so we build a binary classifier that flags
+phishing vs. legitimate email. Phase 1 lands a reproducible end-to-end pipeline
+with a baseline model. Recall is the metric we care about most because missing
+a phishing email is worse than flagging a legitimate one; we use **F2** for
+model selection.
 
----
+## Dataset
 
-## 1. Project Proposal
+- **Source:** Kaggle "Phishing Email Dataset" (SpamAssassin, Enron, Nazario,
+  Ling, CEAS, Nigerian). Stored in `data/raw/archive/` and versioned with DVC
+  (S3 remote, Google Drive backup).
+- **Schema used in Phase 1:** `phishing_email.csv` with two columns —
+  `text_combined` (email text) and `label` (1 = phishing, 0 = legitimate).
+- **Phase 1 sample:** stratified 60% of `phishing_email.csv` so iteration is
+  fast. The remaining 40% is held back for later phases.
 
-- [ ] **Scope & Objectives**: Define the problem statement, goals, and success metrics for phishing_email_detection
-- [ ] **Detailed Description**: Write a 300+ word project description covering the business context, technical approach, and expected outcomes
-- [ ] **Dataset Selection**: Choose appropriate dataset(s) and document the selection justification
-- [ ] **Dataset Description**: Document dataset characteristics (size, features, format, sources)
-- [ ] **Model Considerations**: Identify initial model architectures and algorithms suitable for your problem
-- [ ] **Open-Source Tools**: Document and justify the selection of open-source tools and libraries for the project
+## Pipeline (`dvc.yaml`)
 
----
+`configs/config.yaml` is the single source of truth for paths, sample/split
+ratios, TF-IDF settings, and model hyperparameters.
 
-## 2. Code Organization & Setup
+1. **sample** — stratified 60% sample of the raw CSV → `data/interim/`.
+2. **clean** — normalize schema/labels, lowercase, collapse whitespace, drop
+   empty/duplicate rows. URLs, emails, numbers, and punctuation are kept on
+   purpose: they're useful phishing signals for later feature engineering.
+3. **split** — stratified train (70%) / val (15%) / test (15%) with a fixed
+   seed for reproducibility.
+4. **train** — fit each model in `modeling.models` as a single sklearn
+   `Pipeline(TfidfVectorizer -> classifier)`. The vectorizer travels with the
+   model, which avoids train/test leakage and makes inference one line.
 
-- [ ] **GitHub Repository**: Create repository with cookiecutter MLOps structure
-- [ ] **Environment Setup**: Configure Python virtual environment (venv or conda)
-- [ ] **Dependency Management**: Create and maintain requirements.txt or pyproject.toml
-- [ ] **Project Structure**: Organize code with clear separation of concerns (src/, tests/, data/, etc.)
-- [ ] **Version Pinning**: Pin all critical dependencies to specific versions
-- [ ] **Installation Documentation**: Document how to set up the development environment
+## Models
 
----
+- **Dummy classifier** (`most_frequent`) — sanity floor.
+- **TF-IDF + Logistic Regression** (`class_weight=balanced`) — Phase 1
+  baseline.
 
-## 3. Version Control & Collaboration
+## Baseline result (test set)
 
-- [ ] **Regular Commits**: Establish commit discipline with descriptive, atomic commits
-- [ ] **Branching Strategy**: Implement feature branching (e.g., git-flow or GitHub Flow)
-- [ ] **Pull Request Process**: Establish PR template and review requirements
-- [ ] **Team Roles**: Clearly define responsibilities (author: kirtan, team members, reviewers)
-- [ ] **Code Review Guidelines**: Document code review expectations and checklist
-- [ ] **Commit History**: Maintain clean, readable git history for project traceability
+| metric              | value    |
+| ------------------- | -------- |
+| F2                  | 0.9867   |
+| Recall              | 0.9881   |
+| Accuracy            | 0.9839   |
+| False-negative rate | 0.0119   |
 
----
+Per-model JSON metrics live under `reports/metrics/`; row-level predictions
+under `reports/predictions/`. The chosen artifact is `models/best_model.joblib`.
 
-## 4. Data Handling
+## Reproduce
 
-- [ ] **Data Cleaning Scripts**: Create reproducible scripts for data cleaning and preprocessing
-- [ ] **Normalization**: Implement feature normalization/standardization with proper documentation
-- [ ] **Data Augmentation**: Develop and document data augmentation strategies if applicable
-- [ ] **Data Documentation**: Create data dictionary with feature descriptions and data types
-- [ ] **Data Splits**: Define and implement train/validation/test split strategy
-- [ ] **Data Validation**: Create scripts to validate data quality and consistency
-- [ ] **DVC Setup (Optional)**: Initialize DVC for data versioning if managing large datasets
+```bash
+make install
+dvc pull        # fetch raw data from S3
+make repro      # runs sample -> clean -> split -> train via DVC
+```
 
----
+## Tooling
 
-## 5. Model Training
+- **DVC** for data and pipeline versioning (S3 remote)
+- **scikit-learn** for the model pipeline
+- **ruff** + **mypy** + **pytest** for code quality
+- **pre-commit** for local hooks
 
-- [ ] **Training Environment**: Set up local/cloud training environment with GPU support if needed
-- [ ] **Baseline Model**: Implement and train a baseline model
-- [ ] **Hyperparameter Configuration**: Document baseline hyperparameters and rationale
-- [ ] **Evaluation Metrics**: Define and calculate relevant metrics (accuracy, F1, RMSE, etc.)
-- [ ] **Model Persistence**: Save trained models with version information
-- [ ] **Training Reproducibility**: Ensure training is reproducible (seed management, logging)
-- [ ] **Performance Baseline**: Document baseline model performance as reference point
+## Next iteration
 
----
-
-## 6. Documentation & Reporting
-
-- [ ] **README**: Create comprehensive README with:
-  - [ ] Project overview and objectives
-  - [ ] Setup and installation instructions
-  - [ ] Quick start guide for running training
-  - [ ] Dependencies and requirements
-  - [ ] Contributing guidelines
-  - [ ] License information
-- [ ] **Code Docstrings**: Add docstrings to all functions and classes (NumPy/Google style)
-- [ ] **Code Style**: Implement ruff configuration for linting
-- [ ] **Type Hints**: Add type hints throughout codebase
-- [ ] **Type Checking**: Configure mypy for static type checking
-- [ ] **Makefile**: Create Makefile with commands for:
-  - [ ] `make setup` - install dependencies
-  - [ ] `make train` - run training pipeline
-  - [ ] `make test` - run tests
-  - [ ] `make lint` - run linting checks
-  - [ ] `make format` - auto-format code
-- [ ] **CONTRIBUTING.md**: Document contribution guidelines and development workflow
-- [ ] **API Documentation**: Document all public APIs and interfaces
-
----
-
-> **Checklist:** Use this as a guide for documenting your Phase 1 deliverables.
+Switching datasets in future phases is intentionally a config change: point
+`data.raw_dir` / `data.raw_file` at the new file (or override the sample
+fraction) and re-run `dvc repro`. New model types are added by extending
+`mlops_crew.models.text_classifiers._build_estimator` and listing the name
+under `modeling.models`.

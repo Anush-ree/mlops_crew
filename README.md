@@ -1,102 +1,114 @@
 # Phishing Email Detection
 
-## SE489 · ML Engineering for Production (MLOps) · DePaul University
+**SE489 · ML Engineering for Production (MLOps) · DePaul University**
 
-## 1. Team Informaton
+## 1. Team
 
-- [✅] Team Name: MLOps Crew
-- [✅] Team Members (Name & Email):
-    1. Anushree Bachhav ([abachhav@depaul.edu](mailto:abachhav@depaul.edu))
-    2. Krishna Kalakonda ([kkalakon@depaul.edu](mailto:kkalakon@depaul.edu))
-    3. Muhammad Anas ([MuhammadAnasPSI2@gmail.com](MuhammadAnasPSI2@gmail.com))
-    4. Kirtankumar Parekh ([kparekh2@depaul.edu](mailto:kparekh2@depaul.edu))
-- [✅] Course & Section: [SE489] ML Engineering for Production (MLOps)
+- Anushree Bachhav — abachhav@depaul.edu
+- Krishna Kalakonda — kkalakon@depaul.edu
+- Muhammad Anas — MuhammadAnasPSI2@gmail.com
+- Kirtankumar Parekh — kparekh2@depaul.edu
 
-## 2. Project Overview
+## 2. Project overview
 
-Phishing emails are one of the most common and damaging cybersecurity threats, tricking users into revealing sensitive information or installing malware. This project builds a production-grade binary classifier that detects whether an incoming email is a phishing attempt or a legitimate message.
-Problem statement: Automated phishing detection at scale requires a robust, reproducible ML pipeline that can be monitored and continuously improved as attack patterns evolve. Rule-based filters fail against sophisticated modern phishing content, motivating a data-driven approach.
-Main objectives:
+Phishing emails are a leading cybersecurity threat. This project trains a
+reproducible binary classifier that decides whether an incoming email is
+phishing or legitimate, and ships it as part of an end-to-end MLOps pipeline:
+data versioning (DVC), reproducible stages, deterministic training, and tracked
+metrics. We optimize for **recall** — missing a phishing email is worse than
+flagging a legitimate one — and select models by **F2**.
 
-Train a high-recall classifier (minimize missed phishing emails) using the SpamAssassin + Enron + Nazario corpus
-Build a fully reproducible ML pipeline with data versioning, experiment tracking, and CI/CD
-Deploy the model as a low-latency inference service (Phase 3)
-Monitor for data drift and model degradation over time (Phase 3)
+Phase 1 trains on a stratified 60% sample of `phishing_email.csv` so iteration
+is fast; later phases will pull in more data and additional model families.
 
-Success metrics: Recall, F1 score, Accuracy, Inference latency
-
-## 3. Project Architecture Diagram
+## 3. Architecture
 
 <img width="776" height="662" alt="image" src="https://github.com/user-attachments/assets/2aa3ed2a-427e-4ddb-b2e8-58e3d4a225c6" />
 
-## 4. Phase Deliverables
+## 4. Phase deliverables
 
-- [ ] [PHASE1.md](./PHASE1.md): Project Design & Model Development
-- [ ] [PHASE2.md](./PHASE2.md): Enhancing ML Operations
-- [ ] [PHASE3.md](./PHASE3.md): Continuous ML & Deployment
+- [PHASE1.md](./PHASE1.md) — Project design & baseline model
+- [PHASE2.md](./PHASE2.md) — Enhancing ML operations
+- [PHASE3.md](./PHASE3.md) — Continuous ML & deployment
 
-## 5. Setup Instructions
-
-### Prerequisites
-
-Python 3.11+<br>
-Git
-
-#### Install
+## 5. Setup
 
 ```bash
 git clone https://github.com/Anush-ree/mlops_crew.git
 cd mlops_crew
-python -m venv .venv
-source .venv/bin/activate
-pip install -e ".[dev]"
+python -m venv .venv && source .venv/bin/activate
+make install            # installs runtime deps + the package in editable mode
+make dev                # adds dev tools and pre-commit hooks
 ```
 
-#### Pre-commit hooks
+### Data access (DVC + AWS S3)
+
+Data is versioned with DVC and stored on S3 (Google Drive is kept as a backup
+remote). Request AWS credentials from a teammate, then:
 
 ```bash
-pre-commit install
+git pull
+pip install dvc-s3
+aws configure          # region: us-east-2
+dvc pull               # download raw + processed data
 ```
 
-#### Common commands
+### Common commands
 
 ```bash
-make setup    # install all dependencies
-make train    # run the training pipeline
-make test     # run tests
-make lint     # run ruff linter
-make format   # auto-format code
+make data       # sample -> clean -> split -> validate
+make train      # train all configured models, write metrics + predictions
+make predict    # score the test split with the saved best model
+make repro      # reproduce the full DVC pipeline end to end
+make test       # pytest
+make lint       # ruff check
+make format     # ruff fix + format
 ```
 
-#### Reproduce results
+### Reproduce results
 
 ```bash
-make setup
-make train
+make install
+dvc pull
+make repro
 ```
 
-This will preprocess the data, train the baseline model, and print evaluation metrics to the console. MLflow logs will appear in mlruns/
+This runs sample → clean → split → train, fits the dummy and TF-IDF + Logistic
+Regression baselines, and writes the artifacts under `models/` and `reports/`.
 
-### Data Access (DVC + AWS S3)
+## 6. Repo layout
 
- Data is versioned with DVC and stored on AWS S3. Request AWS credentials then run.
-```bash
-git pull                 # get latest config
-uv pip install dvc-s3   # install DVC S3 plugin
-aws configure           # enter credentials + region: us-east-2
-dvc pull                # download data from S3
 ```
-Google Drive is kept as a backup remote (gdrive_backup) in case S3 is unavailable.
+configs/config.yaml            single source of truth for the pipeline
+src/mlops_crew/
+  config.py                    project paths + YAML loader
+  logging_config.py            shared logger setup
+  data/
+    sample.py                  stage 1: stratified sample of the raw CSV
+    clean.py                   stage 2: schema, labels, text cleaning
+    split.py                   stage 3: stratified train/val/test split
+    validate.py                stage 4: post-split sanity checks
+    make_dataset.py            run all four stages locally
+  models/text_classifiers.py   TF-IDF + classifier sklearn pipeline factory
+  evaluation/metrics.py        recall-oriented binary metrics (F2 + confusion)
+  utils/                       seed + JSON helpers
+  train_model.py               train every configured model, save artifacts
+  predict_model.py             batch inference with the saved pipeline
+dvc.yaml                       DVC stages (sample, clean, split, train)
+```
 
-## 6. Contribution Summary
+## 7. Contributions
 
-- Anushree Bachhav: Project proposal, repository structure, cookiecutter setup, environment configuration, data versioning with DVC, cloud storage setup (AWS S3 + Google Drive backup)
-- Muhammad Anas: Data cleaning, EDA, normalization, train/val/test splits, data documentation 
-- Krishna Kalakonda: Model evaluation, baseline performance documentation, architecture diagram 
-- Kirtankumar Parekh: Model training, experiment tracking, Makefile, CONTRIBUTING.md, repo maintenance
+- **Anushree Bachhav** — proposal, repo/cookiecutter setup, environment
+  configuration, DVC + S3 + Google Drive remotes
+- **Muhammad Anas** — data cleaning, EDA, normalization, train/val/test splits,
+  data documentation
+- **Krishna Kalakonda** — model evaluation, baseline metrics, architecture
+  diagram, code organization
+- **Kirtankumar Parekh** — model training, experiment tracking, Makefile,
+  contribution guidelines, repo maintenance
 
-## 7. References
+## 8. References
 
-- Dataset: Phishing Email Dataset (SpamAssassin, Enron, Nazario, Ling, CEAS, Nigerian)
-- Source: Kaggle
-- Use: Primary training & evaluation data
+- Phishing Email Dataset (Kaggle) — primary training and evaluation data,
+  combining SpamAssassin, Enron, Nazario, Ling, CEAS, and Nigerian Fraud sets.

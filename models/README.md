@@ -5,12 +5,12 @@ Store trained models, serialized artifacts, and predictions here.
 ## What Goes Here
 
 - Trained/serialized models (`.pkl`, `.joblib`, `.h5`, `.pth`, etc.)
-- Model predictions and outputs
-- Model metadata, summaries, and evaluation reports
+- The fitted sklearn pipelines (`dummy.joblib`, `logistic_regression.joblib`)
+- `best_model.joblib`, copied from the best validation model
 
 ## Best Practices
 
 - **Never commit** large model files to Git
-- Use DVC or cloud storage (S3, GCS) to version and manage models
+- Use DVC/S3 to version and manage model artifacts
 - Document model architecture, hyperparameters, and performance metrics
-- Include training dates and dataset versions in model naming
+- Keep metrics and row-level predictions under `reports/`

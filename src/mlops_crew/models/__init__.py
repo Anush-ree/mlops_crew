@@ -1,6 +1,3 @@
-"""Model definitions."""
+from mlops_crew.models.text_classifiers import build_text_classifier
 
-from mlops_crew.models.base import BaseModel
-from mlops_crew.models.model import Model
-
-__all__ = ["BaseModel", "Model"]
+__all__ = ["build_text_classifier"]
