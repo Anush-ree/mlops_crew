@@ -1,0 +1,72 @@
+stages:
+  sample:
+    cmd: python -m mlops_crew.data.sample
+    deps:
+      - configs/config.yaml
+      - data/raw/archive/phishing_email.csv
+      - src/mlops_crew/config.py
+      - src/mlops_crew/data/__init__.py
+      - src/mlops_crew/data/sample.py
+      - src/mlops_crew/utils/io.py
+    outs:
+      - data/interim/phishing_email_phase1_sample.csv
+      - data/interim/sample_summary.json
+
+  clean:
+    cmd: python -m mlops_crew.data.clean
+    deps:
+      - configs/config.yaml
+      - data/interim/phishing_email_phase1_sample.csv
+      - src/mlops_crew/config.py
+      - src/mlops_crew/data/__init__.py
+      - src/mlops_crew/data/clean.py
+      - src/mlops_crew/utils/io.py
+    outs:
+      - data/processed/cleaned.csv
+      - data/processed/cleaning_summary.json
+
+  split:
+    cmd: python -m mlops_crew.data.split
+    deps:
+      - configs/config.yaml
+      - data/processed/cleaned.csv
+      - src/mlops_crew/config.py
+      - src/mlops_crew/data/__init__.py
+      - src/mlops_crew/data/split.py
+      - src/mlops_crew/utils/io.py
+    outs:
+      - data/processed/train.csv
+      - data/processed/val.csv
+      - data/processed/test.csv
+      - data/processed/split_summary.json
+
+  train:
+    cmd: python -m mlops_crew.train_model
+    deps:
+      - configs/config.yaml
+      - data/processed/train.csv
+      - data/processed/val.csv
+      - data/processed/test.csv
+      - src/mlops_crew/config.py
+      - src/mlops_crew/data/__init__.py
+      - src/mlops_crew/evaluation/metrics.py
+      - src/mlops_crew/models/text_classifiers.py
+      - src/mlops_crew/train_model.py
+      - src/mlops_crew/utils/io.py
+      - src/mlops_crew/utils/seed.py
+    outs:
+      - models/dummy.joblib
+      - models/logistic_regression.joblib
+      - models/best_model.joblib
+      - reports/predictions
+    metrics:
+      - reports/metrics/dummy_metrics.json:
+          cache: false
+      - reports/metrics/logistic_regression_metrics.json:
+          cache: false
+      - reports/metrics/best_model_metrics.json:
+          cache: false
+      - reports/metrics/model_comparison.json:
+          cache: false
+      - reports/metrics/model_comparison.csv:
+          cache: false

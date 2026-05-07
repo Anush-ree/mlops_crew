@@ -4,8 +4,8 @@ Store generated analysis reports, findings, and visualizations here.
 
 ## Structure
 
-- **`figures/`** — Generated plots, charts, and graphics (PNG, SVG, PDF)
-- **Reports** — Analysis summaries, insights, and conclusions
+- **`metrics/`** — DVC-tracked JSON/CSV model metrics
+- **`predictions/`** — DVC-tracked row-level validation/test predictions
 
 ## Guidelines
 

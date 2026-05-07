@@ -1,167 +1,100 @@
-"""Data validation script for phishing email detection.
+"""Stage 4: sanity-check the cleaned and split CSVs before training.
 
-This script checks the cleaned and split datasets for quality issues
-such as nulls, class imbalance, empty text, and shape mismatches.
+Failures here mean a bad pipeline run, not a flaky model — so this returns a
+non-zero exit code so CI or `make` can stop early.
 """
 
-import logging
+from __future__ import annotations
+
+import argparse
 import sys
 from pathlib import Path
+from typing import Any
 
 import pandas as pd
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
-logger = logging.getLogger(__name__)
+from mlops_crew.config import CONFIG_PATH, load_project_config, resolve_project_path
+from mlops_crew.data import LABEL_COLUMN, TEXT_COLUMN
+from mlops_crew.logging_config import get_logger, setup_logging
 
-CLEANED_PATH = Path("data/processed/cleaned.csv")
-TRAIN_PATH = Path("data/processed/train.csv")
-VAL_PATH = Path("data/processed/val.csv")
-TEST_PATH = Path("data/processed/test.csv")
+logger = get_logger(__name__)
 
-EXPECTED_COLUMNS = {"text_combined", "label"}
+EXPECTED_COLUMNS = {TEXT_COLUMN, LABEL_COLUMN}
 VALID_LABELS = {0, 1}
-MIN_TEXT_LENGTH = 3
-MAX_IMBALANCE_RATIO = 3.0
+HIGH_IMBALANCE_RATIO = 10.0
 
 
-def check_columns(df: pd.DataFrame, name: str) -> bool:
-    """Check that required columns exist.
-
-    Args:
-        df: DataFrame to validate.
-        name: Name of the dataset for logging.
-
-    Returns:
-        True if valid, False otherwise.
-    """
-    missing = EXPECTED_COLUMNS - set(df.columns)
-    if missing:
-        logger.error(f"[{name}] Missing columns: {missing}")
-        return False
-    logger.info(f"[{name}] Columns OK: {list(df.columns)}")
-    return True
+def dataset_paths(config: dict[str, Any]) -> dict[str, Path]:
+    data_config = config["data"]
+    processed_dir = resolve_project_path(data_config["processed_dir"])
+    return {
+        "cleaned": processed_dir / data_config["cleaned_file"],
+        "train": processed_dir / data_config["train_file"],
+        "val": processed_dir / data_config["val_file"],
+        "test": processed_dir / data_config["test_file"],
+    }
 
 
-def check_nulls(df: pd.DataFrame, name: str) -> bool:
-    """Check for null values in required columns.
-
-    Args:
-        df: DataFrame to validate.
-        name: Name of the dataset for logging.
-
-    Returns:
-        True if no nulls, False otherwise.
-    """
-    nulls = df[list(EXPECTED_COLUMNS)].isnull().sum()
-    if nulls.any():
-        logger.error(f"[{name}] Null values found:\n{nulls[nulls > 0]}")
-        return False
-    logger.info(f"[{name}] No null values found")
-    return True
-
-
-def check_labels(df: pd.DataFrame, name: str) -> bool:
-    """Check that all labels are valid binary values.
-
-    Args:
-        df: DataFrame to validate.
-        name: Name of the dataset for logging.
-
-    Returns:
-        True if all labels valid, False otherwise.
-    """
-    invalid = set(df["label"].unique()) - VALID_LABELS
-    if invalid:
-        logger.error(f"[{name}] Invalid label values: {invalid}")
-        return False
-    logger.info(f"[{name}] Label distribution:\n{df['label'].value_counts()}")
-    return True
-
-
-def check_class_balance(df: pd.DataFrame, name: str) -> bool:
-    """Check that class imbalance ratio is within acceptable range.
-
-    Args:
-        df: DataFrame to validate.
-        name: Name of the dataset for logging.
-
-    Returns:
-        True if balanced enough, False otherwise.
-    """
-    counts = df["label"].value_counts()
-    ratio = counts.max() / counts.min()
-    if ratio > MAX_IMBALANCE_RATIO:
-        logger.warning(f"[{name}] High class imbalance ratio: {ratio:.2f}")
-    else:
-        logger.info(f"[{name}] Class imbalance ratio: {ratio:.2f} (OK)")
-    return True
-
-
-def check_empty_text(df: pd.DataFrame, name: str) -> bool:
-    """Check for empty or very short text entries.
-
-    Args:
-        df: DataFrame to validate.
-        name: Name of the dataset for logging.
-
-    Returns:
-        True if no problematic text found, False otherwise.
-    """
-    short = df[df["text_combined"].str.len() < MIN_TEXT_LENGTH]
-    if len(short) > 0:
-        logger.warning(f"[{name}] {len(short)} rows with very short text (< {MIN_TEXT_LENGTH} chars)")
-    else:
-        logger.info(f"[{name}] No empty or very short text found")
-    return True
-
-
-def validate_dataset(path: Path, name: str) -> bool:
-    """Run all validation checks on a dataset.
-
-    Args:
-        path: Path to CSV file.
-        name: Name for logging.
-
-    Returns:
-        True if all checks pass, False otherwise.
-    """
+def validate_dataset(path: Path, name: str, min_text_length: int) -> bool:
+    """Return True when the CSV at `path` passes every check."""
     if not path.exists():
-        logger.error(f"[{name}] File not found: {path}")
+        logger.error("[%s] file not found: %s", name, path)
         return False
 
-    df = pd.read_csv(path)
-    logger.info(f"[{name}] Shape: {df.shape}")
+    data = pd.read_csv(path)
+    logger.info("[%s] shape=%s", name, data.shape)
+    if data.empty:
+        logger.error("[%s] file is empty", name)
+        return False
 
-    checks = [
-        check_columns(df, name),
-        check_nulls(df, name),
-        check_labels(df, name),
-        check_class_balance(df, name),
-        check_empty_text(df, name),
-    ]
-    return all(checks)
+    missing = EXPECTED_COLUMNS - set(data.columns)
+    if missing:
+        logger.error("[%s] missing columns: %s", name, sorted(missing))
+        return False
+
+    nulls = data[list(EXPECTED_COLUMNS)].isnull().sum()
+    if nulls.any():
+        logger.error("[%s] null counts: %s", name, nulls.to_dict())
+        return False
+
+    invalid_labels = set(data[LABEL_COLUMN].unique()) - VALID_LABELS
+    if invalid_labels:
+        logger.error("[%s] invalid labels: %s", name, sorted(invalid_labels))
+        return False
+    missing_labels = VALID_LABELS - set(data[LABEL_COLUMN].unique())
+    if missing_labels:
+        logger.error("[%s] missing expected labels: %s", name, sorted(missing_labels))
+        return False
+
+    short_count = int((data[TEXT_COLUMN].str.len() < min_text_length).sum())
+    if short_count:
+        logger.error("[%s] %d rows shorter than %d chars", name, short_count, min_text_length)
+        return False
+
+    counts = data[LABEL_COLUMN].value_counts()
+    ratio = float(counts.max() / counts.min())
+    if ratio > HIGH_IMBALANCE_RATIO:
+        logger.warning("[%s] high class imbalance: %.2f", name, ratio)
+    logger.info("[%s] label_distribution=%s", name, counts.to_dict())
+    return True
+
+
+def run(config: dict[str, Any]) -> bool:
+    min_length = int(config.get("cleaning", {}).get("min_text_length", 3))
+    return all(
+        validate_dataset(path, name, min_length) for name, path in dataset_paths(config).items()
+    )
 
 
 def main() -> None:
-    """Validate all processed datasets."""
-    datasets = [
-        (CLEANED_PATH, "cleaned"),
-        (TRAIN_PATH, "train"),
-        (VAL_PATH, "val"),
-        (TEST_PATH, "test"),
-    ]
-
-    results = []
-    for path, name in datasets:
-        logger.info(f"\n--- Validating {name} ---")
-        result = validate_dataset(path, name)
-        results.append(result)
-
-    if all(results):
-        logger.info("\nAll validation checks passed.")
-    else:
-        logger.error("\nSome validation checks failed. Review logs above.")
+    parser = argparse.ArgumentParser(description="Validate cleaned and split datasets")
+    parser.add_argument("--config", type=Path, default=CONFIG_PATH)
+    args = parser.parse_args()
+    setup_logging()
+    if not run(load_project_config(args.config)):
+        logger.error("Validation failed")
         sys.exit(1)
+    logger.info("All validation checks passed")
 
 
 if __name__ == "__main__":

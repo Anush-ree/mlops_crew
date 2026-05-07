@@ -1,0 +1,34 @@
+{
+  "model_name": "dummy",
+  "model_path": "models/dummy.joblib",
+  "test": {
+    "accuracy": 0.5211400783466162,
+    "average_precision": 0.5211400783466162,
+    "f1": 0.6851966965633602,
+    "f2": 0.8447558572366981,
+    "false_negative": 0.0,
+    "false_negative_rate": 0.0,
+    "false_positive": 3545.0,
+    "false_positive_rate": 1.0,
+    "precision": 0.5211400783466162,
+    "recall": 1.0,
+    "roc_auc": 0.5,
+    "true_negative": 0.0,
+    "true_positive": 3858.0
+  },
+  "validation": {
+    "accuracy": 0.5210049979737944,
+    "average_precision": 0.5210049979737944,
+    "f1": 0.6850799289520426,
+    "f2": 0.8446848583066883,
+    "false_negative": 0.0,
+    "false_negative_rate": 0.0,
+    "false_positive": 3546.0,
+    "false_positive_rate": 1.0,
+    "precision": 0.5210049979737944,
+    "recall": 1.0,
+    "roc_auc": 0.5,
+    "true_negative": 0.0,
+    "true_positive": 3857.0
+  }
+}

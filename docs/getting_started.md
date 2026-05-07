@@ -3,9 +3,9 @@
 ## Prerequisites
 
 - Python 3.11 or higher
-- pip or uv package manager
+- pip
 - Git (for version control)
-- Docker (optional, for containerized execution)
+- DVC access to the project S3 remote
 
 ## Installation
 
@@ -18,52 +18,33 @@ cd mlops_crew
 
 ### Step 2: Create a Virtual Environment
 
-**Using venv:**
 ```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
-**Using conda:**
-```bash
-conda create -n mlops_crew python=3.11
-conda activate mlops_crew
+python -m venv .venv
+source .venv/bin/activate
 ```
 
 ### Step 3: Install Dependencies
 
-**Using uv (recommended):**
-```bash
-pip install uv
-uv pip install -r requirements.txt
-```
-
-**Using pip:**
 ```bash
 pip install -U pip
-pip install -r requirements.txt
+make install
 ```
 
 ### Step 4: Set Up Development Environment
 
 ```bash
-# Install development dependencies
-pip install -r requirements_dev.txt
-
-# Install pre-commit hooks
-pre-commit install
-
-# Run tests to verify setup
-pytest tests/
+make dev
+make test
 ```
 
 ## Running the Project
 
 ### Data Processing
 
-Prepare your data for model training:
+Fetch DVC-tracked data from S3, then prepare the Phase 1 sample and splits:
 
 ```bash
+dvc pull
 make data
 ```
 
@@ -75,16 +56,10 @@ python -m mlops_crew.data.make_dataset
 
 ### Model Training
 
-Train the machine learning model:
+Train the configured baseline models:
 
 ```bash
 make train
-```
-
-With custom parameters:
-
-```bash
-python -m mlops_crew.train_model --epochs 100 --batch-size 64
 ```
 
 ### Model Prediction
@@ -95,10 +70,13 @@ Generate predictions on new data:
 make predict
 ```
 
-With custom inputs:
+With custom paths:
 
 ```bash
-python -m mlops_crew.predict_model --model-path models/model.pkl --input data/test.csv
+python -m mlops_crew.predict_model \
+  --model-path models/best_model.joblib \
+  --input data/processed/test.csv \
+  --output reports/predictions/manual_predictions.csv
 ```
 
 ## Development Workflow
@@ -112,8 +90,8 @@ make test
 # Run tests with coverage
 pytest tests/ --cov=mlops_crew
 
-# Run specific test file
-pytest tests/test_model.py -v
+# Run the Phase 1 pipeline tests
+pytest tests/test_phase1_pipeline.py -v
 ```
 
 ### Code Quality
@@ -141,45 +119,17 @@ pre-commit run --all-files
 pre-commit autoupdate
 ```
 
-## Docker Usage
-
-### Build Docker Image
-
-```bash
-make docker_build
-```
-
-Or manually:
-
-```bash
-docker build -t mlops_crew -f dockerfiles/Dockerfile .
-```
-
-### Run with Docker Compose
-
-```bash
-docker-compose up
-```
-
-### Run Single Container
-
-```bash
-make docker_run
-```
-
 ## Project Structure
 
 ```
 mlops_crew/                  # Repository root
 ├── src/
 │   └── mlops_crew/          # Importable package (src/ layout)
-│       ├── config.py                  # Paths & typed config
+│       ├── config.py                  # Repo paths + YAML config loader
 │       ├── logging_config.py
-│       ├── data/                      # Loaders + raw→processed pipeline
-│       ├── features/                  # Feature engineering
-│       ├── models/                    # BaseModel + concrete Model
+│       ├── data/                      # sample, clean, split, validate
+│       ├── models/                    # TF-IDF classifier pipeline factory
 │       ├── evaluation/                # Metrics
-│       ├── visualization/
 │       ├── utils/                     # seed, io
 │       ├── train_model.py
 │       └── predict_model.py
@@ -187,7 +137,7 @@ mlops_crew/                  # Repository root
 ├── data/                              # raw/ and processed/
 ├── models/                            # Trained model artifacts
 ├── docs/                              # MkDocs documentation
-├── configs/                           # Hydra configuration (optional)
+├── configs/                           # Project configuration
 ├── pyproject.toml
 ├── requirements.txt
 └── Makefile
@@ -195,25 +145,9 @@ mlops_crew/                  # Repository root
 
 ## Configuration
 
-### Using Hydra Configuration
-Configuration is managed via Hydra. Edit `configs/config.yaml`:
-
-```yaml
-model:
-  name: my_model
-  type: sklearn
-training:
-  epochs: 100
-  batch_size: 32
-```
-
-Override at runtime:
-
-```bash
-python -m mlops_crew.train_model \
-  model.name=custom_model \
-  training.epochs=200
-```
+Edit `configs/config.yaml` to change paths, the 60% sample fraction, split
+ratios, TF-IDF settings, or the list of models to train. Re-run `make repro`
+after config changes so DVC updates the pipeline outputs.
 
 ## Troubleshooting
 
@@ -223,18 +157,6 @@ If you get `ModuleNotFoundError`, ensure:
 1. Virtual environment is activated
 2. Dependencies are installed: `pip install -r requirements.txt`
 3. Package is installed in editable mode: `pip install -e .`
-
-### CUDA/GPU Issues
-
-If using PyTorch with GPU:
-
-```bash
-# Check GPU availability
-python -c "import torch; print(torch.cuda.is_available())"
-
-# Install CPU-only version if needed
-pip install torch --index-url https://download.pytorch.org/whl/cpu
-```
 
 ### Pre-commit Hook Failures
 
@@ -253,12 +175,12 @@ make format
 ## Next Steps
 
 1. Review the [documentation](index.md)
-2. Start with [Phase 1](PHASE1.md) - Data Exploration
+2. Start with the root [Phase 1 deliverable](../PHASE1.md)
 3. Check the [API Reference](api.md)
 
 ## Support
 
 For issues and questions:
 - Check existing [documentation](index.md)
-- Review [Phase deliverables](PHASE1.md)
+- Review the root [Phase deliverable](../PHASE1.md)
 - Contact kirtan (kparekh2@depaul.edu)
