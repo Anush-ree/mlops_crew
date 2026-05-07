@@ -10,7 +10,8 @@ from pathlib import Path
 
 import pandas as pd
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logging.basicConfig(level=logging.INFO,
+                    format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 RAW_PATH = Path("data/raw/phishing_email.csv")
@@ -113,7 +114,8 @@ def drop_short_text(df: pd.DataFrame, min_length: int = 3) -> pd.DataFrame:
     before = len(df)
     df = df[df["text_combined"].str.strip().str.len() > min_length]
     after = len(df)
-    logger.info(f"Removed {before - after} rows with text shorter than {min_length} chars")
+    logger.info(
+        f"Removed {before - after} rows with text shorter than {min_length} chars")
     return df
 
 

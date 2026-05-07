@@ -10,7 +10,8 @@ from pathlib import Path
 
 import pandas as pd
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logging.basicConfig(level=logging.INFO,
+                    format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 CLEANED_PATH = Path("data/processed/cleaned.csv")
@@ -109,7 +110,8 @@ def check_empty_text(df: pd.DataFrame, name: str) -> bool:
     """
     short = df[df["text_combined"].str.len() < MIN_TEXT_LENGTH]
     if len(short) > 0:
-        logger.warning(f"[{name}] {len(short)} rows with very short text (< {MIN_TEXT_LENGTH} chars)")
+        logger.warning(
+            f"[{name}] {len(short)} rows with very short text (< {MIN_TEXT_LENGTH} chars)")
     else:
         logger.info(f"[{name}] No empty or very short text found")
     return True

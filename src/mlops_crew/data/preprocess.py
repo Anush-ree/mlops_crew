@@ -11,7 +11,8 @@ import joblib
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logging.basicConfig(level=logging.INFO,
+                    format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 CLEANED_PATH = Path("data/processed/cleaned.csv")
@@ -46,7 +47,8 @@ def fit_tfidf(texts: pd.Series) -> tuple[TfidfVectorizer, object]:
     Returns:
         Tuple of (fitted vectorizer, feature matrix).
     """
-    logger.info(f"Fitting TF-IDF with max_features={MAX_FEATURES}, ngram_range={NGRAM_RANGE}")
+    logger.info(
+        f"Fitting TF-IDF with max_features={MAX_FEATURES}, ngram_range={NGRAM_RANGE}")
     vectorizer = TfidfVectorizer(
         max_features=MAX_FEATURES,
         ngram_range=NGRAM_RANGE,

@@ -10,7 +10,8 @@ from pathlib import Path
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logging.basicConfig(level=logging.INFO,
+                    format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 CLEANED_PATH = Path("data/processed/cleaned.csv")
@@ -72,7 +73,8 @@ def split_data(
         stratify=train_val["label"],
     )
 
-    logger.info(f"Train: {len(train)} rows | Val: {len(val)} rows | Test: {len(test)} rows")
+    logger.info(
+        f"Train: {len(train)} rows | Val: {len(val)} rows | Test: {len(test)} rows")
     logger.info(f"Train label dist:\n{train['label'].value_counts()}")
     logger.info(f"Val label dist:\n{val['label'].value_counts()}")
     logger.info(f"Test label dist:\n{test['label'].value_counts()}")
