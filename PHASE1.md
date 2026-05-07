@@ -8,23 +8,106 @@ Phase 1 establishes the foundation for your MLOps project. This phase covers pro
 
 ## 1. Project Proposal
 
-- [ ] **Scope & Objectives**: Define the problem statement, goals, and success metrics for phishing_email_detection
-- [ ] **Detailed Description**: Write a 300+ word project description covering the business context, technical approach, and expected outcomes
-- [ ] **Dataset Selection**: Choose appropriate dataset(s) and document the selection justification
-- [ ] **Dataset Description**: Document dataset characteristics (size, features, format, sources)
-- [ ] **Model Considerations**: Identify initial model architectures and algorithms suitable for your problem
-- [ ] **Open-Source Tools**: Document and justify the selection of open-source tools and libraries for the project
+- [ ] **Scope & Objectives**: 
+      
+  We are building a system to detect phishing emails using machine learning. The goal is to classify each email as either phishing or legitimate.
+
+  Problem statement: Rule-based email filters fail against sophisticated modern phishing content. We need a data-driven, reproducible ML pipeline that can scale, be monitored, and improve as attack patterns evolve.
+
+  Success metrics:
+  - Recall (primary — minimize missed phishing emails)
+  - F1 Score
+  - Accuracy
+  - Inference latency
+
+---
+- [ ] **Detailed Description**:
+Phishing emails are one of the most common and damaging cybersecurity threats. Attackers craft messages that look legitimate to trick users into revealing passwords, financial information, or installing malware. Traditional rule-based filters struggle to keep up with the evolving tactics used in modern phishing campaigns. This motivates a machine learning approach that can learn patterns from large amounts of labeled email data.
+
+This project builds a production-grade binary classifier to detect phishing emails. The input is raw email text. The output is a label: phishing or legitimate. The full pipeline covers data ingestion, cleaning, splitting, vectorization, model training, evaluation, and (in later phases) deployment and monitoring.
+
+ In Phase 1, we focused on data preparation and baseline modeling. The primary dataset is the Phishing Email Dataset from Kaggle, a combined corpus of around 82,000 emails sourced from SpamAssassin, Enron, Nazario, Ling, CEAS, and Nigerian email collections. We cleaned the data by removing duplicates, nulls, very short texts, URLs, and email addresses. We then split it into train, validation, and test sets using stratified sampling to preserve class balance.
+
+ For modeling, Phase 1 uses baseline approaches: logistic regression and decision tree classifiers trained on TF-IDF features. These give us a performance reference point. In Phase 2 and beyond, we will fine-tune transformer models from Hugging Face to improve detection quality.
+
+ The pipeline is fully reproducible. We use a fixed random seed, DVC for data versioning, MLflow for experiment tracking, and config files for hyperparameter management. This means any team member can reproduce results exactly and swap in new models or datasets without rewriting code.
+
+ We expect the final system to catch the majority of phishing emails (high recall) while remaining fast enough for real-world email filtering use cases. Monitoring for data drift and model degradation will be addressed in Phase 3.
+
+
+- [ ] **Dataset Selection**: 
+Dataset: [Phishing Email Dataset](https://www.kaggle.com/datasets/naserabdullahalam/phishing-email-dataset?select=SpamAssasin.csv) — Kaggle
+
+We chose this dataset because:
+  - It is large (~82,000 emails), giving the model enough examples to learn from
+  - It combines multiple well-known sources (SpamAssassin, Enron, Nazario, Ling, CEAS, Nigerian), making it more diverse than any single corpus
+  - The class balance is healthy (imbalance ratio: 1.09), so the model is not biased toward one label
+  - It is publicly available and well-documented, making it reproducible for others
+
+ In Phase 2, individual source CSVs (Enron, CEAS, Nazario, SpamAssassin) will be added separately to increase variety and allow source-level analysis.
+
+  ---
+
+- [ ] **Dataset Description**: 
+
+| Property | Details |
+  |---|---|
+  | Source | Kaggle — Phishing Email Dataset (combined corpus) |
+  | Sub-sources | SpamAssassin, Enron, Nazario, Ling, CEAS, Nigerian |
+  | File | phishing_email.csv |
+  | Size after cleaning | 82,074 rows |
+  | Format | CSV |
+  | Columns | Email text, label (phishing / legitimate) |
+  | Label type | Binary |
+  | Class imbalance ratio | 1.09 (well balanced) |
+  | Train split | 57,451 rows (70%) |
+  | Validation split | 12,311 rows (15%) |
+  | Test split | 12,312 rows (15%) |
+  | Random seed | 42 |
+
+---
+
+- [ ] **Model Considerations**: 
+
+Phase 1 — Baseline models:
+  - Logistic Regression (trained on TF-IDF features)
+  - Decision Tree
+
+  These are fast to train, interpretable, and give a clear performance baseline.
+
+  Phase 2 — Advanced models:
+  - Fine-tuned transformer models from Hugging Face (e.g., DistilBERT, RoBERTa)
+
+  We will use config files to manage hyperparameters so we can swap settings without changing code. We will also track different data versions (e.g., case-sensitive vs. case-insensitive text) to monitor data drift over time.
+
+---
+
+- [ ] **Open-Source Tools**: 
+
+
+  | Tool | Purpose | Justification |
+  |---|---|---|
+  | scikit-learn | TF-IDF vectorization, baseline models, stratified splits | Industry-standard ML library, well-documented |
+  | pandas | Data cleaning and processing | Standard for tabular data in Python |
+  | Hugging Face Transformers | Fine-tuned models in Phase 2 | Large library of pretrained NLP models |
+  | DVC | Data versioning | Tracks dataset versions alongside code in Git |
+  | MLflow | Experiment tracking | Logs metrics, parameters, and model artifacts |
+  | ruff | Code linting | Fast, modern Python linter |
+  | mypy | Static type checking | Catches type errors before runtime |
+  | pytest | Testing | Standard Python testing framework |
+  | Docker | Containerization (Phase 2+) | Ensures consistent environments across machines |
 
 ---
 
 ## 2. Code Organization & Setup
 
-- [ ] **GitHub Repository**: Create repository with cookiecutter MLOps structure
-- [ ] **Environment Setup**: Configure Python virtual environment (venv or conda)
-- [ ] **Dependency Management**: Create and maintain requirements.txt or pyproject.toml
-- [ ] **Project Structure**: Organize code with clear separation of concerns (src/, tests/, data/, etc.)
+- [ ] **GitHub Repository**: Created at https://github.com/Anush-ree/mlops_crew using cookiecutter MLOps structure
+- [ ] **Environment Setup**: Python environment configured using `uv` (fast Python package and environment manager)
+- [ ] **Dependency Management**: `pyproject.toml` maintained with all dependencies
+- [ ] **Project Structure**:Code organized with `src/`, `tests/`, `data/`, `configs/` separation
 - [ ] **Version Pinning**: Pin all critical dependencies to specific versions
-- [ ] **Installation Documentation**: Document how to set up the development environment
+- [ ] **Installation Documentation**: Setup documented in README.md
+
 
 ---
 
