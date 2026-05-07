@@ -14,9 +14,12 @@
 
 ## 2. Project Overview
 
-Phishing emails are one of the most common and damaging cybersecurity threats, tricking users into revealing sensitive information or installing malware. This project builds a production-grade binary classifier that detects whether an incoming email is a phishing attempt or a legitimate message.
-Problem statement: Automated phishing detection at scale requires a robust, reproducible ML pipeline that can be monitored and continuously improved as attack patterns evolve. Rule-based filters fail against sophisticated modern phishing content, motivating a data-driven approach.
-Main objectives:
+This repository implements a production-grade classification system for phishing email detection. 
+It combines several email datasets, cleans and splits the data, converts text to features (TF‑IDF now, transformers later), trains models, and measures performance with an emphasis on recall and low latency..
+Data is versioned with DVC on S3 (s3://mlops-crew-data/dvc-store, region us-east-2) with a Google Drive fallback.
+
+
+Objectives:
 
 Train a high-recall classifier (minimize missed phishing emails) using the SpamAssassin + Enron + Nazario corpus
 Build a fully reproducible ML pipeline with data versioning, experiment tracking, and CI/CD
@@ -98,5 +101,5 @@ Google Drive is kept as a backup remote (gdrive_backup) in case S3 is unavailabl
 ## 7. References
 
 - Dataset: Phishing Email Dataset (SpamAssassin, Enron, Nazario, Ling, CEAS, Nigerian)
-- Source: Kaggle
+- Source: https://www.kaggle.com/datasets/naserabdullahalam/phishing-email-dataset?select=SpamAssasin.csv
 - Use: Primary training & evaluation data
