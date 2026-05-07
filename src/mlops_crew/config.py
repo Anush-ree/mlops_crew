@@ -1,49 +1,31 @@
-"""Project-wide configuration and path constants.
+"""Project paths and config loader.
 
-Access paths via the module-level constants so code does not depend
-on the current working directory.
+The repository layout is fixed relative to this file, so paths resolve the same
+way whether code runs from the repo root, a notebook, or a DVC stage.
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
+
+import yaml
 
 PROJECT_ROOT: Path = Path(__file__).resolve().parents[2]
-DATA_DIR: Path = PROJECT_ROOT / "data"
-RAW_DATA_DIR: Path = DATA_DIR / "raw"
-PROCESSED_DATA_DIR: Path = DATA_DIR / "processed"
-MODELS_DIR: Path = PROJECT_ROOT / "models"
-REPORTS_DIR: Path = PROJECT_ROOT / "reports"
-FIGURES_DIR: Path = REPORTS_DIR / "figures"
+CONFIG_PATH: Path = PROJECT_ROOT / "configs" / "config.yaml"
 
 
-@dataclass(frozen=True)
-class TrainingConfig:
-    """Hyperparameters and training-run settings."""
-
-    epochs: int = 10
-    batch_size: int = 32
-    learning_rate: float = 1e-3
-    seed: int = 42
-    early_stopping_patience: int = 10
+def resolve_project_path(path: str | Path) -> Path:
+    """Resolve a path against the repo root, leaving absolute paths unchanged."""
+    candidate = Path(path)
+    return candidate if candidate.is_absolute() else PROJECT_ROOT / candidate
 
 
-@dataclass(frozen=True)
-class DataConfig:
-    """Data-split and preprocessing settings."""
-
-    train_test_split: float = 0.8
-    val_split: float = 0.1
-    seed: int = 42
-
-
-@dataclass(frozen=True)
-class Config:
-    """Top-level configuration composing sub-configs."""
-
-    training: TrainingConfig = field(default_factory=TrainingConfig)
-    data: DataConfig = field(default_factory=DataConfig)
-
-
-DEFAULT_CONFIG = Config()
+def load_project_config(config_path: str | Path = CONFIG_PATH) -> dict[str, Any]:
+    """Load and return the YAML project config as a dict."""
+    path = resolve_project_path(config_path)
+    with path.open("r", encoding="utf-8") as file:
+        config = yaml.safe_load(file) or {}
+    if not isinstance(config, dict):
+        raise ValueError(f"Config root must be a mapping: {path}")
+    return config

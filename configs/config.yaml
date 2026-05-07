@@ -1,44 +1,66 @@
+# Single source of truth for paths, splits, and model hyperparameters.
+# Every script and DVC stage reads from this file. To swap in a new dataset,
+# update `data.raw_dir` / `data.raw_file` and re-run `dvc repro`.
 
-# Hydra configuration for phishing_email_detection
-
-defaults:
-  - _self_
-
-model:
-  name: default_model
-  type: sklearn
-  parameters:
-    max_depth: 10
-    min_samples_split: 2
+project:
+  name: phishing_email_detection
+  seed: 42
 
 data:
-  raw_path: data/raw
-  processed_path: data/processed
-  train_test_split: 0.8
-  random_state: 42
-  val_split: 0.1
+  raw_dir: data/raw/archive
+  raw_file: phishing_email.csv
+  text_column: text_combined
+  label_column: label
 
-training:
-  epochs: 100
-  batch_size: 32
-  learning_rate: 0.001
-  optimizer: adam
-  loss_function: mse
-  early_stopping: true
-  early_stopping_patience: 10
+  interim_dir: data/interim
+  sampled_file: phishing_email_phase1_sample.csv
 
-evaluation:
-  metrics:
-    - mse
-    - rmse
-    - mae
-  cv_folds: 5
+  processed_dir: data/processed
+  cleaned_file: cleaned.csv
+  train_file: train.csv
+  val_file: val.csv
+  test_file: test.csv
 
-logging:
-  level: INFO
-  output_dir: logs
+  sample:
+    fraction: 0.60
+    random_state: 42
+    stratify: true
+  split:
+    train_size: 0.70
+    val_size: 0.15
+    test_size: 0.15
+    random_state: 42
+    stratify: true
 
-paths:
-  models_dir: models
-  logs_dir: logs
-  predictions_dir: predictions
+cleaning:
+  lowercase: true
+  normalize_whitespace: true
+  drop_duplicates: true
+  min_text_length: 3
+
+features:
+  tfidf:
+    max_features: 20000
+    ngram_range: [1, 2]
+    min_df: 2
+    max_df: 0.95
+    sublinear_tf: true
+    strip_accents: unicode
+    token_pattern: '(?u)\b\w\w+\b'
+
+modeling:
+  output_dir: models
+  models: [dummy, logistic_regression]
+  primary_metric: f2
+  positive_label: 1
+  dummy:
+    strategy: most_frequent
+  logistic_regression:
+    C: 1.0
+    class_weight: balanced
+    max_iter: 1000
+    solver: liblinear
+
+reports:
+  metrics_dir: reports/metrics
+  predictions_dir: reports/predictions
