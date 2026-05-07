@@ -6,8 +6,7 @@
 
 - [✅] Team Name: MLOps Crew
 - [✅] Team Members (Name & Email):
-    1. Anushree Bachhav (abachhav@depaul.edu)
-    (mailto:abachhav@depaul.edu)
+    1. Anushree Bachhav ([abachhav@depaul.edu](mailto:abachhav@depaul.edu))
     2. Krishna Kalakonda ([kkalakon@depaul.edu](mailto:kkalakon@depaul.edu))
     3. Muhammad Anas ([MuhammadAnasPSI2@gmail.com](MuhammadAnasPSI2@gmail.com))
     4. Kirtankumar Parekh ([kparekh2@depaul.edu](mailto:kparekh2@depaul.edu))
