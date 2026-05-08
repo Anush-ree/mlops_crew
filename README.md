@@ -4,13 +4,13 @@
 
 ## 1. Team Informaton
 
-- [✅] Team Name: MLOps Crew
-- [✅] Team Members (Name & Email):
+- Team Name: MLOps Crew
+- Team Members (Name & Email):
     1. Anushree Bachhav ([abachhav@depaul.edu](mailto:abachhav@depaul.edu))
     2. Krishna Kalakonda ([kkalakon@depaul.edu](mailto:kkalakon@depaul.edu))
     3. Muhammad Anas ([MuhammadAnasPSI2@gmail.com](MuhammadAnasPSI2@gmail.com))
     4. Kirtankumar Parekh ([kparekh2@depaul.edu](mailto:kparekh2@depaul.edu))
-- [✅] Course & Section: [SE489] ML Engineering for Production (MLOps)
+- Course & Section: [SE489] ML Engineering for Production (MLOps)
 
 ## 2. Project Overview
 
@@ -47,6 +47,7 @@ Git
 
 #### Install
 
+Bash:
 ```bash
 git clone https://github.com/Anush-ree/mlops_crew.git
 cd mlops_crew
@@ -57,12 +58,14 @@ pip install -e ".[dev]"
 
 #### Pre-commit hooks
 
+Bash:
 ```bash
 pre-commit install
 ```
 
 #### Common commands
 
+Bash:
 ```bash
 make setup    # install all dependencies
 make train    # run the training pipeline
@@ -73,6 +76,7 @@ make format   # auto-format code
 
 #### Reproduce results
 
+Bash:
 ```bash
 make setup
 make train
@@ -82,7 +86,8 @@ This will preprocess the data, train the baseline model, and print evaluation me
 
 ### Data Access (DVC + AWS S3)
 
- Data is versioned with DVC and stored on AWS S3. Request AWS credentials then run.
+Data is versioned with DVC and stored on AWS S3. Request AWS credentials then run.
+Bash:
 ```bash
 git pull                 # get latest config
 uv pip install dvc-s3   # install DVC S3 plugin
