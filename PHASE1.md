@@ -113,32 +113,50 @@ Phase 1 — Baseline models:
 
 ## 3. Version Control & Collaboration
 
-- [ ] **Regular Commits**: Establish commit discipline with descriptive, atomic commits
-- [ ] **Branching Strategy**: Implement feature branching (e.g., git-flow or GitHub Flow)
-- [ ] **Pull Request Process**: Establish PR template and review requirements
+- [ ] **Regular Commits**: Established commit discipline with descriptive, atomic commits
+- [ ] **Branching Strategy**: Implemented feature branching (e.g., git-flow or GitHub Flow)
+- [ ] **Pull Request Process**: Established PR template and review requirements
 - [ ] **Team Roles**: Clearly define responsibilities (author: kirtan, team members, reviewers)
-- [ ] **Code Review Guidelines**: Document code review expectations and checklist
-- [ ] **Commit History**: Maintain clean, readable git history for project traceability
+- [ ] **Code Review Guidelines**: Documented code review expectations and checklist
+- [ ] **Commit History**: Maintained clean, readable git history for project traceability
 
 ---
 
 ## 4. Data Handling
 
-- [ ] **Data Cleaning Scripts**: Create reproducible scripts for data cleaning and preprocessing
-- [ ] **Normalization**: Implement feature normalization/standardization with proper documentation
-- [ ] **Data Augmentation**: Develop and document data augmentation strategies if applicable
-- [ ] **Data Documentation**: Create data dictionary with feature descriptions and data types
-- [ ] **Data Splits**: Define and implement train/validation/test split strategy
-- [ ] **Data Validation**: Create scripts to validate data quality and consistency
-- [ ] **DVC Setup (Optional)**: Initialize DVC for data versioning if managing large datasets
-
+- [ ] **Data Cleaning Scripts**: `clean.py` removes duplicate rows, drops nulls, lowercases 
+  all text, strips URLs and email addresses, and removes very short text entries. 
+  Output saved to `data/processed/cleaned.csv`
+- [ ] **Normalization**: TF-IDF vectorization implemented in `preprocess.py` with max 10,000 
+  features and bigrams (1,2). Sublinear TF scaling used for normalization. Note: will be 
+  updated in Phase 2 to fit only on training data to prevent data leakage.
+- [ ] **Data Augmentation**: Not applicable for Phase 1. Dataset is already well balanced 
+  (class imbalance ratio: 1.09) so no augmentation was needed.
+- [ ] **Data Documentation**: 
+  - Source: [Phishing Email Dataset](https://www.kaggle.com/datasets/naserabdullahalam/phishing-email-dataset) — Kaggle
+  - File: `phishing_email.csv` — 82,486 rows
+  - `text_combined` (string) — full email text
+  - `label` (int) — 1 for phishing, 0 for legitimate
+- [ ] **Data Splits**: `split.py` uses stratified sampling to preserve class balance.
+  - Train: 57,451 rows (70%)
+  - Val: 12,311 rows (15%)
+  - Test: 12,312 rows (15%)
+  - Random seed = 42 for reproducibility
+- [ ] **Data Validation**:  `validate.py` checks for nulls, invalid labels, empty text, 
+  and class imbalance. All checks passed.
+- [ ] **DVC Setup (Optional)**: DVC initialized with AWS S3 as primary remote and Google Drive as backup.
 ---
 
 ## 5. Model Training
 
-- [ ] **Training Environment**: Set up local/cloud training environment with GPU support if needed
+- [ ] **Training Environment**: Local CPU environment using scikit-learn. GPU not required 
+  for baseline models. Hydra used for configuration management.
 - [ ] **Baseline Model**: Implement and train a baseline model
-- [ ] **Hyperparameter Configuration**: Document baseline hyperparameters and rationale
+- [ ] **Hyperparameter Configuration**: Managed via Hydra config file. Key parameters:
+  - Random state: 42
+  - Train/test split: 0.8, val split: 0.1
+  - Early stopping patience: 10
+  - Models saved to `models/`
 - [ ] **Evaluation Metrics**: Define and calculate relevant metrics (accuracy, F1, RMSE, etc.)
 - [ ] **Model Persistence**: Save trained models with version information
 - [ ] **Training Reproducibility**: Ensure training is reproducible (seed management, logging)
