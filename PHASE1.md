@@ -8,7 +8,7 @@ Phase 1 establishes the foundation for your MLOps project. This phase covers pro
 
 ## 1. Project Proposal
 
-- [ ] **Scope & Objectives**: 
+- **Scope & Objectives**: 
       
   We are building a system to detect phishing emails using machine learning. The goal is to classify each email as either phishing or legitimate.
 
@@ -21,21 +21,22 @@ Phase 1 establishes the foundation for your MLOps project. This phase covers pro
   - Inference latency
 
 ---
-- [ ] **Detailed Description**:
+- **Detailed Description**:
+
 Phishing emails are one of the most common and damaging cybersecurity threats. Attackers craft messages that look legitimate to trick users into revealing passwords, financial information, or installing malware. Traditional rule-based filters struggle to keep up with the evolving tactics used in modern phishing campaigns. This motivates a machine learning approach that can learn patterns from large amounts of labeled email data.
 
 This project builds a production-grade binary classifier to detect phishing emails. The input is raw email text. The output is a label: phishing or legitimate. The full pipeline covers data ingestion, cleaning, splitting, vectorization, model training, evaluation, and (in later phases) deployment and monitoring.
 
- In Phase 1, we focused on data preparation and baseline modeling. The primary dataset is the Phishing Email Dataset from Kaggle, a combined corpus of around 82,000 emails sourced from SpamAssassin, Enron, Nazario, Ling, CEAS, and Nigerian email collections. We cleaned the data by removing duplicates, nulls, very short texts, URLs, and email addresses. We then split it into train, validation, and test sets using stratified sampling to preserve class balance.
+In Phase 1, we focused on data preparation and baseline modeling. The primary dataset is the Phishing Email Dataset from Kaggle, a combined corpus of around 82,000 emails sourced from SpamAssassin, Enron, Nazario, Ling, CEAS, and Nigerian email collections. We cleaned the data by removing duplicates, nulls, very short texts, URLs, and email addresses. We then split it into train, validation, and test sets using stratified sampling to preserve class balance.
 
- For modeling, Phase 1 uses baseline approaches: logistic regression and decision tree classifiers trained on TF-IDF features. These give us a performance reference point. In Phase 2 and beyond, we will fine-tune transformer models from Hugging Face to improve detection quality.
+For modeling, Phase 1 uses baseline approaches: logistic regression and decision tree classifiers trained on TF-IDF features. These give us a performance reference point. In Phase 2 and beyond, we will fine-tune transformer models from Hugging Face to improve detection quality.
 
- The pipeline is fully reproducible. We use a fixed random seed, DVC for data versioning, MLflow for experiment tracking, and config files for hyperparameter management. This means any team member can reproduce results exactly and swap in new models or datasets without rewriting code.
+The pipeline is fully reproducible. We use a fixed random seed, DVC for data versioning, MLflow for experiment tracking, and config files for hyperparameter management. This means any team member can reproduce results exactly and swap in new models or datasets without rewriting code.
 
- We expect the final system to catch the majority of phishing emails (high recall) while remaining fast enough for real-world email filtering use cases. Monitoring for data drift and model degradation will be addressed in Phase 3.
+We expect the final system to catch the majority of phishing emails (high recall) while remaining fast enough for real-world email filtering use cases. Monitoring for data drift and model degradation will be addressed in Phase 3.
 
 
-- [ ] **Dataset Selection**: 
+- **Dataset Selection**: 
 Dataset: [Phishing Email Dataset](https://www.kaggle.com/datasets/naserabdullahalam/phishing-email-dataset?select=SpamAssasin.csv) — Kaggle
 
 We chose this dataset because:
@@ -48,7 +49,7 @@ We chose this dataset because:
 
   ---
 
-- [ ] **Dataset Description**: 
+- **Dataset Description**: 
 
 | Property | Details |
   |---|---|
@@ -67,7 +68,7 @@ We chose this dataset because:
 
 ---
 
-- [ ] **Model Considerations**: 
+- **Model Considerations**: 
 
 Phase 1 — Baseline models:
   - Logistic Regression (trained on TF-IDF features)
@@ -75,14 +76,14 @@ Phase 1 — Baseline models:
 
   These are fast to train, interpretable, and give a clear performance baseline.
 
-  Phase 2 — Advanced models:
+Phase 2 — Advanced models:
   - Fine-tuned transformer models from Hugging Face (e.g., DistilBERT, RoBERTa)
 
   We will use config files to manage hyperparameters so we can swap settings without changing code. We will also track different data versions (e.g., case-sensitive vs. case-insensitive text) to monitor data drift over time.
 
 ---
 
-- [ ] **Open-Source Tools**: 
+- **Open-Source Tools**: 
 
 
   | Tool | Purpose | Justification |
@@ -101,97 +102,70 @@ Phase 1 — Baseline models:
 
 ## 2. Code Organization & Setup
 
-- [ ] **GitHub Repository**: Created at https://github.com/Anush-ree/mlops_crew using cookiecutter MLOps structure
-- [ ] **Environment Setup**: Python environment configured using `uv` (fast Python package and environment manager)
-- [ ] **Dependency Management**: `pyproject.toml` maintained with all dependencies
-- [ ] **Project Structure**:Code organized with `src/`, `tests/`, `data/`, `configs/` separation
-- [ ] **Version Pinning**: Pin all critical dependencies to specific versions
-- [ ] **Installation Documentation**: Setup documented in README.md
-
+- **GitHub Repository**: Created at https://github.com/Anush-ree/mlops_crew using cookiecutter MLOps structure
+- **Environment Setup**: Python environment configured using `uv` (fast Python package and environment manager)
+- **Dependency Management**: `pyproject.toml` maintained with all dependencies
+- **Project Structure**:Code organized with `src/`, `tests/`, `data/`, `configs/` separation
+- **Version Pinning**: Pin all critical dependencies to specific versions
+- **Installation Documentation**: Setup documented in README.md
 
 ---
 
 ## 3. Version Control & Collaboration
 
-- [ ] **Regular Commits**: Established commit discipline with descriptive, atomic commits
-- [ ] **Branching Strategy**: Implemented feature branching (e.g., git-flow or GitHub Flow)
-- [ ] **Pull Request Process**: Established PR template and review requirements
-- [ ] **Team Roles**: Clearly define responsibilities (author: kirtan, team members, reviewers)
-- [ ] **Code Review Guidelines**: Documented code review expectations and checklist
-- [ ] **Commit History**: Maintained clean, readable git history for project traceability
+- **Regular Commits**: Established commit discipline with descriptive, atomic commits
+- **Branching Strategy**: Implemented feature branching (e.g., git-flow or GitHub Flow)
+- **Pull Request Process**: Established PR template and review requirements
+- **Team Roles**: Clearly define responsibilities (author: kirtan, team members, reviewers)
+- **Code Review Guidelines**: Documented code review expectations and checklist
+- **Commit History**: Maintained clean, readable git history for project traceability
 
 ---
 
 ## 4. Data Handling
 
-- [ ] **Data Cleaning Scripts**: `clean.py` removes duplicate rows, drops nulls, lowercases 
+- **Data Cleaning Scripts**: `clean.py` removes duplicate rows, drops nulls, lowercases 
   all text, strips URLs and email addresses, and removes very short text entries. 
   Output saved to `data/processed/cleaned.csv`
-- [ ] **Normalization**: TF-IDF vectorization implemented in `preprocess.py` with max 10,000 
+- **Normalization**: TF-IDF vectorization implemented in `preprocess.py` with max 10,000 
   features and bigrams (1,2). Sublinear TF scaling used for normalization. Note: will be 
   updated in Phase 2 to fit only on training data to prevent data leakage.
-- [ ] **Data Augmentation**: Not applicable for Phase 1. Dataset is already well balanced 
+- **Data Augmentation**: Not applicable for Phase 1. Dataset is already well balanced 
   (class imbalance ratio: 1.09) so no augmentation was needed.
-- [ ] **Data Documentation**: 
+- **Data Documentation**: 
   - Source: [Phishing Email Dataset](https://www.kaggle.com/datasets/naserabdullahalam/phishing-email-dataset) — Kaggle
   - File: `phishing_email.csv` — 82,486 rows
   - `text_combined` (string) — full email text
   - `label` (int) — 1 for phishing, 0 for legitimate
-- [ ] **Data Splits**: `split.py` uses stratified sampling to preserve class balance.
+- **Data Splits**: `split.py` uses stratified sampling to preserve class balance.
   - Train: 57,451 rows (70%)
   - Val: 12,311 rows (15%)
   - Test: 12,312 rows (15%)
   - Random seed = 42 for reproducibility
-- [ ] **Data Validation**:  `validate.py` checks for nulls, invalid labels, empty text, 
+- **Data Validation**:  `validate.py` checks for nulls, invalid labels, empty text, 
   and class imbalance. All checks passed.
-- [ ] **DVC Setup (Optional)**: DVC initialized with AWS S3 as primary remote and Google Drive as backup.
+- **DVC Setup (Optional)**: DVC initialized with AWS S3 as primary remote and Google Drive as backup.
 ---
 
 ## 5. Model Training
 
-- [ ] **Training Environment**: Local CPU environment using scikit-learn. GPU not required 
+- **Training Environment**: Local CPU environment using scikit-learn. GPU not required 
   for baseline models. Hydra used for configuration management.
-- [ ] **Baseline Model**: Implement and train a baseline model
-- [ ] **Hyperparameter Configuration**: Managed via Hydra config file. Key parameters:
+- **Baseline Model**: Implement and train a baseline model
+- **Hyperparameter Configuration**: Managed via Hydra config file. Key parameters:
   - Random state: 42
   - Train/test split: 0.8, val split: 0.1
   - Early stopping patience: 10
   - Models saved to `models/`
-- [ ] **Evaluation Metrics**: Recall, F1 Score, Accuracy, Inference latency. 
+- **Evaluation Metrics**: Recall, F1 Score, Accuracy, Inference latency. 
   Cross-validation with 5 folds.
-- [ ] **Model Persistence**: Trained models saved to `models/` directory with logs 
+- **Model Persistence**: Trained models saved to `models/` directory with logs 
   in `logs/`
-- [ ] **Training Reproducibility**: Random seed = 42 set in config. MLflow logs all 
+- **Training Reproducibility**: Random seed = 42 set in config. MLflow logs all 
   parameters and metrics. Hydra config ensures consistent runs.
-- [ ] **Performance Baseline**: - Logistic Regression: F1 = 98%
+- **Performance Baseline**: - Logistic Regression: F1 = 98%
   - Dummy classifier (baseline): F1 = 52%
   - Logistic Regression significantly outperforms the dummy baseline, confirming 
   - the model is learning real patterns and not just guessing the majority class.
 
 ---
-
-## 6. Documentation & Reporting
-
-- [ ] **README**: Create comprehensive README with:
-  - [ ] Project overview and objectives
-  - [ ] Setup and installation instructions
-  - [ ] Quick start guide for running training
-  - [ ] Dependencies and requirements
-  - [ ] Contributing guidelines
-  - [ ] License information
-- [ ] **Code Docstrings**: Add docstrings to all functions and classes (NumPy/Google style)
-- [ ] **Code Style**: Implement ruff configuration for linting
-- [ ] **Type Hints**: Add type hints throughout codebase
-- [ ] **Type Checking**: Configure mypy for static type checking
-- [ ] **Makefile**: Create Makefile with commands for:
-  - [ ] `make setup` - install dependencies
-  - [ ] `make train` - run training pipeline
-  - [ ] `make test` - run tests
-  - [ ] `make lint` - run linting checks
-  - [ ] `make format` - auto-format code
-- [ ] **CONTRIBUTING.md**: Document contribution guidelines and development workflow
-- [ ] **API Documentation**: Document all public APIs and interfaces
-
----
-
-> **Checklist:** Use this as a guide for documenting your Phase 1 deliverables.
