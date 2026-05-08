@@ -157,10 +157,16 @@ Phase 1 — Baseline models:
   - Train/test split: 0.8, val split: 0.1
   - Early stopping patience: 10
   - Models saved to `models/`
-- [ ] **Evaluation Metrics**: Define and calculate relevant metrics (accuracy, F1, RMSE, etc.)
-- [ ] **Model Persistence**: Save trained models with version information
-- [ ] **Training Reproducibility**: Ensure training is reproducible (seed management, logging)
-- [ ] **Performance Baseline**: Document baseline model performance as reference point
+- [ ] **Evaluation Metrics**: Recall, F1 Score, Accuracy, Inference latency. 
+  Cross-validation with 5 folds.
+- [ ] **Model Persistence**: Trained models saved to `models/` directory with logs 
+  in `logs/`
+- [ ] **Training Reproducibility**: Random seed = 42 set in config. MLflow logs all 
+  parameters and metrics. Hydra config ensures consistent runs.
+- [ ] **Performance Baseline**: - Logistic Regression: F1 = 98%
+  - Dummy classifier (baseline): F1 = 52%
+  - Logistic Regression significantly outperforms the dummy baseline, confirming 
+  - the model is learning real patterns and not just guessing the majority class.
 
 ---
 
