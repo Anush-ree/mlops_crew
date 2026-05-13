@@ -4,13 +4,13 @@
 
 ## 1. Team
 
-- [✅] Team Name: MLOps Crew
-- [✅] Team Members (Name & Email):
+- Team Name: MLOps Crew
+- Team Members (Name & Email):
     1. Anushree Bachhav ([abachhav@depaul.edu](mailto:abachhav@depaul.edu))
     2. Krishna Kalakonda ([kkalakon@depaul.edu](mailto:kkalakon@depaul.edu))
     3. Muhammad Anas ([MuhammadAnasPSI2@gmail.com](MuhammadAnasPSI2@gmail.com))
     4. Kirtankumar Parekh ([kparekh2@depaul.edu](mailto:kparekh2@depaul.edu))
-- [✅] Course & Section: [SE489] ML Engineering for Production (MLOps)
+- Course & Section: [SE489] ML Engineering for Production (MLOps)
 
 ## 2. Project overview
 
@@ -36,6 +36,7 @@ is fast; later phases will pull in more data and additional model families.
 
 ## 5. Setup
 
+Bash:
 ```bash
 git clone https://github.com/Anush-ree/mlops_crew.git
 cd mlops_crew
@@ -49,6 +50,7 @@ make dev                # adds dev tools and pre-commit hooks
 Data is versioned with DVC and stored on S3 (Google Drive is kept as a backup
 remote). Request AWS credentials from a teammate, then:
 
+Bash:
 ```bash
 git pull
 pip install dvc-s3
@@ -58,6 +60,7 @@ dvc pull               # download raw + processed data
 
 ### Common commands
 
+Bash:
 ```bash
 make data       # sample -> clean -> split -> validate
 make train      # train all configured models, write metrics + predictions
@@ -70,6 +73,7 @@ make format     # ruff fix + format
 
 ### Reproduce results
 
+Bash:
 ```bash
 make install
 dvc pull
@@ -81,6 +85,15 @@ Regression baselines, and writes the artifacts under `models/` and `reports/`.
 
 ## 6. Repo layout
 
+Data is versioned with DVC and stored on AWS S3. Request AWS credentials then run.
+Bash:
+```bash
+git pull                 # get latest config
+uv pip install dvc-s3   # install DVC S3 plugin
+aws configure           # enter credentials + region: us-east-2
+dvc pull                # download data from S3
+```
+File Structure:
 ```
 configs/config.yaml            single source of truth for the pipeline
 src/mlops_crew/
@@ -113,5 +126,6 @@ dvc.yaml                       DVC stages (sample, clean, split, train)
 
 ## 8. References
 
-- Phishing Email Dataset (Kaggle) — primary training and evaluation data,
-  combining SpamAssassin, Enron, Nazario, Ling, CEAS, and Nigerian Fraud sets.
+- Dataset: Phishing Email Dataset (SpamAssassin, Enron, Nazario, Ling, CEAS, Nigerian)
+- Source: https://www.kaggle.com/datasets/naserabdullahalam/phishing-email-dataset?select=SpamAssasin.csv
+- Use: Primary training & evaluation data
