@@ -1,24 +1,8 @@
 # Configs Directory
 
-Store Hydra configuration files and experiment configurations here.
+`config.yaml` is the single source of truth for the Phase 1 pipeline.
 
-## Structure
-
-Organize configs by component:
-
-- `model/` — Model architecture and hyperparameters
-- `data/` — Data loading and preprocessing configs
-- `training/` — Training loops and optimization settings
-- `experiment/` — Full experiment configurations
-
-## Usage
-
-Hydra automatically loads configs from this directory. Override values via command line:
-
-```bash
-python train.py model=bert data.batch_size=32
-```
-
-## Phase
-
-Phase 2 deliverable — Experiment configuration framework.
+It controls raw/interim/processed paths, the 60% Phase 1 sample fraction,
+train/validation/test split ratios, TF-IDF settings, model hyperparameters, and
+artifact locations. After changing it, run `make repro` so DVC rebuilds the
+affected stages.

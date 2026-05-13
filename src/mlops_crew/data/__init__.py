@@ -1,6 +1,6 @@
-"""Data loading and preprocessing."""
+"""Data pipeline stages: sample, clean, split, validate."""
 
-from mlops_crew.data.loaders import load_processed, load_raw, save_processed
-from mlops_crew.data.make_dataset import process_data
+TEXT_COLUMN = "text_combined"
+LABEL_COLUMN = "label"
 
-__all__ = ["load_raw", "load_processed", "save_processed", "process_data"]
+__all__ = ["TEXT_COLUMN", "LABEL_COLUMN"]

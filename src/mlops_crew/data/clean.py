@@ -1,161 +1,131 @@
-"""Data cleaning script for phishing email detection.
+"""Stage 2: clean the sampled CSV into a model-ready table.
 
-This script loads the raw phishing email dataset, performs cleaning steps,
-and saves the cleaned data to the processed directory.
+The schema is reduced to two columns (`text_combined`, `label`). Cleaning is
+deliberately conservative: we lowercase and collapse whitespace for the TF-IDF
+baseline but keep URLs, addresses, numbers, and punctuation, since those are
+useful phishing signals for later feature engineering.
 """
 
-import logging
-import re
+from __future__ import annotations
+
+import argparse
 from pathlib import Path
+from typing import Any
 
 import pandas as pd
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
-logger = logging.getLogger(__name__)
+from mlops_crew.config import CONFIG_PATH, load_project_config, resolve_project_path
+from mlops_crew.data import LABEL_COLUMN, TEXT_COLUMN
+from mlops_crew.logging_config import get_logger, setup_logging
+from mlops_crew.utils.io import save_json
 
-RAW_PATH = Path("data/raw/phishing_email.csv")
-PROCESSED_PATH = Path("data/processed/cleaned.csv")
+logger = get_logger(__name__)
 
-
-def load_data(path: Path) -> pd.DataFrame:
-    """Load raw CSV data from disk.
-
-    Args:
-        path: Path to the raw CSV file.
-
-    Returns:
-        Loaded DataFrame.
-    """
-    logger.info(f"Loading data from {path}")
-    df = pd.read_csv(path)
-    logger.info(f"Loaded {len(df)} rows, {df.shape[1]} columns")
-    return df
+VALID_LABELS = {0, 1}
 
 
-def remove_duplicates(df: pd.DataFrame) -> pd.DataFrame:
-    """Remove duplicate rows from the DataFrame.
-
-    Args:
-        df: Input DataFrame.
-
-    Returns:
-        DataFrame with duplicates removed.
-    """
-    before = len(df)
-    df = df.drop_duplicates()
-    after = len(df)
-    logger.info(f"Removed {before - after} duplicate rows")
-    return df
+def clean_paths(config: dict[str, Any]) -> dict[str, Path]:
+    data_config = config["data"]
+    interim_dir = resolve_project_path(data_config["interim_dir"])
+    processed_dir = resolve_project_path(data_config["processed_dir"])
+    return {
+        "sampled": interim_dir / data_config["sampled_file"],
+        "cleaned": processed_dir / data_config["cleaned_file"],
+        "summary": processed_dir / "cleaning_summary.json",
+    }
 
 
-def drop_nulls(df: pd.DataFrame) -> pd.DataFrame:
-    """Drop rows with missing values.
-
-    Args:
-        df: Input DataFrame.
-
-    Returns:
-        DataFrame with null rows removed.
-    """
-    before = len(df)
-    df = df.dropna(subset=["text_combined", "label"])
-    after = len(df)
-    logger.info(f"Removed {before - after} rows with null values")
-    return df
+def _normalize_label(value: object) -> int | None:
+    if pd.isna(value):
+        return None
+    try:
+        as_float = float(str(value).strip())
+    except (TypeError, ValueError):
+        return None
+    if not as_float.is_integer():
+        return None
+    label = int(as_float)
+    return label if label in VALID_LABELS else None
 
 
-def clean_text(text: str) -> str:
-    """Clean a single email text string.
-
-    Applies the following transformations:
-    - Lowercase
-    - Remove URLs
-    - Remove email addresses
-    - Remove extra whitespace
-
-    Args:
-        text: Raw email text.
-
-    Returns:
-        Cleaned text string.
-    """
-    text = str(text).lower()
-    text = re.sub(r"http\S+|www\S+", "", text)
-    text = re.sub(r"\S+@\S+", "", text)
-    text = re.sub(r"\s+", " ", text).strip()
-    return text
+def clean_text(text: object, *, lowercase: bool, normalize_whitespace: bool) -> str:
+    """Lowercase and collapse whitespace; keep URLs/addresses/numbers/punctuation."""
+    cleaned = "" if pd.isna(text) else str(text)
+    if lowercase:
+        cleaned = cleaned.lower()
+    if normalize_whitespace:
+        cleaned = " ".join(cleaned.split())
+    return cleaned.strip()
 
 
-def clean_text_column(df: pd.DataFrame) -> pd.DataFrame:
-    """Apply text cleaning to the text_combined column.
+def clean_dataset(data: pd.DataFrame, config: dict[str, Any]) -> tuple[pd.DataFrame, dict]:
+    """Apply schema, label, and text cleaning. Returns the cleaned frame plus a summary."""
+    data_config = config["data"]
+    cleaning = config.get("cleaning", {})
 
-    Args:
-        df: Input DataFrame.
+    text_source = data_config.get("text_column", TEXT_COLUMN)
+    label_source = data_config.get("label_column", LABEL_COLUMN)
+    missing = {text_source, label_source} - set(data.columns)
+    if missing:
+        raise ValueError(f"Input data missing required columns: {sorted(missing)}")
 
-    Returns:
-        DataFrame with cleaned text column.
-    """
-    logger.info("Cleaning text column...")
-    df["text_combined"] = df["text_combined"].apply(clean_text)
-    return df
+    cleaned = data[[text_source, label_source]].rename(
+        columns={text_source: TEXT_COLUMN, label_source: LABEL_COLUMN}
+    )
 
+    raw_rows = len(cleaned)
+    cleaned[LABEL_COLUMN] = cleaned[LABEL_COLUMN].apply(_normalize_label)
+    cleaned[TEXT_COLUMN] = cleaned[TEXT_COLUMN].apply(
+        clean_text,
+        lowercase=bool(cleaning.get("lowercase", True)),
+        normalize_whitespace=bool(cleaning.get("normalize_whitespace", True)),
+    )
 
-def drop_short_text(df: pd.DataFrame, min_length: int = 3) -> pd.DataFrame:
-    """Drop rows where text is empty or too short after cleaning.
+    cleaned = cleaned.dropna(subset=[TEXT_COLUMN, LABEL_COLUMN])
+    min_length = int(cleaning.get("min_text_length", 3))
+    cleaned = cleaned[cleaned[TEXT_COLUMN].str.len() >= min_length]
 
-    Args:
-        df: Input DataFrame.
-        min_length: Minimum number of characters required.
+    if cleaning.get("drop_duplicates", True):
+        cleaned = cleaned.drop_duplicates(subset=[TEXT_COLUMN, LABEL_COLUMN])
 
-    Returns:
-        DataFrame with short text rows removed.
-    """
-    before = len(df)
-    df = df[df["text_combined"].str.strip().str.len() > min_length]
-    after = len(df)
-    logger.info(f"Removed {before - after} rows with text shorter than {min_length} chars")
-    return df
+    cleaned[LABEL_COLUMN] = cleaned[LABEL_COLUMN].astype("int64")
+    cleaned = cleaned.reset_index(drop=True)
 
-
-def validate_labels(df: pd.DataFrame) -> pd.DataFrame:
-    """Ensure labels are binary (0 or 1) and drop invalid rows.
-
-    Args:
-        df: Input DataFrame.
-
-    Returns:
-        DataFrame with only valid label values.
-    """
-    before = len(df)
-    df = df[df["label"].isin([0, 1])]
-    after = len(df)
-    logger.info(f"Removed {before - after} rows with invalid labels")
-    logger.info(f"Label distribution:\n{df['label'].value_counts()}")
-    return df
+    summary = {
+        "raw_rows": int(raw_rows),
+        "cleaned_rows": int(len(cleaned)),
+        "rows_removed": int(raw_rows - len(cleaned)),
+        "label_distribution": {
+            str(label): int(count) for label, count in cleaned[LABEL_COLUMN].value_counts().items()
+        },
+    }
+    return cleaned, summary
 
 
-def save_data(df: pd.DataFrame, path: Path) -> None:
-    """Save cleaned DataFrame to CSV.
+def run(config: dict[str, Any]) -> pd.DataFrame:
+    paths = clean_paths(config)
+    if not paths["sampled"].exists():
+        raise FileNotFoundError(
+            f"Sampled data not found at {paths['sampled']}. Run `python -m mlops_crew.data.sample`."
+        )
 
-    Args:
-        df: Cleaned DataFrame.
-        path: Output file path.
-    """
-    path.parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(path, index=False)
-    logger.info(f"Saved cleaned data to {path} ({len(df)} rows)")
+    logger.info("Loading sampled data from %s", paths["sampled"])
+    sampled = pd.read_csv(paths["sampled"])
+    cleaned, summary = clean_dataset(sampled, config)
+
+    paths["cleaned"].parent.mkdir(parents=True, exist_ok=True)
+    cleaned.to_csv(paths["cleaned"], index=False)
+    save_json(summary, paths["summary"])
+    logger.info("Cleaned %s rows -> %s rows", summary["raw_rows"], summary["cleaned_rows"])
+    return cleaned
 
 
 def main() -> None:
-    """Run the full cleaning pipeline."""
-    df = load_data(RAW_PATH)
-    df = remove_duplicates(df)
-    df = drop_nulls(df)
-    df = clean_text_column(df)
-    df = drop_short_text(df)
-    df = validate_labels(df)
-    save_data(df, PROCESSED_PATH)
-    logger.info("Cleaning complete.")
+    parser = argparse.ArgumentParser(description="Clean the sampled phishing email CSV")
+    parser.add_argument("--config", type=Path, default=CONFIG_PATH)
+    args = parser.parse_args()
+    setup_logging()
+    run(load_project_config(args.config))
 
 
 if __name__ == "__main__":

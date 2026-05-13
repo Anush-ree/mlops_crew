@@ -1,10 +1,12 @@
-# phishing_email_detection
+# Phishing Email Detection
 
-A phishing email detection system that can detect whether incoming email is a phishing email or a regular email.
+A reproducible MLOps pipeline for classifying emails as phishing or legitimate.
 
 ## Overview
 
-Welcome to phishing_email_detection! This project is designed to provide a scalable, production-ready machine learning pipeline.
+Phase 1 keeps the system intentionally small: sample the DVC-tracked raw data,
+clean it, create deterministic train/validation/test splits, train baseline
+models, and save metrics plus model artifacts.
 
 ## Quick Start
 
@@ -14,21 +16,24 @@ Welcome to phishing_email_detection! This project is designed to provide a scala
 # Using pip
 pip install -r requirements.txt
 
-# Using uv (faster alternative)
-uv pip install -r requirements.txt
+# Install the package in editable mode
+pip install -e .
 ```
 
 ### Running the Pipeline
 
 ```bash
-# Prepare data
+# Prepare data: sample -> clean -> split -> validate
 make data
 
-# Train the model
+# Train configured baseline models
 make train
 
 # Generate predictions
 make predict
+
+# Reproduce the DVC pipeline: sample -> clean -> split -> train
+make repro
 ```
 
 ## Documentation
@@ -42,13 +47,11 @@ make predict
 mlops_crew/                  # Repository root
 ├── src/
 │   └── mlops_crew/          # Importable package (src/ layout)
-│       ├── config.py                  # Paths + typed config
+│       ├── config.py                  # Repo paths + YAML config loader
 │       ├── logging_config.py
-│       ├── data/                      # Loaders + raw→processed pipeline
-│       ├── features/                  # Feature engineering
-│       ├── models/                    # BaseModel ABC + concrete Model
+│       ├── data/                      # sample, clean, split, validate
+│       ├── models/                    # TF-IDF classifier pipeline factory
 │       ├── evaluation/                # Metric helpers
-│       ├── visualization/             # Plot helpers
 │       ├── utils/                     # seed, io
 │       ├── train_model.py             # Training CLI
 │       └── predict_model.py           # Inference CLI

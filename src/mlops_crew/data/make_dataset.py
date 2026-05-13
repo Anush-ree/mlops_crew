@@ -1,37 +1,37 @@
-"""Raw-to-processed data pipeline entrypoint."""
+"""Run sample -> clean -> split -> validate end to end.
+
+Convenience entrypoint for `make data`. The DVC pipeline (`dvc.yaml`) runs the
+same stages individually so artifacts can be cached.
+"""
 
 from __future__ import annotations
 
 import argparse
 from pathlib import Path
 
-from mlops_crew.config import PROCESSED_DATA_DIR, RAW_DATA_DIR
+from mlops_crew.config import CONFIG_PATH, load_project_config
+from mlops_crew.data import clean, sample, split, validate
 from mlops_crew.logging_config import get_logger, setup_logging
 
 logger = get_logger(__name__)
 
 
-def process_data(input_dir: Path, output_dir: Path) -> None:
-    """Transform raw data in ``input_dir`` and write outputs to ``output_dir``.
-
-    Replace this stub with project-specific cleaning, feature extraction,
-    and train/val/test splits.
-    """
-    logger.info("Reading raw data from %s", input_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
-    logger.info("Writing processed data to %s", output_dir)
+def process_data(config_path: Path = CONFIG_PATH) -> None:
+    config = load_project_config(config_path)
+    sample.run(config)
+    clean.run(config)
+    split.run(config)
+    if not validate.run(config):
+        raise RuntimeError("Data validation failed")
 
 
 def main() -> None:
-    """CLI entrypoint for data processing."""
-    parser = argparse.ArgumentParser(description="Process raw data into model inputs")
-    parser.add_argument("--input", type=Path, default=RAW_DATA_DIR)
-    parser.add_argument("--output", type=Path, default=PROCESSED_DATA_DIR)
+    parser = argparse.ArgumentParser(description="Run the full data preparation pipeline")
+    parser.add_argument("--config", type=Path, default=CONFIG_PATH)
     args = parser.parse_args()
-
     setup_logging()
-    process_data(args.input, args.output)
-    logger.info("Data processing complete")
+    process_data(args.config)
+    logger.info("Data pipeline complete")
 
 
 if __name__ == "__main__":

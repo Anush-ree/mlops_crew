@@ -5,7 +5,8 @@ Store all data files for the phishing_email_detection project here.
 ## Structure
 
 - **`raw/`** — Original, immutable data as received. Never modify files here.
-- **`processed/`** — Cleaned, transformed, and feature-engineered data ready for modeling.
+- **`interim/`** — Reproducible sampled or intermediate data used before cleaning.
+- **`processed/`** — Cleaned train/validation/test CSVs ready for modeling.
 
 ## Best Practices
 
