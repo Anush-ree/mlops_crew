@@ -1,109 +1,136 @@
-"""Stage 3: split cleaned data into train, validation, and test CSVs.
+"""Data splitting script for phishing email detection.
 
-Stratification on the label keeps class balance consistent across splits, and
-the random seed makes the split reproducible across runs and machines.
+This script splits the cleaned dataset into train, validation, and test sets
+using stratified sampling to preserve class distribution.
+
+Uses Hydra for configuration management and rich for structured logging.
 """
 
-from __future__ import annotations
-
-import argparse
 from pathlib import Path
-from typing import Any
 
+import hydra
 import pandas as pd
+from omegaconf import DictConfig
 from sklearn.model_selection import train_test_split
 
-from mlops_crew.config import CONFIG_PATH, load_project_config, resolve_project_path
-from mlops_crew.data import LABEL_COLUMN
-from mlops_crew.logging_config import get_logger, setup_logging
-from mlops_crew.utils.io import save_json
+from mlops_crew.utils.logging_setup import get_logger, setup_logging
 
 logger = get_logger(__name__)
 
 
-def split_paths(config: dict[str, Any]) -> dict[str, Path]:
-    data_config = config["data"]
-    processed_dir = resolve_project_path(data_config["processed_dir"])
-    return {
-        "cleaned": processed_dir / data_config["cleaned_file"],
-        "train": processed_dir / data_config["train_file"],
-        "val": processed_dir / data_config["val_file"],
-        "test": processed_dir / data_config["test_file"],
-        "summary": processed_dir / "split_summary.json",
-    }
+def load_cleaned_data(path: Path) -> pd.DataFrame:
+    """Load cleaned CSV data.
+
+    Args:
+        path: Path to the cleaned CSV file.
+
+    Returns:
+        Loaded DataFrame.
+    """
+    logger.info(f"Loading cleaned data from [bold]{path}[/bold]")
+    df = pd.read_csv(path)
+    logger.info(f"Loaded [green]{len(df):,}[/green] rows")
+    return df
 
 
 def split_data(
-    data: pd.DataFrame, config: dict[str, Any]
+    df: pd.DataFrame,
+    test_size: float,
+    val_size: float,
+    seed: int,
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-    """Split into train / val / test using the proportions in config."""
-    cfg = config["data"]["split"]
-    train_size = float(cfg["train_size"])
-    val_size = float(cfg["val_size"])
-    test_size = float(cfg["test_size"])
-    if abs(train_size + val_size + test_size - 1.0) > 1e-8:
-        raise ValueError("Split proportions must sum to 1.0")
-    if min(train_size, val_size, test_size) <= 0:
-        raise ValueError("Split proportions must all be positive")
+    """Split DataFrame into train, validation, and test sets.
 
-    random_state = int(cfg["random_state"])
-    stratify = cfg.get("stratify", True)
-    holdout_size = val_size + test_size
+    Uses stratified splitting to preserve class distribution across splits.
 
-    train, holdout = train_test_split(
-        data,
-        test_size=holdout_size,
-        random_state=random_state,
-        stratify=data[LABEL_COLUMN] if stratify else None,
-    )
-    val, test = train_test_split(
-        holdout,
-        test_size=test_size / holdout_size,
-        random_state=random_state,
-        stratify=holdout[LABEL_COLUMN] if stratify else None,
-    )
-    return (
-        train.reset_index(drop=True),
-        val.reset_index(drop=True),
-        test.reset_index(drop=True),
+    Args:
+        df: Full cleaned DataFrame.
+        test_size: Fraction of data to use for test set.
+        val_size: Fraction of data to use for validation set.
+        seed: Random seed for reproducibility.
+
+    Returns:
+        Tuple of (train_df, val_df, test_df).
+    """
+    train_val, test = train_test_split(
+        df,
+        test_size=test_size,
+        random_state=seed,
+        stratify=df["label"],
     )
 
+    val_fraction = val_size / (1 - test_size)
+    train, val = train_test_split(
+        train_val,
+        test_size=val_fraction,
+        random_state=seed,
+        stratify=train_val["label"],
+    )
 
-def run(config: dict[str, Any]) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-    paths = split_paths(config)
-    if not paths["cleaned"].exists():
-        raise FileNotFoundError(f"Cleaned data not found at {paths['cleaned']}. Run `make data`.")
-
-    logger.info("Loading cleaned data from %s", paths["cleaned"])
-    cleaned = pd.read_csv(paths["cleaned"])
-    train, val, test = split_data(cleaned, config)
-
-    paths["train"].parent.mkdir(parents=True, exist_ok=True)
-    train.to_csv(paths["train"], index=False)
-    val.to_csv(paths["val"], index=False)
-    test.to_csv(paths["test"], index=False)
-    logger.info("Split sizes: train=%d val=%d test=%d", len(train), len(val), len(test))
-
-    summary = {
-        name: {
-            "rows": int(len(frame)),
-            "label_distribution": {
-                str(label): int(count)
-                for label, count in frame[LABEL_COLUMN].value_counts().items()
-            },
-        }
-        for name, frame in {"train": train, "val": val, "test": test}.items()
-    }
-    save_json(summary, paths["summary"])
+    logger.info(
+        f"Split complete — Train: [green]{len(train):,}[/green] | "
+        f"Val: [yellow]{len(val):,}[/yellow] | "
+        f"Test: [blue]{len(test):,}[/blue]"
+    )
     return train, val, test
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser(description="Create train/val/test splits")
-    parser.add_argument("--config", type=Path, default=CONFIG_PATH)
-    args = parser.parse_args()
-    setup_logging()
-    run(load_project_config(args.config))
+def save_splits(
+    train: pd.DataFrame,
+    val: pd.DataFrame,
+    test: pd.DataFrame,
+    train_path: Path,
+    val_path: Path,
+    test_path: Path,
+) -> None:
+    """Save train, val, and test splits to CSV.
+
+    Args:
+        train: Training DataFrame.
+        val: Validation DataFrame.
+        test: Test DataFrame.
+        train_path: Output path for train split.
+        val_path: Output path for val split.
+        test_path: Output path for test split.
+    """
+    train_path.parent.mkdir(parents=True, exist_ok=True)
+    train.to_csv(train_path, index=False)
+    val.to_csv(val_path, index=False)
+    test.to_csv(test_path, index=False)
+    logger.info(f"Saved train → [bold]{train_path}[/bold]")
+    logger.info(f"Saved val   → [bold]{val_path}[/bold]")
+    logger.info(f"Saved test  → [bold]{test_path}[/bold]")
+
+
+@hydra.main(config_path="../../../conf", config_name="config", version_base=None)
+def main(cfg: DictConfig) -> None:
+    """Run the full splitting pipeline using Hydra config.
+
+    Args:
+        cfg: Hydra configuration object.
+    """
+    setup_logging(
+        log_dir=cfg.logging.log_dir,
+        log_file=cfg.logging.log_file,
+        log_level=cfg.logging.log_level,
+    )
+    logger.info("[bold blue]Starting data splitting pipeline[/bold blue]")
+
+    df = load_cleaned_data(Path(cfg.data.cleaned_path))
+    train, val, test = split_data(
+        df,
+        test_size=cfg.data.test_size,
+        val_size=cfg.data.val_size,
+        seed=cfg.data.random_seed,
+    )
+    save_splits(
+        train, val, test,
+        Path(cfg.data.train_path),
+        Path(cfg.data.val_path),
+        Path(cfg.data.test_path),
+    )
+
+    logger.info("[bold green]Splitting complete.[/bold green]")
 
 
 if __name__ == "__main__":
