@@ -74,6 +74,8 @@ make profile-train        # cProfile the training entrypoint
 make profile-predict      # cProfile saved-model inference
 make mlflow-ui            # open local MLflow UI on port 5001
 make repro      # reproduce the full DVC pipeline end to end
+scripts/verify_phase2.sh  # run DVC repro + CI checks + Phase 2 smoke checks
+scripts/verify_phase2.sh --replay-mlflow  # populate local MLflow from scratch outputs
 make test       # pytest
 make lint       # ruff check
 make format     # ruff fix + format
@@ -86,14 +88,17 @@ Bash:
 make install
 dvc pull
 make repro
+scripts/verify_phase2.sh
 ```
 
 This fits the configured dummy and TF-IDF model family, writes artifacts under
 `models/` and `reports/`, and runs the full Phase 2 DVC graph:
 
 ```text
-sample -> source_manifest -> clean -> split -> transformer_dataset -> train
-      -> inference_latency -> plot_model_comparison -> divergence
+sample -> clean -> split -> transformer_dataset
+                 -> train -> inference_latency
+                          -> plot_model_comparison
+sample + source_manifest + train -> divergence
 ```
 
 ## 6. Repo layout

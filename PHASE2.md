@@ -52,6 +52,7 @@ Current divergence summary:
 | Check | Result |
 | --- | ---: |
 | Label Jensen-Shannon distance | 0.000007 |
+| Source Jensen-Shannon distance | 0.014327 |
 | Text length KS statistic | 0.005134 |
 | New-token rate in Phase 2 increment | 0.039855 |
 | Prediction Jensen-Shannon distance | 0.000207 |
@@ -79,6 +80,13 @@ make profile-train
 make profile-predict
 ```
 
+By default the profiling scripts read the normal DVC inputs but write temporary
+outputs under `reports/profiling/scratch/` and disable MLflow tracking. This
+prevents profiling from creating duplicate experiment runs or dirtying the
+DVC-tracked model, prediction, metric, and monitoring outputs. Use
+`python scripts/profile_train.py --with-tracking` only when you explicitly want
+to profile MLflow logging overhead too.
+
 Generated artifacts:
 
 - `reports/profiling/train_model_cprofile.txt`
@@ -87,13 +95,14 @@ Generated artifacts:
 
 Baseline profiling findings:
 
-- Training took about 97 seconds on the local machine used for this run.
+- Training under cProfile took about 147 seconds on the local machine used for
+  this run. Normal DVC training can be faster because cProfile adds overhead.
 - TF-IDF `fit_transform` dominates training time, which is expected for this
   pipeline because every classifier owns a full TF-IDF pipeline.
-- MLflow model logging adds several seconds because it serializes sklearn
-  pipelines and infers dependencies.
+- The committed profile disables MLflow tracking so the profiler output stays
+  focused on model training and does not create duplicate local runs.
 - Saved-model inference is fast after the model is loaded: the 1,024-row batch
-  benchmark is roughly 11k records/second on this machine.
+  benchmark is roughly 8k records/second on this machine.
 
 No aggressive optimization was applied in this phase because model quality is
 already strong and the current implementation is simpler to reproduce. The next
@@ -112,8 +121,15 @@ tracking:
   tracking_uri: file:./mlruns
 ```
 
-The local `mlruns/` directory is gitignored — each grader will populate it on
-their own machine by running `make repro`. Open the UI with:
+The local `mlruns/` directory is gitignored. A training run populates it when
+the train stage actually executes. If `dvc pull` already restored every DVC
+output and `dvc repro` skips training, populate the UI with the scratch replay:
+
+```bash
+scripts/verify_phase2.sh --replay-mlflow
+```
+
+Open the UI with:
 
 ```bash
 make mlflow-ui              # serves http://localhost:5001
@@ -123,14 +139,15 @@ Exact wiring (where logging happens in the code):
 
 | What gets logged | Code site |
 | --- | --- |
-| Parent run open + close + config artifact | `src/mlops_crew/tracking/mlflow_tracking.py:44-66` (`training_run`) |
-| Per-model nested run with model params + TF-IDF params | `src/mlops_crew/tracking/mlflow_tracking.py:68-89` (`model_run`) |
-| Dataset rows + label counts | `src/mlops_crew/tracking/mlflow_tracking.py:92-96` (`log_dataset_info`) |
-| Validation + test metrics | `src/mlops_crew/tracking/mlflow_tracking.py:99-103` (`log_metrics`) |
-| Joblib + sklearn flavor + prediction CSVs + monitoring CSV | `src/mlops_crew/tracking/mlflow_tracking.py:106-134` (`log_artifacts`, `log_model_artifacts`) |
+| Parent run open + close + config artifact | `src/mlops_crew/tracking/mlflow_tracking.py:27-48` (`training_run`) |
+| Per-model nested run with model params + TF-IDF params | `src/mlops_crew/tracking/mlflow_tracking.py:51-72` (`model_run`) |
+| Dataset rows + label counts | `src/mlops_crew/tracking/mlflow_tracking.py:75-79` (`log_dataset_info`) |
+| Validation + test metrics | `src/mlops_crew/tracking/mlflow_tracking.py:82-86` (`log_metrics`) |
+| Joblib + sklearn flavor + optional prediction CSVs + monitoring CSV | `src/mlops_crew/tracking/mlflow_tracking.py:89-118` (`log_artifacts`, `log_model_artifacts`) |
 | Call sites that drive all of the above | `src/mlops_crew/train_model.py:154,161,165,174-176,205-209` |
 
-What a grader will see in the UI after `make repro` + `make mlflow-ui`:
+What a grader will see in the UI after a training run or `--replay-mlflow` +
+`make mlflow-ui`:
 
 - Experiment `phishing-email-phase2`.
 - One parent run named `phase2-training` per training invocation, with
@@ -145,6 +162,11 @@ What a grader will see in the UI after `make repro` + `make mlflow-ui`:
   `monitoring/training_resource_usage.csv` as artifacts.
 - Select all four nested runs in the UI and click **Compare** to see the
   per-metric side-by-side table the professor expects.
+
+If you want the UI to show only one fresh invocation, use
+`scripts/verify_phase2.sh --clean-mlflow`. The replay writes models, metrics,
+predictions, and monitoring CSVs under ignored scratch paths, so it does not
+affect DVC artifacts or Git-tracked files.
 
 The filesystem MLflow backend (`file:./mlruns`) is acceptable for this
 class/local workflow — MLflow 3 prints a deprecation note in favor of a SQLite
@@ -244,6 +266,7 @@ make repro
 make test
 make lint
 mypy src/mlops_crew
+scripts/verify_phase2.sh
 ```
 
 > The Phase 2 DVC pipeline has been pushed to the S3 remote `storage`
@@ -253,13 +276,16 @@ mypy src/mlops_crew
 > credentials, run `dvc pull -r gdrive_backup` instead.
 
 Step-by-step grader path is documented in
-`docs/phase2_implementation_and_verification.md`.
+`docs/phase2_implementation_and_verification.md`. The short command-only
+version is `docs/phase2_reproduction_commands.md`.
 
 The full DVC pipeline now runs:
 
 ```text
-sample -> source_manifest -> clean -> split -> transformer_dataset -> train
-      -> inference_latency -> plot_model_comparison -> divergence
+sample -> clean -> split -> transformer_dataset
+                 -> train -> inference_latency
+                          -> plot_model_comparison
+sample + source_manifest + train -> divergence
 ```
 
 Current `dvc status` result:

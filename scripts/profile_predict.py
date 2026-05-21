@@ -5,10 +5,21 @@ from __future__ import annotations
 import argparse
 import cProfile
 import pstats
+from copy import deepcopy
 from pathlib import Path
+from typing import Any
 
 from mlops_crew.config import CONFIG_PATH, load_project_config, resolve_project_path
 from mlops_crew.monitoring.inference_latency import run as run_latency
+
+
+def _isolated_config(config: dict[str, Any]) -> dict[str, Any]:
+    """Profile inference without overwriting the DVC-tracked latency report."""
+    profile_config = deepcopy(config)
+    profile_config["reports"]["monitoring_dir"] = str(
+        Path(config["reports"]["profiling_dir"]) / "scratch" / "predict" / "monitoring"
+    )
+    return profile_config
 
 
 def main() -> None:
@@ -25,7 +36,7 @@ def main() -> None:
 
     profiler = cProfile.Profile()
     profiler.enable()
-    run_latency(config)
+    run_latency(_isolated_config(config))
     profiler.disable()
     profiler.dump_stats(profile_path)
 

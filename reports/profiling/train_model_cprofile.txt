@@ -1,48 +1,48 @@
-         165546865 function calls (164405107 primitive calls) in 97.288 seconds
+         159331637 function calls (158204085 primitive calls) in 146.588 seconds
 
    Ordered by: cumulative time
-   List reduced from 4136 to 40 due to restriction <40>
+   List reduced from 1429 to 40 due to restriction <40>
 
    ncalls  tottime  percall  cumtime  percall filename:lineno(function)
-      2/1    0.000    0.000   96.604   96.604 train_model.py:142(train)
-        1    0.000    0.000   96.595   96.595 resource_monitor.py:44(stop)
-        1    0.000    0.000   96.595   96.595 threading.py:1115(join)
-        5    0.000    0.000   96.594   19.319 threading.py:1153(_wait_for_tstate_lock)
-        4    0.002    0.000   86.830   21.708 train_model.py:102(_train_one)
-     17/4    0.004    0.000   60.585   15.146 base.py:1319(wrapper)
-        4    0.000    0.000   60.581   15.145 pipeline.py:562(fit)
-        4    0.000    0.000   59.533   14.883 pipeline.py:512(_fit)
-        4    0.000    0.000   59.532   14.883 memory.py:325(__call__)
-        4    0.000    0.000   59.532   14.883 pipeline.py:1471(_fit_transform_one)
-        4    0.001    0.000   59.515   14.879 text.py:2078(fit_transform)
-    95/79    3.759    0.040   43.676    0.553 threading.py:637(wait)
-      172    2.654    0.015   41.623    0.242 queue.py:154(get)
-   341864    0.328    0.000   24.874    0.000 text.py:77(_analyze)
-        8    0.002    0.000   23.468    2.934 train_model.py:86(_evaluate)
-   341864    7.824    0.000   14.627    0.000 text.py:247(_word_ngrams)
-        8    0.000    0.000   11.696    1.462 pipeline.py:697(predict)
-        8    0.002    0.000   11.637    1.455 train_model.py:78(_scores_for)
-     5278   11.312    0.002   11.384    0.002 {built-in method builtins.sorted}
-       16    0.000    0.000    9.781    0.611 text.py:2110(transform)
-        4    0.000    0.000    9.698    2.425 mlflow_tracking.py:113(log_model_artifacts)
-        4    0.001    0.000    9.548    2.387 __init__.py:379(log_model)
-        4    0.001    0.000    9.547    2.387 model.py:1058(log)
-        4    0.001    0.000    9.219    2.305 __init__.py:175(save_model)
-       16    0.002    0.000    9.005    0.563 text.py:1408(transform)
-        4    0.000    0.000    8.858    2.215 environment.py:409(infer_pip_requirements)
-        4    0.000    0.000    8.858    2.214 requirements_utils.py:482(_infer_requirements)
-        6    0.000    0.000    8.714    1.452 pipeline.py:815(predict_proba)
-       20    3.307    0.165    8.604    0.430 text.py:1256(_count_vocab)
-27809/27807    0.112    0.000    7.838    0.000 {built-in method posix.stat}
-        6    0.003    0.001    7.706    1.284 client.py:259(_process_records)
-     1825    0.004    0.000    7.688    0.004 <frozen genericpath>:16(exists)
-        4    0.000    0.000    7.652    1.913 requirements_utils.py:302(_capture_imported_modules)
-        7    0.001    0.000    7.620    1.089 subprocess.py:1165(communicate)
-        4    0.000    0.000    7.586    1.897 threading.py:1428(run)
-        4    0.000    0.000    7.586    1.896 requirements_utils.py:245(_run_command)
-   341978    6.876    0.000    6.876    0.000 {method 'findall' of 're.Pattern' objects}
-        6    0.000    0.000    6.627    1.104 client.py:323(_send_with_retries)
-        6    0.497    0.083    6.153    1.025 client.py:280(<lambda>)
-        7    0.000    0.000    5.326    0.761 api.py:14(request)
+  500/491   43.977    0.088  232.908    0.474 {method 'acquire' of '_thread.lock' objects}
+  124/123    9.053    0.073  152.918    1.243 threading.py:637(wait)
+        1    0.000    0.000  146.589  146.589 train_model.py:142(train)
+        1    0.000    0.000  145.751  145.751 resource_monitor.py:44(stop)
+        1    0.000    0.000  145.751  145.751 threading.py:1115(join)
+        1    0.000    0.000  145.751  145.751 threading.py:1153(_wait_for_tstate_lock)
+        1    0.000    0.000  145.751  145.751 threading.py:1016(_bootstrap)
+        1    0.000    0.000  145.751  145.751 threading.py:1056(_bootstrap_inner)
+        1    0.089    0.089  145.751  145.751 threading.py:999(run)
+        4    0.003    0.001  145.661   36.415 train_model.py:102(_train_one)
+  124/123   11.407    0.092  115.790    0.941 threading.py:323(wait)
+     17/4    0.009    0.001  106.554   26.639 base.py:1319(wrapper)
+        4    0.000    0.000  106.545   26.636 pipeline.py:562(fit)
+        4    0.000    0.000  104.850   26.212 pipeline.py:512(_fit)
+        4    0.000    0.000  104.849   26.212 memory.py:325(__call__)
+        4    0.000    0.000  104.849   26.212 pipeline.py:1471(_fit_transform_one)
+        4    0.001    0.000  104.849   26.212 text.py:2078(fit_transform)
+   341864    0.429    0.000   35.873    0.000 text.py:77(_analyze)
+        8    0.003    0.000   35.114    4.389 train_model.py:86(_evaluate)
+       16    0.000    0.000   23.455    1.466 text.py:2110(transform)
+   341864   11.136    0.000   20.837    0.000 text.py:247(_word_ngrams)
+      131   20.801    0.159   20.801    0.159 {built-in method builtins.sorted}
+       16    0.003    0.000   17.776    1.111 text.py:1408(transform)
+        8    0.001    0.000   17.741    2.218 pipeline.py:697(predict)
+        8    0.003    0.000   17.179    2.147 train_model.py:78(_scores_for)
+        6    0.000    0.000   12.919    2.153 pipeline.py:815(predict_proba)
+       20    4.212    0.211   10.826    0.541 text.py:1256(_count_vocab)
+   341864    9.814    0.000    9.814    0.000 {method 'findall' of 're.Pattern' objects}
+ 52035712    6.516    0.000    6.516    0.000 {method 'join' of 'str' objects}
+   341864    0.134    0.000    4.659    0.000 text.py:51(_preprocess)
+        2    0.000    0.000    4.256    2.128 pipeline.py:869(decision_function)
+   341864    2.087    0.000    4.013    0.000 text.py:124(strip_accents_unicode)
+ 52371363    3.301    0.000    3.301    0.000 {method 'append' of 'list' objects}
+        4    0.031    0.008    3.181    0.795 text.py:1340(fit_transform)
+        4    2.918    0.730    3.150    0.788 text.py:1217(_limit_features)
+2109/1801    2.918    0.001    2.924    0.002 {built-in method numpy.asarray}
+        4    0.015    0.004    2.751    0.688 numpy_pickle.py:474(dump)
+        4    0.000    0.000    2.733    0.683 pickle.py:470(dump)
+ 481018/4    0.222    0.000    2.733    0.683 numpy_pickle.py:360(save)
+ 481018/4    0.693    0.000    2.733    0.683 pickle.py:529(save)
 
 

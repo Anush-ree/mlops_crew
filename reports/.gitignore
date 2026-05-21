@@ -2,3 +2,4 @@
 /divergence
 /monitoring
 /profiling/*.prof
+/profiling/scratch

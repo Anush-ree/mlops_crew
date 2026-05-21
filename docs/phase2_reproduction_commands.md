@@ -1,0 +1,110 @@
+# Phase 2 Reproduction Commands
+
+This is the command sequence used to verify the Phase 2 model-development work
+on `model_v2`. It covers Sections 2-4: monitoring/debugging, profiling, and
+experiment tracking.
+
+## One-command local verification
+
+```bash
+cd mlops_crew
+python -m venv .venv
+source .venv/bin/activate
+make install
+make dev
+dvc pull
+
+scripts/verify_phase2.sh
+```
+
+The script runs:
+
+```bash
+dvc status
+dvc repro
+make lint
+mypy src
+pytest tests/ --cov=mlops_crew --cov-report=xml
+python scripts/profile_predict.py
+dvc status
+```
+
+To also regenerate the slower training profile:
+
+```bash
+scripts/verify_phase2.sh --include-slow-profile
+```
+
+To populate the local MLflow UI after `dvc pull` restored outputs and
+`dvc repro` skipped training:
+
+```bash
+scripts/verify_phase2.sh --replay-mlflow
+```
+
+To replay MLflow from a clean local tracking directory:
+
+```bash
+scripts/verify_phase2.sh --clean-mlflow
+```
+
+To check that local DVC cache contents are synced to the default remote:
+
+```bash
+scripts/verify_phase2.sh --check-remote
+```
+
+Flags can be combined:
+
+```bash
+scripts/verify_phase2.sh --clean-mlflow --include-slow-profile --check-remote
+```
+
+## Manual command sequence
+
+Use this when you want to inspect each step separately:
+
+```bash
+cd mlops_crew
+source .venv/bin/activate
+
+dvc status
+dvc repro
+
+make lint
+mypy src
+pytest tests/ --cov=mlops_crew --cov-report=xml
+
+python scripts/profile_predict.py
+python scripts/profile_train.py
+
+dvc status
+dvc status -c
+```
+
+The profiling scripts write readable cProfile summaries to
+`reports/profiling/*_cprofile.txt`. They write temporary train/latency outputs
+under `reports/profiling/scratch/`, which is ignored, so profiling does not
+dirty DVC-tracked model, metric, prediction, monitoring, or MLflow artifacts by
+default.
+
+## Expected final artifacts
+
+After `dvc repro`, these are the key files a grader should inspect:
+
+- `models/best_model.joblib`
+- `reports/metrics/best_model_metrics.json`
+- `reports/metrics/model_comparison.csv`
+- `reports/monitoring/training_resource_usage.csv`
+- `reports/monitoring/inference_latency.csv`
+- `reports/divergence/phase2_divergence_report.json`
+- `reports/divergence/phase2_divergence_summary.md`
+- `data/processed/transformer/train.jsonl`
+- `data/processed/transformer/val.jsonl`
+- `data/processed/transformer/test.jsonl`
+- `data/processed/transformer/dataset_info.json`
+- local regenerated MLflow runs under `mlruns/` when training executes or
+  `scripts/verify_phase2.sh --replay-mlflow` is used
+
+The transformer files are dataset exports only. This branch does not fine-tune
+or train a transformer/LLM model.

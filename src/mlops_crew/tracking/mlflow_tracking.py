@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterator
-from contextlib import contextmanager, nullcontext
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
 
@@ -22,23 +22,6 @@ def setup_mlflow(config: dict[str, Any]) -> None:
     tracking = config.get("tracking", {})
     mlflow.set_tracking_uri(tracking.get("tracking_uri", "file:./mlruns"))
     mlflow.set_experiment(tracking.get("experiment_name", config["project"]["name"]))
-
-
-def _flatten(prefix: str, value: Any, output: dict[str, Any]) -> None:
-    if isinstance(value, dict):
-        for key, nested in value.items():
-            next_prefix = f"{prefix}.{key}" if prefix else str(key)
-            _flatten(next_prefix, nested, output)
-    elif isinstance(value, list):
-        output[prefix] = ",".join(str(item) for item in value)
-    else:
-        output[prefix] = value
-
-
-def flatten_config(config: dict[str, Any]) -> dict[str, Any]:
-    flattened: dict[str, Any] = {}
-    _flatten("", config, flattened)
-    return flattened
 
 
 @contextmanager
@@ -123,16 +106,13 @@ def log_model_artifacts(
 
     log_metrics(metrics)
     log_artifacts([model_path], artifact_path="joblib")
-    prediction_paths = [
-        Path(path)
-        for key, path in metrics.items()
-        if key.endswith("_prediction_path") and isinstance(path, str)
-    ]
-    log_artifacts(prediction_paths, artifact_path="predictions")
+    if config.get("tracking", {}).get("log_predictions", True):
+        prediction_paths = [
+            Path(path)
+            for key, path in metrics.items()
+            if key.endswith("_prediction_path") and isinstance(path, str)
+        ]
+        log_artifacts(prediction_paths, artifact_path="predictions")
 
     if config.get("tracking", {}).get("log_models", True):
         mlflow.sklearn.log_model(model, name=f"{model_name}_pipeline")
-
-
-def maybe_nullcontext() -> nullcontext[None]:
-    return nullcontext()

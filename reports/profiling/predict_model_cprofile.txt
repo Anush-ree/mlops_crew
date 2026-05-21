@@ -1,48 +1,48 @@
-         5065228 function calls (5026563 primitive calls) in 2.605 seconds
+         5068701 function calls (5029814 primitive calls) in 2.573 seconds
 
    Ordered by: cumulative time
-   List reduced from 3888 to 40 due to restriction <40>
+   List reduced from 3890 to 40 due to restriction <40>
 
    ncalls  tottime  percall  cumtime  percall filename:lineno(function)
-       80    0.002    0.000    5.675    0.071 __init__.py:1(<module>)
-        1    0.000    0.000    2.609    2.609 inference_latency.py:58(run)
-        1    0.001    0.001    1.824    1.824 numpy_pickle.py:674(load)
-        1    0.000    0.000    1.823    1.823 numpy_pickle.py:613(_unpickle)
-        1    0.087    0.087    1.823    1.823 pickle.py:1179(load)
-    920/5    0.003    0.000    1.518    0.304 <frozen importlib._bootstrap>:1349(_find_and_load)
-    882/5    0.002    0.000    1.518    0.304 <frozen importlib._bootstrap>:1304(_find_and_load_unlocked)
-        9    0.000    0.000    1.517    0.169 pickle.py:1525(load_stack_global)
-        9    0.000    0.000    1.517    0.169 pickle.py:1564(find_class)
-    238/9    0.000    0.000    1.517    0.169 {built-in method builtins.__import__}
-    864/5    0.002    0.000    1.517    0.303 <frozen importlib._bootstrap>:911(_load_unlocked)
-    736/5    0.001    0.000    1.517    0.303 <frozen importlib._bootstrap_external>:989(exec_module)
-   2081/8    0.003    0.000    1.517    0.190 <frozen importlib._bootstrap>:480(_call_with_frames_removed)
-   1039/5    0.025    0.000    1.515    0.303 {built-in method builtins.exec}
-        4    0.000    0.000    1.314    0.328 base.py:1(<module>)
-        1    0.000    0.000    1.294    1.294 _chunking.py:1(<module>)
-        1    0.000    0.000    1.293    1.293 _param_validation.py:1(<module>)
-        2    0.000    0.000    1.249    0.624 _array_api.py:1(<module>)
-        1    0.000    0.000    1.116    1.116 validation.py:1(<module>)
-        1    0.000    0.000    1.002    1.002 fixes.py:1(<module>)
-  712/427    0.001    0.000    0.718    0.002 <frozen importlib._bootstrap>:1390(_handle_fromlist)
-        1    0.001    0.001    0.674    0.674 inference_latency.py:30(measure_latency)
-       12    0.000    0.000    0.673    0.056 pipeline.py:697(predict)
-       12    0.000    0.000    0.668    0.056 text.py:2110(transform)
-       12    0.000    0.000    0.660    0.055 text.py:1408(transform)
-       12    0.239    0.020    0.660    0.055 text.py:1256(_count_vocab)
-        1    0.000    0.000    0.599    0.599 _stats_py.py:1(<module>)
-  864/859    0.001    0.000    0.448    0.001 <frozen importlib._bootstrap>:806(module_from_spec)
+       80    0.002    0.000    5.452    0.068 __init__.py:1(<module>)
+        1    0.000    0.000    2.576    2.576 inference_latency.py:58(run)
+        1    0.001    0.001    1.775    1.775 numpy_pickle.py:674(load)
+        1    0.000    0.000    1.774    1.774 numpy_pickle.py:613(_unpickle)
+        1    0.088    0.088    1.774    1.774 pickle.py:1179(load)
+    920/5    0.003    0.000    1.462    0.292 <frozen importlib._bootstrap>:1349(_find_and_load)
+    882/5    0.002    0.000    1.462    0.292 <frozen importlib._bootstrap>:1304(_find_and_load_unlocked)
+        9    0.000    0.000    1.461    0.162 pickle.py:1525(load_stack_global)
+        9    0.000    0.000    1.461    0.162 pickle.py:1564(find_class)
+    238/9    0.000    0.000    1.461    0.162 {built-in method builtins.__import__}
+    864/5    0.002    0.000    1.461    0.292 <frozen importlib._bootstrap>:911(_load_unlocked)
+    736/5    0.001    0.000    1.461    0.292 <frozen importlib._bootstrap_external>:989(exec_module)
+   2081/8    0.003    0.000    1.461    0.183 <frozen importlib._bootstrap>:480(_call_with_frames_removed)
+   1039/5    0.025    0.000    1.460    0.292 {built-in method builtins.exec}
+        4    0.000    0.000    1.269    0.317 base.py:1(<module>)
+        1    0.000    0.000    1.252    1.252 _chunking.py:1(<module>)
+        1    0.000    0.000    1.252    1.252 _param_validation.py:1(<module>)
+        2    0.000    0.000    1.211    0.606 _array_api.py:1(<module>)
+        1    0.000    0.000    1.096    1.096 validation.py:1(<module>)
+        1    0.000    0.000    0.988    0.988 fixes.py:1(<module>)
+  712/427    0.001    0.000    0.689    0.002 <frozen importlib._bootstrap>:1390(_handle_fromlist)
+        1    0.001    0.001    0.680    0.680 inference_latency.py:30(measure_latency)
+       12    0.000    0.000    0.678    0.056 pipeline.py:697(predict)
+       12    0.000    0.000    0.674    0.056 text.py:2110(transform)
+       12    0.000    0.000    0.664    0.055 text.py:1408(transform)
+       12    0.240    0.020    0.664    0.055 text.py:1256(_count_vocab)
+        1    0.000    0.000    0.588    0.588 _stats_py.py:1(<module>)
+  864/859    0.001    0.000    0.467    0.001 <frozen importlib._bootstrap>:806(module_from_spec)
+  127/125    0.000    0.000    0.456    0.004 <frozen importlib._bootstrap_external>:1287(create_module)
+  127/125    0.452    0.004    0.455    0.004 {built-in method _imp.create_dynamic}
       625    0.001    0.000    0.437    0.001 _docscrape.py:579(__init__)
-  127/125    0.000    0.000    0.437    0.003 <frozen importlib._bootstrap_external>:1287(create_module)
-  127/125    0.433    0.003    0.436    0.003 {built-in method _imp.create_dynamic}
-      633    0.002    0.000    0.388    0.001 _docscrape.py:140(__init__)
+      633    0.002    0.000    0.387    0.001 _docscrape.py:140(__init__)
       474    0.003    0.000    0.382    0.001 _array_api.py:840(decorator)
      3939    0.005    0.000    0.366    0.000 text.py:77(_analyze)
-      633    0.007    0.000    0.283    0.000 _docscrape.py:388(_parse)
-        1    0.000    0.000    0.241    0.241 distributions.py:1(<module>)
-     3939    0.116    0.000    0.216    0.000 text.py:247(_word_ngrams)
-      736    0.004    0.000    0.211    0.000 <frozen importlib._bootstrap_external>:1062(get_code)
-10562/9677    0.002    0.000    0.185    0.000 {built-in method builtins.hasattr}
-        5    0.000    0.000    0.173    0.035 _base.py:1(<module>)
+      633    0.007    0.000    0.284    0.000 _docscrape.py:388(_parse)
+        1    0.000    0.000    0.236    0.236 distributions.py:1(<module>)
+     3939    0.115    0.000    0.215    0.000 text.py:247(_word_ngrams)
+10562/9677    0.003    0.000    0.166    0.000 {built-in method builtins.hasattr}
+        5    0.000    0.000    0.155    0.031 _base.py:1(<module>)
+        1    0.000    0.000    0.153    0.153 _classes.py:1(<module>)
 
 

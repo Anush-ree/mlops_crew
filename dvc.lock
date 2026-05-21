@@ -121,8 +121,8 @@ stages:
       size: 2189
     - path: src/mlops_crew/tracking/mlflow_tracking.py
       hash: md5
-      md5: 3f2fdf66851655e0c3bd63388e44b669
-      size: 4655
+      md5: 8fc156b4477376cca25b96d9e36f7015
+      size: 4098
     - path: src/mlops_crew/train_model.py
       hash: md5
       md5: d7af8a8bf6e873b99c2f32101b803171
@@ -138,23 +138,23 @@ stages:
     outs:
     - path: models/best_model.joblib
       hash: md5
-      md5: f0a026bb93a0d3bd64dcc6a426cbd532
+      md5: 257a8155b784c3a4db03efc98b6b5de2
       size: 960048
     - path: models/complement_nb.joblib
       hash: md5
-      md5: c994c1999c1682f0bcd2240e4e515e08
+      md5: 40221fe915b2ca488b622cca38a8e94f
       size: 1600177
     - path: models/dummy.joblib
       hash: md5
-      md5: 72a81b58fb511c9f210372f76e04ff03
+      md5: 94f951e4762cc0ed81cd63c81aa20206
       size: 799905
     - path: models/linear_svc.joblib
       hash: md5
-      md5: f0a026bb93a0d3bd64dcc6a426cbd532
+      md5: 257a8155b784c3a4db03efc98b6b5de2
       size: 960048
     - path: models/logistic_regression.joblib
       hash: md5
-      md5: e21670565dc0e77fc9f009ddd3d5f5a1
+      md5: 3ed76e7d3ebcb2fa02267be244ecec52
       size: 960192
     - path: reports/metrics/best_model_metrics.json
       hash: md5
@@ -186,8 +186,8 @@ stages:
       size: 5361
     - path: reports/monitoring/training_resource_usage.csv
       hash: md5
-      md5: adbc2aff304e32b580364f4e35d50a7c
-      size: 3630
+      md5: e81df3994c68f866eafbca36706fac1d
+      size: 5889
     - path: reports/predictions
       hash: md5
       md5: 308f5ae16942d36adf2c4bfe869b086a.dir
@@ -314,7 +314,7 @@ stages:
       size: 12244981
     - path: models/best_model.joblib
       hash: md5
-      md5: f0a026bb93a0d3bd64dcc6a426cbd532
+      md5: 257a8155b784c3a4db03efc98b6b5de2
       size: 960048
     - path: src/mlops_crew/config.py
       hash: md5
@@ -331,8 +331,8 @@ stages:
     outs:
     - path: reports/monitoring/inference_latency.csv
       hash: md5
-      md5: 3d83a8bfdd0c6b4790761ccc752a85cd
-      size: 860
+      md5: 001b9013847300465cc84ad97a1c191a
+      size: 850
   divergence:
     cmd: python -m mlops_crew.monitoring.divergence
     deps:
@@ -354,7 +354,7 @@ stages:
       size: 1747655
     - path: models/best_model.joblib
       hash: md5
-      md5: f0a026bb93a0d3bd64dcc6a426cbd532
+      md5: 257a8155b784c3a4db03efc98b6b5de2
       size: 960048
     - path: src/mlops_crew/config.py
       hash: md5
@@ -375,8 +375,8 @@ stages:
     outs:
     - path: reports/divergence/phase2_divergence_report.json
       hash: md5
-      md5: b4134c049b983129008c7f2677c8edc5
-      size: 4831
+      md5: 73d9eafb056efe100abaccc045fe0df7
+      size: 4826
     - path: reports/divergence/phase2_divergence_summary.md
       hash: md5
       md5: 724c95290b42c053b90cde7bab34167a

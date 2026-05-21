@@ -29,7 +29,7 @@ Everything below is engineered against that lesson — every number we claim is 
 | 2.2 Debugging | covered in PHASE2.md "Debugging entry points" + this doc | `PHASE2.md`, this file (§A.4) |
 | 3.1 cProfile | done | `scripts/profile_train.py`, `scripts/profile_predict.py`, `reports/profiling/*_cprofile.txt` |
 | 3.2 Optimization decision | documented (no aggressive opt) | `PHASE2.md` §Profiling and Optimization |
-| 4 Experiment tracking | done | `src/mlops_crew/tracking/mlflow_tracking.py`, `src/mlops_crew/train_model.py:154,161,165`, `mlruns/` (regenerated per machine) |
+| 4 Experiment tracking | done | `src/mlops_crew/tracking/mlflow_tracking.py`, `src/mlops_crew/train_model.py:154,161,165`, `mlruns/` (regenerated per machine by training or scratch replay) |
 
 ### A.2 Data versioning — local and remote
 
@@ -116,11 +116,11 @@ Both notebooks read pre-computed pipeline artifacts only — they do not re-run 
 
 Three artifacts feed Section 2.1:
 
-1. **Resource monitor.** `ResourceMonitor` (background thread, psutil, 1 Hz) wraps the entire training run. Output: `reports/monitoring/training_resource_usage.csv`. Columns: timestamp, process_cpu_percent, system_cpu_percent, rss_mb, available_memory_mb. Roughly 90–110 samples for a ~100 s run.
+1. **Resource monitor.** `ResourceMonitor` (background thread, psutil, 1 Hz) wraps the entire training run. Output: `reports/monitoring/training_resource_usage.csv`. Columns: timestamp, process_cpu_percent, system_cpu_percent, rss_mb, available_memory_mb. Current runs produce roughly 70–120 samples depending on local scheduling and MLflow serialization time.
 
-2. **Inference latency.** `inference_latency.py` measures batch sizes [1, 32, 256, 1024] × 3 repeats on `models/best_model.joblib`. Output: `reports/monitoring/inference_latency.csv` with `milliseconds_per_record` and `records_per_second`. Current numbers: batch=1024 at ~5,800 rec/s (~0.17 ms/record).
+2. **Inference latency.** `inference_latency.py` measures batch sizes [1, 32, 256, 1024] × 3 repeats on `models/best_model.joblib`. Output: `reports/monitoring/inference_latency.csv` with `milliseconds_per_record` and `records_per_second`. Current numbers: batch=1024 at roughly 8k rec/s (~0.12 ms/record) on the local machine used for this run.
 
-3. **Divergence.** `divergence.py` compares Phase 1 reference vs Phase 2 increment along five axes — label JS, source JS (joined on the manifest), text-length KS, vocabulary new-token rate, prediction JS. Outputs: `reports/divergence/phase2_divergence_report.json` (machine-readable) and `phase2_divergence_summary.md` (human-readable). Current numbers — label JS=0.000007, source JS=0.0005, KS=0.005, new-token rate=0.040, prediction JS=0.0002 — meaning the Phase 2 increment is **not** out-of-distribution.
+3. **Divergence.** `divergence.py` compares Phase 1 reference vs Phase 2 increment along five axes — label JS, source JS (joined on the manifest), text-length KS, vocabulary new-token rate, prediction JS. Outputs: `reports/divergence/phase2_divergence_report.json` (machine-readable) and `phase2_divergence_summary.md` (human-readable). Current numbers — label JS=0.000007, source JS=0.014327, KS=0.005134, new-token rate=0.039855, prediction JS=0.000207 — meaning the Phase 2 increment is **not** out-of-distribution.
 
 ### A.6 Debugging (Section 2.2)
 
@@ -138,13 +138,13 @@ Four worked scenarios — actual commands you can run today:
    Symptom: cleaning step drops most rows. Reason: source labels were strings (`"spam"`/`"ham"`) but `_normalize_label` only accepts numeric `{0, 1}`. Quick check: `breakpoint()` inside `clean_dataset` and `print(cleaned[LABEL_COLUMN].isna().sum())`. For the current dataset all sources are already numeric; the `source_manifest` stage asserts this so a string-labeled source would fail fast.
 
 4. **F2 regression after adding Phase 2 data.**  
-   Diagnose flow: `notebooks/phase2_model_development.ipynb` cell 12 prints the Δ F2 table per model. If the delta is negative for the winning model, cross-check `phase2_divergence_analysis.ipynb` for a vocabulary jump or source-mix shift. The "false-negatives by source" cell tells you whether one source is dragging recall down.
+   Diagnose flow: `notebooks/phase2_model_development.ipynb` prints the Phase 1 to Phase 2 delta table per model. If the delta is negative for the winning model, cross-check `phase2_divergence_analysis.ipynb` for a vocabulary jump or source-mix shift. The false-negatives-by-source output tells you whether one source is dragging recall down.
 
 ### A.7 Profiling (Section 3)
 
-`scripts/profile_train.py` runs `train(config)` inside `cProfile.Profile`. `scripts/profile_predict.py` does the same for `monitoring.inference_latency.run`. Both write a `.prof` (machine-readable, gitignored) plus a `*_cprofile.txt` (committed). The committed text files show:
+`scripts/profile_train.py` runs the training path inside `cProfile.Profile`. `scripts/profile_predict.py` does the same for `monitoring.inference_latency.run`. Both write a `.prof` (machine-readable, gitignored) plus a `*_cprofile.txt` (committed). By default they write temporary models/metrics/predictions/latency CSVs under `reports/profiling/scratch/` and disable MLflow tracking, so profiling does not create duplicate runs or dirty DVC outputs. Use `python scripts/profile_train.py --with-tracking` only when profiling MLflow overhead explicitly. The committed text files show:
 
-- **Training:** ~97 s on a 2024-era laptop. Top of the cumulative-time table: `train` → `_train_one` → `pipeline.fit` → `TfidfVectorizer.fit_transform`. TF-IDF dominates, as expected for sklearn text classifiers.
+- **Training:** ~147 s under cProfile on the local machine used for this run. Top of the cumulative-time table: `train` → `_train_one` → `pipeline.fit` → `TfidfVectorizer.fit_transform`. TF-IDF dominates, as expected for sklearn text classifiers. Normal DVC training can be faster because cProfile adds overhead.
 - **Inference:** ~2.6 s for the full latency sweep. The top cost is `joblib.load` (one-time pickle deserialization) — `predict` itself is fast.
 
 **Optimization decision documented** in PHASE2.md: keep TF-IDF inside the sklearn `Pipeline` rather than precomputing feature pickles. The professor's PDF specifically asks for the decision-and-reason, not optimization for its own sake.
@@ -161,12 +161,12 @@ The MLflow wiring is small but covers every line item the PDF lists:
 | Hyperparameters logged | `model_run()` logs `model.*` + `tfidf.*` per nested run |
 | Metrics logged | `log_metrics()` writes `validation_*` + `test_*` to each nested run |
 | Trained model artifacts | `mlflow.sklearn.log_model(...)` + joblib uploaded to `joblib/` |
-| Useful artifacts | `config/config.yaml`, `predictions/*.csv`, `metrics/model_comparison.csv`, `monitoring/training_resource_usage.csv` all on the parent run |
-| Exact training code line numbers | `src/mlops_crew/train_model.py:154` (parent run), `:161` (nested run), `:165` (artifact log), `:174-176` (resource csv), `:205-209` (comparison artifacts) |
+| Useful artifacts | `config/config.yaml`, optional `predictions/*.csv`, `metrics/model_comparison.csv`, `monitoring/training_resource_usage.csv` |
+| Exact training code line numbers | `src/mlops_crew/train_model.py:154` (parent run), `:161` (nested run), `:165-167` (model artifact log), `:174-175` (resource csv), `:205-209` (comparison artifacts) |
 | Compare runs in UI | parent run + 4 nested runs; select-all-and-Compare in the MLflow UI |
 | How to access | `make mlflow-ui` (port 5001 — macOS AirPlay uses 5000) |
 
-The `mlruns/` directory is gitignored — each grader populates it locally by running `make repro`. Class 7 mentioned committing the directory, but the PDF rubric accepts "screenshot or link" instead, and a clean `mlruns/` snapshot per machine is a more honest reproducibility signal than committing one person's local store.
+The `mlruns/` directory is gitignored. A fresh training run populates it locally, but if `dvc pull` already restored every DVC output, `dvc repro` can correctly skip training and therefore not create new MLflow runs. Use `scripts/verify_phase2.sh --replay-mlflow` to populate the UI with scratch outputs without dirtying DVC artifacts. Class 7 mentioned committing the directory, but the PDF rubric accepts "screenshot or link" instead, and a clean local replay is a more honest reproducibility signal than committing one person's local store.
 
 ### A.9 What was checked against `main` and pre-PR-#5
 
@@ -202,7 +202,7 @@ make install            # runtime deps + editable install of mlops_crew
 make dev                # adds pytest, ruff, mypy, pre-commit
 ```
 
-Expected: `make install` completes; `pip list` shows `mlops-crew`, `mlflow`, `dvc[s3]`, `psutil`, `scipy`, `scikit-learn`, `pandas`, `numpy`, `matplotlib`, `pyyaml`, `joblib`.
+Expected: `make install` completes; `pip list` shows `mlops-crew`, `mlflow`, `dvc`, `dvc-s3`, `psutil`, `scipy`, `scikit-learn`, `pandas`, `numpy`, `matplotlib`, `pyyaml`, `joblib`.
 
 ### B.1 Pull data + pipeline outputs from the remote
 
@@ -214,7 +214,20 @@ dvc pull                # uses the default `storage` remote
 # dvc pull -r gdrive_backup
 ```
 
-Expected: `dvc pull` reports rehydrating ~30 outputs (raw archive 261 MB + interim + processed + models + reports). After it finishes, `dvc status -c` should print nothing.
+Expected: `dvc pull` reports rehydrating the raw archive plus interim, processed, model, and report outputs. After it finishes, `dvc status -c` should report that the cache and default remote are in sync.
+
+### B.1a One-command verification shortcut
+
+```bash
+scripts/verify_phase2.sh
+```
+
+Expected: runs `dvc status`, `dvc repro`, lint, mypy, pytest with coverage,
+inference profiling, and a final `dvc status`. Use
+`scripts/verify_phase2.sh --include-slow-profile` to also regenerate the
+training profile, `--replay-mlflow` to populate local MLflow from scratch
+outputs when DVC skips training, `--clean-mlflow` to delete local runs before
+that replay, and `--check-remote` to include `dvc status -c`.
 
 ### B.2 Static checks (≈ 30 seconds total)
 
@@ -230,8 +243,8 @@ Expected:
 ```
 ruff check .                       -> All checks passed!
 ruff format --check .              -> (no diff)
-mypy src/mlops_crew                -> Success: no issues found in 27 source files
-pytest                             -> 9 passed
+mypy src/mlops_crew                -> Success: no issues found
+pytest                             -> 12 passed
 ```
 
 ### B.3 DVC pipeline integrity
@@ -244,7 +257,7 @@ dvc dag
 Expected:
 
 - `dvc status` → `Data and pipelines are up to date.`
-- `dvc dag` shows: `sample → {source_manifest, clean} → split → {transformer_dataset, train} → {inference_latency, plot_model_comparison, divergence}`.
+- `dvc dag` shows: `sample → clean → split → {transformer_dataset, train}`, `train → {inference_latency, plot_model_comparison}`, and `sample + source_manifest + train → divergence`.
 
 ### B.4 Full pipeline reproduction (≈ 2–4 min on a laptop)
 
@@ -262,7 +275,7 @@ Expected: 8 stages run (or skip if cached). After completion these files exist a
 - `reports/predictions/*_val_predictions.csv`, `*_test_predictions.csv`
 - `reports/monitoring/{training_resource_usage.csv, inference_latency.csv}`
 - `reports/divergence/{phase2_divergence_report.json, phase2_divergence_summary.md}`
-- `mlruns/<exp_id>/<run_id>/...` populated
+- `mlruns/<exp_id>/<run_id>/...` populated when the train stage executes; if DVC skips training from pulled artifacts, run `scripts/verify_phase2.sh --replay-mlflow`
 
 ### B.5 Best-model metrics check
 
@@ -333,7 +346,7 @@ Interpretation: Phase 2 increment is in-distribution; observed model lift is fro
 cat reports/monitoring/inference_latency.csv | column -ts ','
 ```
 
-Expected: rows for batch_size ∈ {1, 32, 256, 1024} × repeat ∈ {1, 2, 3}. Batch=1024 at ~5–8k records/sec on a typical laptop.
+Expected: rows for batch_size ∈ {1, 32, 256, 1024} × repeat ∈ {1, 2, 3}. Batch=1024 is roughly 8k records/sec on the local machine used for the committed report; exact values vary by CPU.
 
 ### B.9 Resource monitoring
 
@@ -342,7 +355,7 @@ head -3 reports/monitoring/training_resource_usage.csv
 wc -l reports/monitoring/training_resource_usage.csv
 ```
 
-Expected: header is `timestamp,process_cpu_percent,system_cpu_percent,rss_mb,available_memory_mb`. Row count roughly equals seconds of training (~90–110 rows).
+Expected: header is `timestamp,process_cpu_percent,system_cpu_percent,rss_mb,available_memory_mb`. Row count roughly tracks training duration; current local runs are around 70–120 rows depending on scheduling and MLflow logging time.
 
 ### B.10 Profiling artifacts
 
@@ -359,7 +372,7 @@ Expected: training cProfile shows `train` → `_train_one` → `pipeline.fit` �
 make mlflow-ui          # http://localhost:5001
 ```
 
-Expected: experiment `phishing-email-phase2`. Click into a `phase2-training` run → it shows 4 nested runs (`dummy`, `logistic_regression`, `linear_svc`, `complement_nb`), each with params (`model.*`, `tfidf.*`), metrics (`validation_f2`, `test_f2`, `validation_recall`, …), artifacts (`joblib/<model>.joblib`, `predictions/*.csv`, `config/config.yaml`), and the sklearn model flavor. Parent run additionally carries `metrics/model_comparison.csv` and `monitoring/training_resource_usage.csv`. Select the 4 nested runs and click **Compare** for the side-by-side metrics table.
+Expected: experiment `phishing-email-phase2`. If no run appears because DVC skipped training from pulled artifacts, run `scripts/verify_phase2.sh --replay-mlflow` and refresh the UI. Click into a `phase2-training` run → it shows 4 nested runs (`dummy`, `logistic_regression`, `linear_svc`, `complement_nb`), each with params (`model.*`, `tfidf.*`), metrics (`validation_f2`, `test_f2`, `validation_recall`, …), artifacts (`joblib/<model>.joblib`, `predictions/*.csv`, `config/config.yaml`), and the sklearn model flavor. Parent run additionally carries `metrics/model_comparison.csv` and `monitoring/training_resource_usage.csv`. Select the 4 nested runs and click **Compare** for the side-by-side metrics table.
 
 ### B.12 Notebooks (developer experimentation evidence)
 
@@ -369,8 +382,8 @@ jupyter notebook notebooks/
 
 Open and re-run if desired:
 
-- `notebooks/phase2_model_development.ipynb` — 11 code cells. Last cell prints MLflow run summary; cell 12 prints the Phase 1 → Phase 2 delta table; cell 16 cross-evaluates a Phase-1-style LR on the Phase 2 increment.
-- `notebooks/phase2_divergence_analysis.ipynb` — 10 code cells. Cell 15 prints the per-source false-negative breakdown on the Phase 2 increment.
+- `notebooks/phase2_model_development.ipynb` — 11 code cells. It prints the Phase 1 → Phase 2 delta table, cross-evaluates a Phase-1-style LR on the Phase 2 increment, summarizes the latest completed MLflow training invocation, and spot-checks false negatives.
+- `notebooks/phase2_divergence_analysis.ipynb` — 10 code cells. It prints the drift report and the per-source false-negative breakdown on the Phase 2 increment.
 
 Both notebooks were committed with executed outputs, so the grader can read them without a kernel.
 
@@ -417,6 +430,7 @@ The Phase 1 critique ("nothing in the repo could have produced that number") can
 | Re-run latency benchmark | `make latency` |
 | Profile training | `make profile-train` |
 | Profile inference | `make profile-predict` |
+| Full local verification | `scripts/verify_phase2.sh` |
 | Open MLflow UI | `make mlflow-ui` (port 5001) |
 | Run tests | `make test` |
 | Lint | `make lint` |
