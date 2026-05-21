@@ -275,9 +275,8 @@ scripts/verify_phase2.sh
 > remote `gdrive_backup` is kept as a fallback. If you are without AWS
 > credentials, run `dvc pull -r gdrive_backup` instead.
 
-Step-by-step grader path is documented in
-`docs/phase2_implementation_and_verification.md`. The short command-only
-version is `docs/phase2_reproduction_commands.md`.
+
+Refer to this file for commands to execute: `docs/phase2_reproduction_commands.md`.
 
 The full DVC pipeline now runs:
 
