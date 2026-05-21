@@ -1,0 +1,20 @@
+# Default data configuration
+raw_path: data/raw/phishing_email.csv
+cleaned_path: data/processed/cleaned.csv
+train_path: data/processed/train.csv
+val_path: data/processed/val.csv
+test_path: data/processed/test.csv
+
+# Cleaning settings
+min_text_length: 3
+
+# Split settings
+test_size: 0.15
+val_size: 0.15
+random_seed: 42
+
+# TF-IDF settings
+tfidf:
+  max_features: 10000
+  ngram_range: [1, 2]
+  sublinear_tf: true
