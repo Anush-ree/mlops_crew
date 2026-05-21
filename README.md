@@ -120,8 +120,8 @@ This fits the configured dummy and TF-IDF model family, writes artifacts under
 `models/` and `reports/`, and runs the full Phase 2 DVC graph:
 
 ```text
-sample -> clean -> split -> transformer_dataset
-                 -> train -> inference_latency
+sample -> clean -> split -> validate -> transformer_dataset
+                              -> train -> inference_latency
                           -> plot_model_comparison
 sample + source_manifest + train -> divergence
 ```

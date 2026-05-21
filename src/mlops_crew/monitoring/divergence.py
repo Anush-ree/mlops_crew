@@ -133,6 +133,7 @@ def build_divergence_report(config: dict[str, Any]) -> dict[str, Any]:
 
     lengths_phase1 = phase1[TEXT_COLUMN].astype(str).str.len()
     lengths_phase2 = phase2_increment[TEXT_COLUMN].astype(str).str.len()
+    length_ks_test = ks_2samp(lengths_phase1, lengths_phase2)
     report: dict[str, Any] = {
         "phase1_reference_rows": int(len(phase1)),
         "phase2_increment_rows": int(len(phase2_increment)),
@@ -151,8 +152,8 @@ def build_divergence_report(config: dict[str, Any]) -> dict[str, Any]:
         "text_length": {
             "phase1_reference": _text_length_stats(phase1),
             "phase2_increment": _text_length_stats(phase2_increment),
-            "ks_statistic": float(ks_2samp(lengths_phase1, lengths_phase2).statistic),
-            "ks_pvalue": float(ks_2samp(lengths_phase1, lengths_phase2).pvalue),
+            "ks_statistic": float(length_ks_test.statistic),
+            "ks_pvalue": float(length_ks_test.pvalue),
         },
         "vocabulary": _vocabulary_report(phase1, phase2_increment, config),
     }

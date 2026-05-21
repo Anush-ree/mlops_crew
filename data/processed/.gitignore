@@ -4,5 +4,6 @@
 /val.csv
 /test.csv
 /split_summary.json
+/validation_report.json
 /features
 /transformer

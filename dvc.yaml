@@ -62,10 +62,26 @@ stages:
       - data/processed/test.csv
       - data/processed/split_summary.json
 
+  validate:
+    cmd: python -m mlops_crew.data.validate
+    deps:
+      - configs/config.yaml
+      - data/processed/cleaned.csv
+      - data/processed/train.csv
+      - data/processed/val.csv
+      - data/processed/test.csv
+      - src/mlops_crew/config.py
+      - src/mlops_crew/data/__init__.py
+      - src/mlops_crew/data/validate.py
+      - src/mlops_crew/utils/io.py
+    outs:
+      - data/processed/validation_report.json
+
   transformer_dataset:
     cmd: python -m mlops_crew.data.export_transformer_dataset
     deps:
       - configs/config.yaml
+      - data/processed/validation_report.json
       - data/processed/train.csv
       - data/processed/val.csv
       - data/processed/test.csv
@@ -80,6 +96,7 @@ stages:
     cmd: python -m mlops_crew.train_model
     deps:
       - configs/config.yaml
+      - data/processed/validation_report.json
       - data/processed/train.csv
       - data/processed/val.csv
       - data/processed/test.csv

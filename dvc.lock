@@ -446,3 +446,47 @@ stages:
       md5: 752fb28388053fa9d707c00e6c4f503a.dir
       size: 87091579
       nfiles: 4
+  validate:
+    cmd: python -m mlops_crew.data.validate
+    deps:
+    - path: configs/config.yaml
+      hash: md5
+      md5: 1b7f8afe6d6d2f918542578176ca8023
+      size: 2594
+    - path: data/processed/cleaned.csv
+      hash: md5
+      md5: 29ece2ea5a66ecebc6f7cacc590336fe
+      size: 85907518
+    - path: data/processed/test.csv
+      hash: md5
+      md5: 2da32d82043038eec78464a50d33ad9c
+      size: 12254844
+    - path: data/processed/train.csv
+      hash: md5
+      md5: 948c37f75b4e74e7970de61fc21df4c3
+      size: 61812839
+    - path: data/processed/val.csv
+      hash: md5
+      md5: 4d26ccafbf228100236b0a5ea920255d
+      size: 11839877
+    - path: src/mlops_crew/config.py
+      hash: md5
+      md5: a93fdd7f4f76e2d627bfa5587e8e4515
+      size: 1087
+    - path: src/mlops_crew/data/__init__.py
+      hash: md5
+      md5: fdd5285cf95db6c5b6499d4d07b8394d
+      size: 215
+    - path: src/mlops_crew/data/validate.py
+      hash: md5
+      md5: d09460c815c887bd04671c195d6514a7
+      size: 4978
+    - path: src/mlops_crew/utils/io.py
+      hash: md5
+      md5: 169b9ef6d64fafe09caf107a0ba231e9
+      size: 492
+    outs:
+    - path: data/processed/validation_report.json
+      hash: md5
+      md5: 785dc4dcd09eb6d8943efbf6f42978d5
+      size: 753

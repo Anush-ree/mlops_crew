@@ -284,9 +284,9 @@ Windows-specific setup (PowerShell, Git Bash, WSL, Chocolatey, optional `make`):
 The full DVC pipeline now runs:
 
 ```text
-sample -> clean -> split -> transformer_dataset
-                 -> train -> inference_latency
-                          -> plot_model_comparison
+sample -> clean -> split -> validate -> transformer_dataset
+                              -> train -> inference_latency
+                                       -> plot_model_comparison
 sample + source_manifest + train -> divergence
 ```
 

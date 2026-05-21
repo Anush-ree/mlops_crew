@@ -13,15 +13,17 @@ from typing import Any
 
 import pandas as pd
 
-from mlops_crew.config import CONFIG_PATH, load_project_config, resolve_project_path
+from mlops_crew.config import CONFIG_PATH, PROJECT_ROOT, load_project_config, resolve_project_path
 from mlops_crew.data import LABEL_COLUMN, TEXT_COLUMN
 from mlops_crew.logging_config import get_logger, setup_logging
+from mlops_crew.utils.io import save_json
 
 logger = get_logger(__name__)
 
 EXPECTED_COLUMNS = {TEXT_COLUMN, LABEL_COLUMN}
 VALID_LABELS = {0, 1}
 HIGH_IMBALANCE_RATIO = 10.0
+VALIDATION_REPORT_FILE = "validation_report.json"
 
 
 def dataset_paths(config: dict[str, Any]) -> dict[str, Path]:
@@ -79,11 +81,43 @@ def validate_dataset(path: Path, name: str, min_text_length: int) -> bool:
     return True
 
 
+def validation_report_path(config: dict[str, Any]) -> Path:
+    """Return the DVC-tracked validation report path under ``data/processed/``."""
+    processed_dir = resolve_project_path(config["data"]["processed_dir"])
+    return processed_dir / VALIDATION_REPORT_FILE
+
+
+def _build_validation_report(config: dict[str, Any]) -> dict[str, Any]:
+    """Summarize validated datasets for the DVC stage output artifact."""
+    paths = dataset_paths(config)
+    datasets: dict[str, Any] = {}
+    for name, path in paths.items():
+        frame = pd.read_csv(path)
+        counts = frame[LABEL_COLUMN].value_counts().to_dict()
+        try:
+            relative_path = str(path.relative_to(PROJECT_ROOT))
+        except ValueError:
+            relative_path = str(path)
+        datasets[name] = {
+            "path": relative_path,
+            "rows": int(len(frame)),
+            "label_distribution": {str(label): int(count) for label, count in counts.items()},
+        }
+    return {
+        "status": "passed",
+        "min_text_length": int(config.get("cleaning", {}).get("min_text_length", 3)),
+        "datasets": datasets,
+    }
+
+
 def run(config: dict[str, Any]) -> bool:
     min_length = int(config.get("cleaning", {}).get("min_text_length", 3))
-    return all(
-        validate_dataset(path, name, min_length) for name, path in dataset_paths(config).items()
-    )
+    paths = dataset_paths(config)
+    passed = all(validate_dataset(path, name, min_length) for name, path in paths.items())
+    if passed:
+        save_json(_build_validation_report(config), validation_report_path(config))
+        logger.info("Wrote validation report to %s", validation_report_path(config))
+    return passed
 
 
 def main() -> None:

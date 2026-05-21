@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pandas as pd
 import pytest
 
 from mlops_crew.data import TEXT_COLUMN
+from mlops_crew.monitoring.resource_monitor import ResourceMonitor
 from mlops_crew.evaluation.metrics import binary_classification_report
 from mlops_crew.monitoring.divergence import _js_distance
 from mlops_crew.monitoring.inference_latency import measure_latency
@@ -32,6 +35,22 @@ def test_js_distance_is_zero_for_matching_distributions() -> None:
     right = {"0": 140, "1": 60}
 
     assert _js_distance(left, right) == pytest.approx(0.0)
+
+
+def test_resource_monitor_stops_cleanly_and_writes_csv(tmp_path: Path) -> None:
+    """Background sampler should stop before CSV export and be restartable."""
+    monitor = ResourceMonitor(interval_seconds=0.05)
+    monitor.start()
+    monitor.stop()
+    output = tmp_path / "usage.csv"
+    monitor.write_csv(output)
+
+    assert output.exists()
+    frame = pd.read_csv(output)
+    assert not frame.empty
+
+    monitor.start()
+    monitor.stop()
 
 
 def test_measure_latency_reports_each_batch_and_repeat() -> None:
