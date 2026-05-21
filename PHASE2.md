@@ -276,8 +276,10 @@ scripts/verify_phase2.sh
 > remote `gdrive_backup` is kept as a fallback. If you are without AWS
 > credentials, run `dvc pull -r gdrive_backup` instead.
 
-
 Refer to this file for commands to execute: `docs/phase2_reproduction_commands.md`.
+Windows-specific setup (PowerShell, Git Bash, WSL, Chocolatey, optional `make`):
+`docs/windows_setup.md`. Run `scripts/verify_phase2.ps1` in PowerShell or
+`scripts/verify_phase2.sh` in Bash — same checks.
 
 The full DVC pipeline now runs:
 

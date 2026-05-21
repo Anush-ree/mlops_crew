@@ -2,7 +2,47 @@
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
-export PATH="$PWD/.venv/bin:$PATH"
+
+# Prefer the venv layout that exists on this machine (Windows vs Unix).
+# Git Bash / native Windows: .venv/Scripts — Linux, macOS, WSL: .venv/bin
+resolve_venv_bin() {
+  if [[ -x "$PWD/.venv/Scripts/python.exe" ]] || [[ -x "$PWD/.venv/Scripts/python" ]]; then
+    echo "$PWD/.venv/Scripts"
+  elif [[ -x "$PWD/.venv/bin/python" ]]; then
+    echo "$PWD/.venv/bin"
+  else
+    printf 'ERROR: No usable .venv found. Create one first, e.g.:\n' >&2
+    printf '  python -m venv .venv\n' >&2
+    printf '  source .venv/bin/activate    # Linux / macOS / WSL\n' >&2
+    printf '  source .venv/Scripts/activate  # Git Bash on Windows\n' >&2
+    exit 1
+  fi
+}
+
+VENV_BIN="$(resolve_venv_bin)"
+export PATH="${VENV_BIN}:${PATH}"
+
+if [[ -x "${VENV_BIN}/python.exe" ]]; then
+  PYTHON="${VENV_BIN}/python.exe"
+elif [[ -x "${VENV_BIN}/python" ]]; then
+  PYTHON="${VENV_BIN}/python"
+else
+  printf 'ERROR: No python executable in %s\n' "$VENV_BIN" >&2
+  exit 1
+fi
+
+# Windows venv exposes console_scripts as *.exe; Git Bash/WSL often cannot run `dvc`
+# without the .exe suffix. `python -m dvc` works everywhere we support.
+dvc() {
+  "$PYTHON" -m dvc "$@"
+}
+
+printf '==> Using venv tools from: %s\n' "$VENV_BIN"
+printf '==> Python: %s\n' "$PYTHON"
+if [[ "$VENV_BIN" == *Scripts* ]] && grep -qi microsoft /proc/version 2>/dev/null; then
+  printf 'NOTE: WSL + Windows .venv detected. Prefer: .\\scripts\\verify_phase2.ps1 in PowerShell,\n' >&2
+  printf '      or recreate the venv inside WSL (python3 -m venv .venv → .venv/bin).\n' >&2
+fi
 
 include_slow_profile=0
 clean_mlflow=0
@@ -14,8 +54,12 @@ usage() {
 Usage: scripts/verify_phase2.sh [--include-slow-profile] [--replay-mlflow] [--clean-mlflow] [--check-remote]
 
 Runs the Phase 2 reproducibility checks in the same order used for local
-verification. By default this does not delete local MLflow runs and does not
-require DVC remote credentials.
+verification. Works on Linux, macOS, WSL, and Git Bash on Windows (auto-detects
+.venv/bin vs .venv/Scripts). Native Windows PowerShell users should run
+scripts/verify_phase2.ps1 instead (see docs/windows_setup.md).
+
+By default this does not delete local MLflow runs and does not require DVC
+remote credentials.
 
 Options:
   --include-slow-profile  Also run training cProfile. This retrains all models.
@@ -56,9 +100,22 @@ run() {
   "$@"
 }
 
+run_lint() {
+  printf '\n==> lint\n'
+  # Always use the venv Python. `make lint` often fails on Windows/WSL because
+  # Make invokes `ruff` without .venv/Scripts on PATH.
+  "$PYTHON" -m ruff check .
+  "$PYTHON" -m ruff format --check .
+}
+
+run_dvc() {
+  printf '\n==> dvc %s\n' "$*"
+  dvc "$@"
+}
+
 run_mlflow_replay() {
   printf '\n==> Replaying MLflow tracking with scratch outputs\n'
-  python - <<'PY'
+  "$PYTHON" - <<'PY'
 from copy import deepcopy
 from pathlib import Path
 
@@ -82,28 +139,28 @@ if [[ "$clean_mlflow" == "1" ]]; then
   rm -rf mlruns
 fi
 
-run dvc status
-run dvc repro
-run make lint
-run mypy src
-run pytest tests/ --cov=mlops_crew --cov-report=xml
-run python scripts/profile_predict.py --output-dir reports/profiling/scratch/verify_predict
+run_dvc status
+run_dvc repro
+run_lint
+run "$PYTHON" -m mypy src
+run "$PYTHON" -m pytest tests/ --cov=mlops_crew --cov-report=xml
+run "$PYTHON" scripts/profile_predict.py --output-dir reports/profiling/scratch/verify_predict
 
 if [[ "$include_slow_profile" == "1" ]]; then
-  run python scripts/profile_train.py --output-dir reports/profiling/scratch/verify_train
+  run "$PYTHON" scripts/profile_train.py --output-dir reports/profiling/scratch/verify_train
 fi
 
 if [[ "$replay_mlflow" == "1" ]]; then
   run_mlflow_replay
 fi
 
-run dvc status
+run_dvc status
 
 if [[ "$check_remote" == "1" ]]; then
-  run dvc status -c
+  run_dvc status -c
 fi
 
-python - <<'PY'
+"$PYTHON" - <<'PY'
 import json
 from pathlib import Path
 

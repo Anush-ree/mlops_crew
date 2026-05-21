@@ -1,9 +1,9 @@
 {
   "model_name": "logistic_regression",
-  "model_path": "models/logistic_regression.joblib",
+  "model_path": "models\\logistic_regression.joblib",
   "test": {
     "accuracy": 0.9875278848103833,
-    "average_precision": 0.9987049995091772,
+    "average_precision": 0.9987035634855097,
     "f1": 0.9880871670702179,
     "f2": 0.9903315989749165,
     "false_negative": 42.0,
@@ -12,15 +12,15 @@
     "false_positive_rate": 0.017164653528289893,
     "precision": 0.9843689695098418,
     "recall": 0.9918335601788839,
-    "roc_auc": 0.9986238050332229,
+    "roc_auc": 0.9986238874401073,
     "true_negative": 4638.0,
     "true_positive": 5101.0
   },
-  "test_prediction_path": "reports/predictions/logistic_regression_test_predictions.csv",
-  "val_prediction_path": "reports/predictions/logistic_regression_val_predictions.csv",
+  "test_prediction_path": "reports\\predictions\\logistic_regression_test_predictions.csv",
+  "val_prediction_path": "reports\\predictions\\logistic_regression_val_predictions.csv",
   "validation": {
     "accuracy": 0.9865125240847784,
-    "average_precision": 0.9987193150136726,
+    "average_precision": 0.998708651577534,
     "f1": 0.9870911385033485,
     "f2": 0.9881845388472152,
     "false_negative": 57.0,
@@ -29,7 +29,7 @@
     "false_positive_rate": 0.016105107014197925,
     "precision": 0.9852741716721566,
     "recall": 0.9889148191365228,
-    "roc_auc": 0.9986980477062158,
+    "roc_auc": 0.9986933083888637,
     "true_negative": 4643.0,
     "true_positive": 5085.0
   }

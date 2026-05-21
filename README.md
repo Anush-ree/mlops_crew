@@ -37,14 +37,38 @@ experiments with MLflow, and adds monitoring, profiling, and divergence reports.
 
 ## 5. Setup
 
-Bash:
+### Windows, macOS, and Linux
+
+We support **native Windows (PowerShell)**, **Git Bash**, **WSL**, and Unix
+shells. Graders on Windows can follow [docs/windows_setup.md](docs/windows_setup.md)
+for Chocolatey/`make`, AWS CLI, and verification without bash.
+
+**PowerShell (Windows — recommended):**
+
+```powershell
+git clone https://github.com/Anush-ree/mlops_crew.git
+cd mlops_crew
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt -r requirements_dev.txt
+pip install -e .
+aws configure          # region: us-east-2
+dvc pull
+.\scripts\verify_phase2.ps1
+```
+
+**Bash (Linux / macOS / WSL / Git Bash):**
+
 ```bash
 git clone https://github.com/Anush-ree/mlops_crew.git
 cd mlops_crew
-python -m venv .venv && source .venv/bin/activate
-make install            # installs runtime deps + the package in editable mode
+python -m venv .venv && source .venv/bin/activate   # Windows Git Bash: .venv/Scripts/activate
+make install            # or: pip install -r requirements.txt && pip install -e .
 make dev                # adds dev tools and pre-commit hooks
 ```
+
+`make` is optional on Windows; see [docs/windows_setup.md](docs/windows_setup.md)
+for direct `pip` / `dvc` / `pytest` equivalents.
 
 ### Data access (DVC + AWS S3)
 
@@ -74,7 +98,8 @@ make profile-train        # cProfile the training entrypoint
 make profile-predict      # cProfile saved-model inference
 make mlflow-ui            # open local MLflow UI on port 5001
 make repro      # reproduce the full DVC pipeline end to end
-scripts/verify_phase2.sh  # run DVC repro + CI checks + Phase 2 smoke checks
+scripts/verify_phase2.sh  # Bash: DVC repro + CI checks + Phase 2 smoke checks
+scripts/verify_phase2.ps1 # PowerShell (Windows): same checks as the .sh script
 scripts/verify_phase2.sh --replay-mlflow  # populate local MLflow from scratch outputs
 make test       # pytest
 make lint       # ruff check

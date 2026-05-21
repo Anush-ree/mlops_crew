@@ -1,6 +1,6 @@
 {
   "model_name": "dummy",
-  "model_path": "models/dummy.joblib",
+  "model_path": "models\\dummy.joblib",
   "test": {
     "accuracy": 0.521496653822754,
     "average_precision": 0.521496653822754,
@@ -16,8 +16,8 @@
     "true_negative": 0.0,
     "true_positive": 5143.0
   },
-  "test_prediction_path": "reports/predictions/dummy_test_predictions.csv",
-  "val_prediction_path": "reports/predictions/dummy_val_predictions.csv",
+  "test_prediction_path": "reports\\predictions\\dummy_test_predictions.csv",
+  "val_prediction_path": "reports\\predictions\\dummy_val_predictions.csv",
   "validation": {
     "accuracy": 0.5214481289930027,
     "average_precision": 0.5214481289930027,
