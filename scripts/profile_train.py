@@ -28,6 +28,12 @@ def _isolated_config(config: dict[str, Any], *, with_tracking: bool) -> dict[str
 def main() -> None:
     parser = argparse.ArgumentParser(description="Profile model training")
     parser.add_argument("--config", type=Path, default=CONFIG_PATH)
+    parser.add_argument(
+        "--output-dir",
+        type=Path,
+        default=None,
+        help="Directory for cProfile outputs. Defaults to reports.profiling_dir.",
+    )
     parser.add_argument("--sort", default="cumulative")
     parser.add_argument(
         "--with-tracking",
@@ -40,7 +46,11 @@ def main() -> None:
     args = parser.parse_args()
 
     config = load_project_config(args.config)
-    output_dir = resolve_project_path(config["reports"]["profiling_dir"])
+    output_dir = (
+        resolve_project_path(args.output_dir)
+        if args.output_dir is not None
+        else resolve_project_path(config["reports"]["profiling_dir"])
+    )
     output_dir.mkdir(parents=True, exist_ok=True)
     profile_path = output_dir / "train_model.prof"
     text_path = output_dir / "train_model_cprofile.txt"

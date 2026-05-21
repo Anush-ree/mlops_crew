@@ -85,7 +85,8 @@ outputs under `reports/profiling/scratch/` and disable MLflow tracking. This
 prevents profiling from creating duplicate experiment runs or dirtying the
 DVC-tracked model, prediction, metric, and monitoring outputs. Use
 `python scripts/profile_train.py --with-tracking` only when you explicitly want
-to profile MLflow logging overhead too.
+to profile MLflow logging overhead too. Use `--output-dir` to write profile
+summaries to ignored scratch space during verification.
 
 Generated artifacts:
 

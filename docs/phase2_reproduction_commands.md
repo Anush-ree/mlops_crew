@@ -25,7 +25,7 @@ dvc repro
 make lint
 mypy src
 pytest tests/ --cov=mlops_crew --cov-report=xml
-python scripts/profile_predict.py
+python scripts/profile_predict.py --output-dir reports/profiling/scratch/verify_predict
 dvc status
 ```
 
@@ -86,7 +86,8 @@ The profiling scripts write readable cProfile summaries to
 `reports/profiling/*_cprofile.txt`. They write temporary train/latency outputs
 under `reports/profiling/scratch/`, which is ignored, so profiling does not
 dirty DVC-tracked model, metric, prediction, monitoring, or MLflow artifacts by
-default.
+default. The verification script also writes its profile output to scratch so a
+clean worktree stays clean after verification.
 
 ## Expected final artifacts
 

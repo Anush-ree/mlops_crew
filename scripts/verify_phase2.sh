@@ -87,10 +87,10 @@ run dvc repro
 run make lint
 run mypy src
 run pytest tests/ --cov=mlops_crew --cov-report=xml
-run python scripts/profile_predict.py
+run python scripts/profile_predict.py --output-dir reports/profiling/scratch/verify_predict
 
 if [[ "$include_slow_profile" == "1" ]]; then
-  run python scripts/profile_train.py
+  run python scripts/profile_train.py --output-dir reports/profiling/scratch/verify_train
 fi
 
 if [[ "$replay_mlflow" == "1" ]]; then
