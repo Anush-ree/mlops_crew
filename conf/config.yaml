@@ -1,8 +1,0 @@
-defaults:
-  - data: default
-  - logging: default
-  - _self_
-
-project:
-  name: phishing_email_detection
-  version: "1.0"
