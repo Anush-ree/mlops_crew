@@ -5,8 +5,9 @@ Store all data files for the phishing_email_detection project here.
 ## Structure
 
 - **`raw/`** — Original, immutable data as received. Never modify files here.
-- **`interim/`** — Reproducible sampled or intermediate data used before cleaning.
+- **`interim/`** — Reproducible phase partitions and source manifest data.
 - **`processed/`** — Cleaned train/validation/test CSVs ready for modeling.
+- **`processed/transformer/`** — JSONL splits for later transformer fine-tuning.
 
 ## Best Practices
 

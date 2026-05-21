@@ -15,7 +15,9 @@ from typing import Any
 from sklearn.dummy import DummyClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
+from sklearn.naive_bayes import ComplementNB
 from sklearn.pipeline import Pipeline
+from sklearn.svm import LinearSVC
 
 
 def build_tfidf_vectorizer(config: dict[str, Any]) -> TfidfVectorizer:
@@ -48,6 +50,15 @@ def _build_estimator(model_name: str, config: dict[str, Any]) -> Any:
             random_state=seed,
             solver=model_config.get("solver", "liblinear"),
         )
+    if model_name == "linear_svc":
+        return LinearSVC(
+            C=float(model_config.get("C", 1.0)),
+            class_weight=model_config.get("class_weight", "balanced"),
+            max_iter=int(model_config.get("max_iter", 5000)),
+            random_state=seed,
+        )
+    if model_name == "complement_nb":
+        return ComplementNB(alpha=float(model_config.get("alpha", 0.5)))
 
     raise ValueError(f"Unsupported model: {model_name}")
 

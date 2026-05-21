@@ -1,64 +1,39 @@
-# Phase 2: Model Development
+# Phase 2: Model Development and Operations
 
-## Overview
-This phase focuses on building, training, and validating machine learning models.
+Phase 2 trains on an 80% reproducible sample, tracks experiments with MLflow,
+adds divergence and latency monitoring, and exports JSONL splits for later
+transformer fine-tuning.
 
-## Objectives
+## Implemented
 
-- [ ] Implement baseline model
-- [ ] Train and evaluate initial models
-- [ ] Hyperparameter tuning
-- [ ] Cross-validation and performance analysis
-- [ ] Model comparison and selection
+- Deterministic 60/20/20 phase partitioning.
+- Source-block manifest for source-level divergence reporting.
+- TF-IDF experiments: dummy, Logistic Regression, Linear SVC, Complement NB.
+- MLflow tracking for params, metrics, models, and prediction artifacts.
+- Resource usage, inference latency, and divergence reports.
+- cProfile scripts for training and prediction.
+- Model comparison CSV/JSON plus a generated comparison chart.
+- Transformer-ready JSONL train/validation/test export.
 
-## Deliverables
+## Best Model
 
-### 1. Model Implementation
-- Model architecture defined
-- Training pipeline implemented
-- Evaluation metrics chosen
-- Baseline performance established
+`linear_svc` is selected by validation F2.
 
-### 2. Experiment Tracking
-- All experiments logged and documented
-- MLflow experiment tracking configured
+| Metric | Validation | Test |
+| --- | ---: | ---: |
+| F2 | 0.9924 | 0.9912 |
+| Recall | 0.9930 | 0.9922 |
+| False negative rate | 0.0070 | 0.0078 |
 
-### 3. Performance Analysis
-- Model comparison results
-- Hyperparameter sensitivity analysis
-- Feature importance analysis
-- Error analysis and patterns
+## Commands
 
-### 4. Model Artifacts
-- Best model saved and versioned
-- Model evaluation report
-- Training curves and visualizations
-- Configuration documentation
+```bash
+make repro
+make mlflow-ui
+make divergence
+make latency
+make profile-train
+make profile-predict
+```
 
-## Model Selection
-
-*To be filled in during Phase 2*
-
-### Chosen Model
-- Model Type: 
-- Best Hyperparameters: 
-- Performance Metrics: 
-
-## Key Results
-
-*To be filled in during Phase 2*
-
-## Challenges and Solutions
-
-*To be filled in during Phase 2*
-
-## Next Steps
-
-Move to Phase 3 once model is selected and meets performance requirements.
-
-## Status
-
-- Start Date: 
-- Estimated Completion: 
-- Actual Completion: 
-- Status: Not Started
+See the root [PHASE2.md](../PHASE2.md) for the full deliverable details.

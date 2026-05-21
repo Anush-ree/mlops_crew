@@ -5,6 +5,7 @@
 project:
   name: phishing_email_detection
   seed: 42
+  phase: 2
 
 data:
   raw_dir: data/raw/archive
@@ -13,24 +14,45 @@ data:
   label_column: label
 
   interim_dir: data/interim
-  sampled_file: phishing_email_phase1_sample.csv
+  sampled_file: phishing_email_phase2_sample.csv
+  phase1_reference_file: phishing_email_phase1_reference.csv
+  phase2_increment_file: phishing_email_phase2_increment.csv
+  phase3_holdout_file: phishing_email_phase3_holdout.csv
+  source_manifest_file: source_manifest.csv
 
   processed_dir: data/processed
   cleaned_file: cleaned.csv
   train_file: train.csv
   val_file: val.csv
   test_file: test.csv
+  transformer_dir: transformer
 
   sample:
-    fraction: 0.60
+    fraction: 0.80
     random_state: 42
     stratify: true
+    phase1_fraction: 0.60
+    phase2_increment_fraction: 0.20
+    phase3_holdout_fraction: 0.20
   split:
     train_size: 0.70
     val_size: 0.15
     test_size: 0.15
     random_state: 42
     stratify: true
+  source_order:
+    - name: enron
+      file: Enron.csv
+    - name: ling
+      file: Ling.csv
+    - name: ceas_08
+      file: CEAS_08.csv
+    - name: spamassassin
+      file: SpamAssasin.csv
+    - name: nigerian_fraud
+      file: Nigerian_Fraud.csv
+    - name: nazario
+      file: Nazario.csv
 
 cleaning:
   lowercase: true
@@ -50,7 +72,7 @@ features:
 
 modeling:
   output_dir: models
-  models: [dummy, logistic_regression]
+  models: [dummy, logistic_regression, linear_svc, complement_nb]
   primary_metric: f2
   positive_label: 1
   dummy:
@@ -60,7 +82,27 @@ modeling:
     class_weight: balanced
     max_iter: 1000
     solver: liblinear
+  linear_svc:
+    C: 1.0
+    class_weight: balanced
+    max_iter: 5000
+  complement_nb:
+    alpha: 0.5
 
 reports:
   metrics_dir: reports/metrics
   predictions_dir: reports/predictions
+  divergence_dir: reports/divergence
+  monitoring_dir: reports/monitoring
+  profiling_dir: reports/profiling
+
+tracking:
+  enabled: true
+  experiment_name: phishing-email-phase2
+  tracking_uri: file:./mlruns
+  log_models: true
+  log_predictions: true
+
+monitoring:
+  resource_sample_seconds: 1.0
+  top_new_tokens: 50

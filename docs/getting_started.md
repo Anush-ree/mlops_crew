@@ -41,7 +41,7 @@ make test
 
 ### Data Processing
 
-Fetch DVC-tracked data from S3, then prepare the Phase 1 sample and splits:
+Fetch DVC-tracked data from S3, then prepare the Phase 2 sample and splits:
 
 ```bash
 dvc pull
@@ -56,7 +56,7 @@ python -m mlops_crew.data.make_dataset
 
 ### Model Training
 
-Train the configured baseline models:
+Train the configured models:
 
 ```bash
 make train
@@ -90,7 +90,7 @@ make test
 # Run tests with coverage
 pytest tests/ --cov=mlops_crew
 
-# Run the Phase 1 pipeline tests
+# Run the pipeline tests
 pytest tests/test_phase1_pipeline.py -v
 ```
 
@@ -127,9 +127,11 @@ mlops_crew/                  # Repository root
 │   └── mlops_crew/          # Importable package (src/ layout)
 │       ├── config.py                  # Repo paths + YAML config loader
 │       ├── logging_config.py
-│       ├── data/                      # sample, clean, split, validate
+│       ├── data/                      # sample, manifest, clean, split, export
 │       ├── models/                    # TF-IDF classifier pipeline factory
-│       ├── evaluation/                # Metrics
+│       ├── evaluation/                # Metrics and comparison plots
+│       ├── monitoring/                # Divergence, latency, resource usage
+│       ├── tracking/                  # MLflow helpers
 │       ├── utils/                     # seed, io
 │       ├── train_model.py
 │       └── predict_model.py
@@ -145,9 +147,10 @@ mlops_crew/                  # Repository root
 
 ## Configuration
 
-Edit `configs/config.yaml` to change paths, the 60% sample fraction, split
-ratios, TF-IDF settings, or the list of models to train. Re-run `make repro`
-after config changes so DVC updates the pipeline outputs.
+Edit `configs/config.yaml` to change paths, the 60/20/20 phase partitioning,
+split ratios, TF-IDF settings, tracking settings, monitoring outputs, or the
+list of models to train. Re-run `make repro` after config changes so DVC
+updates the pipeline outputs.
 
 ## Troubleshooting
 
@@ -175,12 +178,12 @@ make format
 ## Next Steps
 
 1. Review the [documentation](index.md)
-2. Start with the root [Phase 1 deliverable](../PHASE1.md)
+2. Start with the root [Phase 2 deliverable](../PHASE2.md)
 3. Check the [API Reference](api.md)
 
 ## Support
 
 For issues and questions:
 - Check existing [documentation](index.md)
-- Review the root [Phase deliverable](../PHASE1.md)
+- Review the root [Phase deliverable](../PHASE2.md)
 - Contact kirtan (kparekh2@depaul.edu)

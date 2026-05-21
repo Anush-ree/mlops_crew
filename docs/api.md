@@ -29,11 +29,13 @@ logger = get_logger(__name__)
 
 | Function | Purpose |
 |---|---|
-| `sample.run(config)` | Create the configured 60% raw-data sample |
+| `sample.run(config)` | Create Phase 1 reference, Phase 2 increment, Phase 2 sample, and Phase 3 holdout CSVs |
+| `source_manifest.run(config)` | Create source-block metadata for divergence monitoring |
 | `clean.run(config)` | Normalize schema, labels, and email text |
 | `split.run(config)` | Create deterministic train/validation/test splits |
+| `export_transformer_dataset.export_transformer_dataset(config)` | Export HF-compatible JSONL train/validation/test splits |
 | `validate.run(config)` | Sanity-check cleaned and split CSVs |
-| `make_dataset.process_data(config_path)` | Run sample → clean → split → validate |
+| `make_dataset.process_data(config_path)` | Run sample → source manifest → clean → split → transformer export → validate |
 
 CLI: `python -m mlops_crew.data.make_dataset`
 
@@ -55,6 +57,22 @@ from mlops_crew.evaluation import binary_classification_report
 
 metrics = binary_classification_report(y_true, y_pred, y_score)
 ```
+
+CLI: `python -m mlops_crew.evaluation.plot_model_comparison`
+
+## `mlops_crew.monitoring`
+
+```bash
+python -m mlops_crew.monitoring.inference_latency
+python -m mlops_crew.monitoring.divergence
+```
+
+These modules write Phase 2 latency and divergence reports under `reports/`.
+
+## `mlops_crew.tracking`
+
+`mlops_crew.tracking.mlflow_tracking` wraps MLflow setup, nested model runs,
+metric logging, and artifact logging for `train_model.py`.
 
 ## `mlops_crew.utils`
 
