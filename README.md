@@ -108,8 +108,8 @@ src/mlops_crew/
   models/text_classifiers.py   TF-IDF + classifier sklearn pipeline factory
   evaluation/metrics.py        recall-oriented binary metrics (F2 + confusion)
   utils/                       seed + JSON helpers
-  train_model.py               train every configured model, save artifacts
-  predict_model.py             batch inference with the saved pipeline
+  models/train_model.py        train every configured model, save artifacts
+  models/predict_model.py      batch inference with the saved pipeline
 dvc.yaml                       DVC stages (sample, clean, split, train)
 ```
 

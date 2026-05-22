@@ -73,7 +73,7 @@ make predict
 With custom paths:
 
 ```bash
-python -m mlops_crew.predict_model \
+python -m mlops_crew.models.predict_model \
   --model-path models/best_model.joblib \
   --input data/processed/test.csv \
   --output reports/predictions/manual_predictions.csv
@@ -131,8 +131,9 @@ mlops_crew/                  # Repository root
 │       ├── models/                    # TF-IDF classifier pipeline factory
 │       ├── evaluation/                # Metrics
 │       ├── utils/                     # seed, io
-│       ├── train_model.py
-│       └── predict_model.py
+│       ├── models/                    # CLI scripts: train_model.py, predict_model.py
+│       │   ├── train_model.py
+│       │   └── predict_model.py
 ├── tests/                             # Unit tests
 ├── data/                              # raw/ and processed/
 ├── models/                            # Trained model artifacts
