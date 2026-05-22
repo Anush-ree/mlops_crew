@@ -6,12 +6,28 @@ way whether code runs from the repo root, a notebook, or a DVC stage.
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from typing import Any
 
 import yaml
 
-PROJECT_ROOT: Path = Path(__file__).resolve().parents[2]
+
+def _detect_project_root() -> Path:
+    env_root = os.getenv("MLOPS_CREW_PROJECT_ROOT")
+    if env_root:
+        candidate = Path(env_root).expanduser().resolve()
+        if (candidate / "pyproject.toml").exists() and (candidate / "configs").exists():
+            return candidate
+
+    for candidate in Path(__file__).resolve().parents:
+        if (candidate / "pyproject.toml").exists() and (candidate / "configs").exists():
+            return candidate
+
+    return Path(__file__).resolve().parents[2]
+
+
+PROJECT_ROOT: Path = _detect_project_root()
 CONFIG_PATH: Path = PROJECT_ROOT / "configs" / "config.yaml"
 
 
