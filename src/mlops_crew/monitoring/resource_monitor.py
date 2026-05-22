@@ -14,6 +14,8 @@ import psutil
 
 @dataclass(frozen=True)
 class ResourceSample:
+    """One CPU and memory observation taken during background sampling."""
+
     timestamp: float
     process_cpu_percent: float
     system_cpu_percent: float

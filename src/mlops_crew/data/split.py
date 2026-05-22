@@ -22,6 +22,7 @@ logger = get_logger(__name__)
 
 
 def split_paths(config: dict[str, Any]) -> dict[str, Path]:
+    """Resolve cleaned input and train/val/test output paths."""
     data_config = config["data"]
     processed_dir = resolve_project_path(data_config["processed_dir"])
     return {
@@ -70,6 +71,7 @@ def split_data(
 
 
 def run(config: dict[str, Any]) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    """Split cleaned data into train, validation, and test CSVs."""
     paths = split_paths(config)
     if not paths["cleaned"].exists():
         raise FileNotFoundError(f"Cleaned data not found at {paths['cleaned']}. Run `make data`.")
@@ -99,6 +101,7 @@ def run(config: dict[str, Any]) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFram
 
 
 def main() -> None:
+    """CLI entrypoint for the DVC ``split`` stage."""
     parser = argparse.ArgumentParser(description="Create train/val/test splits")
     parser.add_argument("--config", type=Path, default=CONFIG_PATH)
     args = parser.parse_args()

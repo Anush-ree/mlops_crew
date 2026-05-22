@@ -21,6 +21,7 @@ from sklearn.svm import LinearSVC
 
 
 def build_tfidf_vectorizer(config: dict[str, Any]) -> TfidfVectorizer:
+    """Build the shared TF-IDF vectorizer from ``features.tfidf`` in config."""
     cfg = config["features"]["tfidf"]
     return TfidfVectorizer(
         max_features=int(cfg["max_features"]),

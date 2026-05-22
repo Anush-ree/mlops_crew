@@ -19,10 +19,12 @@ _MLFLOW_METRIC_TYPES = (int, float)
 
 
 def tracking_enabled(config: dict[str, Any]) -> bool:
+    """Return whether MLflow logging is turned on in the project config."""
     return bool(config.get("tracking", {}).get("enabled", False))
 
 
 def setup_mlflow(config: dict[str, Any]) -> None:
+    """Configure tracking URI and experiment name from config."""
     tracking = config.get("tracking", {})
     mlflow.set_tracking_uri(tracking.get("tracking_uri", "file:./mlruns"))
     mlflow.set_experiment(tracking.get("experiment_name", config["project"]["name"]))
@@ -77,6 +79,7 @@ def model_run(config: dict[str, Any], model_name: str) -> Iterator[Any]:
 
 
 def log_dataset_info(frames: dict[str, pd.DataFrame]) -> None:
+    """Log row counts and per-label counts for each training split."""
     for split_name, frame in frames.items():
         mlflow.log_metric(f"{split_name}_rows", len(frame))
         for label, count in frame["label"].value_counts().items():
@@ -84,6 +87,7 @@ def log_dataset_info(frames: dict[str, pd.DataFrame]) -> None:
 
 
 def log_metrics(metrics: dict[str, Any]) -> None:
+    """Log validation and test metrics from a model training result dict."""
     for split_name in ("validation", "test"):
         for metric_name, value in metrics[split_name].items():
             if isinstance(value, _MLFLOW_METRIC_TYPES):
@@ -91,6 +95,7 @@ def log_metrics(metrics: dict[str, Any]) -> None:
 
 
 def log_artifacts(paths: list[Path], artifact_path: str) -> None:
+    """Upload existing local files into the active MLflow run."""
     for path in paths:
         resolved = resolve_project_path(path)
         if resolved.exists():

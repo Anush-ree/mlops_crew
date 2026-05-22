@@ -212,6 +212,7 @@ def train(config: dict[str, Any]) -> dict[str, Any]:
 
 
 def main() -> None:
+    """CLI entrypoint for the DVC ``train`` stage."""
     parser = argparse.ArgumentParser(description="Train phishing email classifiers")
     parser.add_argument("--config", type=Path, default=CONFIG_PATH)
     args = parser.parse_args()

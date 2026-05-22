@@ -32,7 +32,7 @@ The script runs:
 
 ```bash
 dvc status
-dvc repro
+dvc repro   # includes validate -> data/processed/validation_report.json
 make lint
 mypy src
 pytest tests/ --cov=mlops_crew --cov-report=xml

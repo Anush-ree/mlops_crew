@@ -27,6 +27,7 @@ VALIDATION_REPORT_FILE = "validation_report.json"
 
 
 def dataset_paths(config: dict[str, Any]) -> dict[str, Path]:
+    """Resolve cleaned and split CSV paths checked by validation."""
     data_config = config["data"]
     processed_dir = resolve_project_path(data_config["processed_dir"])
     return {
@@ -111,6 +112,7 @@ def _build_validation_report(config: dict[str, Any]) -> dict[str, Any]:
 
 
 def run(config: dict[str, Any]) -> bool:
+    """Validate splits; on success write ``validation_report.json`` for DVC."""
     min_length = int(config.get("cleaning", {}).get("min_text_length", 3))
     paths = dataset_paths(config)
     passed = all(validate_dataset(path, name, min_length) for name, path in paths.items())
@@ -121,6 +123,7 @@ def run(config: dict[str, Any]) -> bool:
 
 
 def main() -> None:
+    """CLI entrypoint for the DVC ``validate`` stage."""
     parser = argparse.ArgumentParser(description="Validate cleaned and split datasets")
     parser.add_argument("--config", type=Path, default=CONFIG_PATH)
     args = parser.parse_args()

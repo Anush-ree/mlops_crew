@@ -25,6 +25,7 @@ logger = get_logger(__name__)
 
 
 def source_manifest_paths(config: dict[str, Any]) -> dict[str, Path]:
+    """Resolve raw source CSVs, combined file, and manifest output paths."""
     data_config = config["data"]
     interim_dir = resolve_project_path(data_config["interim_dir"])
     raw_dir = resolve_project_path(data_config["raw_dir"])
@@ -93,6 +94,7 @@ def build_source_manifest(config: dict[str, Any]) -> pd.DataFrame:
 
 
 def run(config: dict[str, Any]) -> pd.DataFrame:
+    """Build and write the row-level source manifest used by divergence."""
     paths = source_manifest_paths(config)
     manifest = build_source_manifest(config)
     paths["manifest"].parent.mkdir(parents=True, exist_ok=True)
@@ -117,6 +119,7 @@ def run(config: dict[str, Any]) -> pd.DataFrame:
 
 
 def main() -> None:
+    """CLI entrypoint for the DVC ``source_manifest`` stage."""
     parser = argparse.ArgumentParser(description="Build source metadata for raw rows")
     parser.add_argument("--config", type=Path, default=CONFIG_PATH)
     args = parser.parse_args()

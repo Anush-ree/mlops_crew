@@ -16,6 +16,7 @@ logger = get_logger(__name__)
 
 
 def predict(model_path: Path, input_path: Path, output_path: Path) -> None:
+    """Score ``input_path`` and write predictions (and probabilities when available)."""
     logger.info("Loading model from %s", model_path)
     model = joblib.load(model_path)
 
@@ -34,6 +35,7 @@ def predict(model_path: Path, input_path: Path, output_path: Path) -> None:
 
 
 def main() -> None:
+    """CLI entrypoint for batch inference with the saved best model."""
     parser = argparse.ArgumentParser(
         description="Score a CSV file with the trained phishing classifier"
     )

@@ -23,6 +23,7 @@ logger = get_logger(__name__)
 
 
 def sample_paths(config: dict[str, Any]) -> dict[str, Path]:
+    """Resolve raw input, phase partition CSVs, and sample summary paths."""
     data_config = config["data"]
     raw_path = resolve_project_path(data_config["raw_dir"]) / data_config["raw_file"]
     interim_dir = resolve_project_path(data_config["interim_dir"])
@@ -130,6 +131,7 @@ def partition_phase_data(data: pd.DataFrame, config: dict[str, Any]) -> dict[str
 
 
 def run(config: dict[str, Any]) -> pd.DataFrame:
+    """Partition the raw CSV and write the 80% Phase 2 modeling sample."""
     paths = sample_paths(config)
     if not paths["raw"].exists():
         raise FileNotFoundError(
@@ -174,6 +176,7 @@ def run(config: dict[str, Any]) -> pd.DataFrame:
 
 
 def main() -> None:
+    """CLI entrypoint for the DVC ``sample`` stage."""
     parser = argparse.ArgumentParser(description="Sample the raw phishing email CSV")
     parser.add_argument("--config", type=Path, default=CONFIG_PATH)
     args = parser.parse_args()

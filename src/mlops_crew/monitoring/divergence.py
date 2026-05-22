@@ -23,6 +23,7 @@ logger = get_logger(__name__)
 
 
 def divergence_paths(config: dict[str, Any]) -> dict[str, Path]:
+    """Resolve phase partitions, model, and divergence report output paths."""
     data_config = config["data"]
     interim_dir = resolve_project_path(data_config["interim_dir"])
     reports_dir = resolve_project_path(config["reports"]["divergence_dir"])
@@ -117,6 +118,7 @@ def _prediction_distribution(model: Any, frame: pd.DataFrame) -> dict[str, int]:
 
 
 def build_divergence_report(config: dict[str, Any]) -> dict[str, Any]:
+    """Compare Phase 1 reference vs Phase 2 increment label, source, and text drift."""
     paths = divergence_paths(config)
     phase1 = pd.read_csv(paths["phase1"])
     phase2_increment = pd.read_csv(paths["phase2_increment"])
@@ -177,6 +179,7 @@ def _format_distribution(distribution: dict[str, int]) -> str:
 
 
 def write_summary(report: dict[str, Any], path: Path) -> None:
+    """Write a human-readable Markdown summary of the divergence JSON report."""
     path.parent.mkdir(parents=True, exist_ok=True)
     lines = [
         "# Phase 2 Divergence Summary",
@@ -210,6 +213,7 @@ def write_summary(report: dict[str, Any], path: Path) -> None:
 
 
 def run(config: dict[str, Any]) -> dict[str, Any]:
+    """Build divergence JSON and Markdown reports for the DVC stage."""
     paths = divergence_paths(config)
     report = build_divergence_report(config)
     save_json(report, paths["report_json"])
@@ -219,6 +223,7 @@ def run(config: dict[str, Any]) -> dict[str, Any]:
 
 
 def main() -> None:
+    """CLI entrypoint for the DVC ``divergence`` stage."""
     parser = argparse.ArgumentParser(description="Build Phase 2 divergence report")
     parser.add_argument("--config", type=Path, default=CONFIG_PATH)
     args = parser.parse_args()

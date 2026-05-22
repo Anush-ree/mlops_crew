@@ -19,6 +19,7 @@ logger = get_logger(__name__)
 
 
 def plot_paths(config: dict[str, Any]) -> dict[str, Path]:
+    """Resolve model comparison CSV input and PNG output paths."""
     metrics_dir = resolve_project_path(config["reports"]["metrics_dir"])
     return {
         "comparison": metrics_dir / "model_comparison.csv",
@@ -27,6 +28,7 @@ def plot_paths(config: dict[str, Any]) -> dict[str, Path]:
 
 
 def plot_model_comparison(config: dict[str, Any]) -> Path:
+    """Build F2 and false-negative-rate bar charts from ``model_comparison.csv``."""
     paths = plot_paths(config)
     metrics = pd.read_csv(paths["comparison"])
     metrics = metrics.sort_values("val_f2", ascending=False)
@@ -57,6 +59,7 @@ def plot_model_comparison(config: dict[str, Any]) -> Path:
 
 
 def main() -> None:
+    """CLI entrypoint for the DVC ``plot_model_comparison`` stage."""
     parser = argparse.ArgumentParser(description="Plot model comparison metrics")
     parser.add_argument("--config", type=Path, default=CONFIG_PATH)
     args = parser.parse_args()

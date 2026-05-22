@@ -87,7 +87,7 @@ dvc pull               # download raw + processed data
 
 Bash:
 ```bash
-make data       # sample, source manifest, clean, split, transformer export, validate
+make data       # sample, source manifest, clean, split, validate, transformer export
 make train      # train all configured models, write metrics + predictions
 make predict    # score the test split with the saved best model
 make source-manifest      # build raw source metadata for divergence analysis
@@ -128,37 +128,25 @@ sample + source_manifest + train -> divergence
 
 ## 6. Repo layout
 
-Data is versioned with DVC and stored on AWS S3. Request AWS credentials then run.
-Bash:
-```bash
-git pull                 # get latest config
-uv pip install dvc-s3   # install DVC S3 plugin
-aws configure           # enter credentials + region: us-east-2
-dvc pull                # download data from S3
+See **§5 Setup → Data access** for `dvc pull`. Key paths:
+
 ```
-File Structure:
-```
-configs/config.yaml            single source of truth for the pipeline
+configs/config.yaml                 single source of truth for the pipeline
+dvc.yaml                            DVC stages (sample → … → train → monitoring)
+data/processed/validation_report.json   DVC validate artifact (row/label snapshot)
 src/mlops_crew/
-  config.py                    project paths + YAML loader
-  logging_config.py            shared logger setup
   data/
-    sample.py                  stage 1: stratified sample of the raw CSV
-    clean.py                   stage 2: schema, labels, text cleaning
-    split.py                   stage 3: stratified train/val/test split
-    validate.py                stage 4: post-split sanity checks
-    source_manifest.py         source-block metadata for divergence monitoring
-    export_transformer_dataset.py
-    make_dataset.py            run all four stages locally
-  models/text_classifiers.py   TF-IDF + classifier sklearn pipeline factory
-  evaluation/metrics.py        recall-oriented binary metrics (F2 + confusion)
-  evaluation/plot_model_comparison.py
-  monitoring/                  resource usage, latency, divergence reports
-  tracking/                    MLflow wrapper
-  utils/                       seed + JSON helpers
-  train_model.py               train every configured model, save artifacts
-  predict_model.py             batch inference with the saved pipeline
-dvc.yaml                       DVC stages for data, training, monitoring, reports
+    sample.py                       phase partitions + 80% modeling sample
+    source_manifest.py              raw source-block metadata (divergence)
+    clean.py, split.py, validate.py
+    export_transformer_dataset.py   JSONL export for future transformer work
+    make_dataset.py                 local equivalent of data stages through validate
+  models/text_classifiers.py        TF-IDF + classifier sklearn pipelines
+  train_model.py, predict_model.py
+  evaluation/, monitoring/, tracking/
+scripts/verify_phase2.ps1|.sh       grader verification (Windows + Bash)
+PHASE2.md                           Phase 2 deliverable narrative
+docs/windows_setup.md               Windows reproduction guide
 ```
 
 ## 7. Contributions
@@ -169,8 +157,9 @@ dvc.yaml                       DVC stages for data, training, monitoring, report
   data documentation
 - **Krishna Kalakonda** — model evaluation, baseline metrics, architecture
   diagram, code organization
-- **Kirtankumar Parekh** — model training, experiment tracking, Makefile,
-  contribution guidelines, repo maintenance
+- **Kirtankumar Parekh** — Phase 2 integration review, Windows verification
+  (`verify_phase2.ps1`, `docs/windows_setup.md`), DVC validate stage, docs and
+  docstrings, repo maintenance
 
 ## 8. References
 
