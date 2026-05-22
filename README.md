@@ -98,6 +98,8 @@ make profile-train        # cProfile the training entrypoint
 make profile-predict      # cProfile saved-model inference
 make hydra-demo           # run two Hydra-configured MLflow experiments
 make mlflow-ui            # open local MLflow UI on port 5001
+make docker-train         # build/run the training container with host-mounted artifacts
+make docker-predict       # build/run the prediction container with host-mounted artifacts
 make repro      # reproduce the full DVC pipeline end to end
 scripts/verify_phase2.sh  # Bash: DVC repro + CI checks + Phase 2 smoke checks
 scripts/verify_phase2.ps1 # PowerShell (Windows): same checks as the .sh script
@@ -127,6 +129,28 @@ sample -> clean -> split -> validate -> transformer_dataset
 sample + source_manifest + train -> divergence
 ```
 
+### Docker training and prediction
+
+Phase 2 includes separate containers for training and prediction:
+
+```bash
+docker build -f train.dockerfile . -t train:latest
+docker build -f predict.dockerfile . -t predict:latest
+```
+
+After `dvc pull` has restored the data and model artifacts, the Make targets run
+the containers with the required host mounts:
+
+```bash
+make docker-train
+make docker-predict
+```
+
+`make docker-train` mounts `data/`, `configs/`, `models/`, `reports/`, `logs/`,
+and `mlruns/` so training outputs are preserved on the host. `make
+docker-predict` mounts `data/`, `configs/`, `models/`, and `reports/`, and
+writes `reports/predictions/batch_predictions.csv`.
+
 ## 6. Repo layout
 
 See **§5 Setup → Data access** for `dvc pull`. Key paths:
@@ -149,6 +173,8 @@ src/mlops_crew/
   train_hydra.py                    Hydra experiment wrapper
   evaluation/, monitoring/, tracking/
 scripts/verify_phase2.ps1|.sh       grader verification (Windows + Bash)
+train.dockerfile                    containerized model training
+predict.dockerfile                  containerized batch prediction
 PHASE2.md                           Phase 2 deliverable narrative
 docs/windows_setup.md               Windows reproduction guide
 ```

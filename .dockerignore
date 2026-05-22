@@ -11,3 +11,10 @@ __pycache__
 notebooks/
 docs/
 reports/
+data/
+models/
+logs/
+mlruns/
+outputs/
+coverage.xml
+.coverage

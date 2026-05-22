@@ -23,8 +23,6 @@ Implemented in this phase:
 - transformer-ready JSONL dataset export for future fine-tuning
 - Docker containerization
 
-<Add here: Modify the commands or add any additonal instructions if changed for DOCKER>
-
 ## How to Reproduce
 
 Run these commands from the repository root.
@@ -105,6 +103,33 @@ Transformer JSONL rows: test=9862, train=46020, val=9861
 ## Optional Commands
 
 Run these only when the related evidence needs to be regenerated.
+
+### Docker Training and Prediction
+
+Build both images:
+
+```bash
+docker build -f train.dockerfile . -t train:latest
+docker build -f predict.dockerfile . -t predict:latest
+```
+
+Run the containerized training and prediction flows:
+
+```bash
+make docker-train
+make docker-predict
+```
+
+`make docker-train` expects DVC data artifacts to already exist from `dvc pull`.
+It mounts `data/`, `configs/`, `models/`, `reports/`, `logs/`, and `mlruns/`
+so training outputs are saved back to the host.
+
+`make docker-predict` expects `models/best_model.joblib` and
+`data/processed/test.csv` to exist. It writes:
+
+```text
+reports/predictions/batch_predictions.csv
+```
 
 ### MLflow UI
 
@@ -211,6 +236,9 @@ to be reviewed when new data is added.
 
 | Output | Path |
 | --- | --- |
+| Training Dockerfile | `train.dockerfile` |
+| Prediction Dockerfile | `predict.dockerfile` |
+| Docker ignore file | `.dockerignore` |
 | DVC pipeline | `dvc.yaml`, `dvc.lock` |
 | Phase partitions | `data/interim/phishing_email_phase*.csv` |
 | Source manifest | `data/interim/source_manifest.csv` |
@@ -246,7 +274,8 @@ for future use.
 The JSONL records contain `text` and `label` fields and will be used with
 Hugging Face Datasets in a next transformer experiment.
 
+## Phase 3 Notes
 
-## Remaining Items
-
-<Add here: final Docker/containerization results once available.>
+Phase 3 should use the reserved 20% holdout only after the final model family is
+selected. Transformer fine-tuning can start from the JSONL dataset prepared in
+this phase.

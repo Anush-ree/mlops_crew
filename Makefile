@@ -42,18 +42,36 @@ plot:
 latency:
 	python -m mlops_crew.monitoring.inference_latency
 
+divergence:
+	python -m mlops_crew.monitoring.divergence
+
+profile-train:
+	python scripts/profile_train.py
+
+profile-predict:
+	python scripts/profile_predict.py
+
+mlflow-ui:
+	mlflow ui --backend-store-uri ./mlruns --port 5001
+
 # Build and run the training image with host-mounted DVC data
 docker-train:
 	docker build -f train.dockerfile . -t train:latest
+	mkdir -p models reports logs mlruns
 	docker run --rm \
 		-e MLOPS_CREW_PROJECT_ROOT=/app \
 		-v "$$(pwd)/data:/app/data" \
 		-v "$$(pwd)/configs:/app/configs" \
+		-v "$$(pwd)/models:/app/models" \
+		-v "$$(pwd)/reports:/app/reports" \
+		-v "$$(pwd)/logs:/app/logs" \
+		-v "$$(pwd)/mlruns:/app/mlruns" \
 		train:latest
 
 # Build and run the prediction image with host-mounted DVC data and saved models
 docker-predict:
 	docker build -f predict.dockerfile . -t predict:latest
+	mkdir -p reports/predictions
 	docker run --rm \
 		-e MLOPS_CREW_PROJECT_ROOT=/app \
 		-v "$$(pwd)/data:/app/data" \
