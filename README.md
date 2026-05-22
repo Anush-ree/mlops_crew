@@ -43,7 +43,7 @@ We support **native Windows (PowerShell)**, **Git Bash**, **WSL**, and Unix
 shells. Graders on Windows can follow [docs/windows_setup.md](docs/windows_setup.md)
 for Chocolatey/`make`, AWS CLI, and verification without bash.
 
-**PowerShell (Windows — recommended):**
+**PowerShell (Windows):**
 
 ```powershell
 git clone https://github.com/Anush-ree/mlops_crew.git
