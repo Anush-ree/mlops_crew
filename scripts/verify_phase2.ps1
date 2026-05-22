@@ -52,7 +52,7 @@ function Invoke-Lint {
     if (Get-Command make -ErrorAction SilentlyContinue) {
         make lint
     } else {
-        ruff check .
+        ruff check --no-cache .
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
         ruff format --check .
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
@@ -67,9 +67,11 @@ from copy import deepcopy
 from pathlib import Path
 
 from mlops_crew.config import CONFIG_PATH, load_project_config
-from mlops_crew.train_model import train
+from mlops_crew.logging_config import setup_logging_from_config
+from mlops_crew.models.train_model import train
 
 config = deepcopy(load_project_config(CONFIG_PATH))
+setup_logging_from_config(config)
 scratch_root = Path(config['reports']['profiling_dir']) / 'scratch' / 'mlflow_replay'
 config['modeling']['output_dir'] = str(scratch_root / 'models')
 config['reports']['metrics_dir'] = str(scratch_root / 'metrics')

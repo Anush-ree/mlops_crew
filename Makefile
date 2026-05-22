@@ -62,7 +62,7 @@ test:
 	pytest tests/
 
 lint:
-	ruff check .
+	ruff check --no-cache .
 	ruff format --check .
 
 format:
