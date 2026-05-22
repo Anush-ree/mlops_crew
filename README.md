@@ -37,14 +37,38 @@ experiments with MLflow, and adds monitoring, profiling, and divergence reports.
 
 ## 5. Setup
 
-Bash:
+### Windows, macOS, and Linux
+
+We support **native Windows (PowerShell)**, **Git Bash**, **WSL**, and Unix
+shells. Graders on Windows can follow [docs/windows_setup.md](docs/windows_setup.md)
+for Chocolatey/`make`, AWS CLI, and verification without bash.
+
+**PowerShell (Windows — recommended):**
+
+```powershell
+git clone https://github.com/Anush-ree/mlops_crew.git
+cd mlops_crew
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt -r requirements_dev.txt
+pip install -e .
+aws configure          # region: us-east-2
+dvc pull
+.\scripts\verify_phase2.ps1
+```
+
+**Bash (Linux / macOS / WSL / Git Bash):**
+
 ```bash
 git clone https://github.com/Anush-ree/mlops_crew.git
 cd mlops_crew
-python -m venv .venv && source .venv/bin/activate
-make install            # installs runtime deps + the package in editable mode
+python -m venv .venv && source .venv/bin/activate   # Windows Git Bash: .venv/Scripts/activate
+make install            # or: pip install -r requirements.txt && pip install -e .
 make dev                # adds dev tools and pre-commit hooks
 ```
+
+`make` is optional on Windows; see [docs/windows_setup.md](docs/windows_setup.md)
+for direct `pip` / `dvc` / `pytest` equivalents.
 
 ### Data access (DVC + AWS S3)
 
@@ -63,7 +87,7 @@ dvc pull               # download raw + processed data
 
 Bash:
 ```bash
-make data       # sample, source manifest, clean, split, transformer export, validate
+make data       # sample, source manifest, clean, split, validate, transformer export
 make train      # train all configured models, write metrics + predictions
 make predict    # score the test split with the saved best model
 make source-manifest      # build raw source metadata for divergence analysis
@@ -75,7 +99,8 @@ make profile-predict      # cProfile saved-model inference
 make hydra-demo           # run two Hydra-configured MLflow experiments
 make mlflow-ui            # open local MLflow UI on port 5001
 make repro      # reproduce the full DVC pipeline end to end
-scripts/verify_phase2.sh  # run DVC repro + CI checks + Phase 2 smoke checks
+scripts/verify_phase2.sh  # Bash: DVC repro + CI checks + Phase 2 smoke checks
+scripts/verify_phase2.ps1 # PowerShell (Windows): same checks as the .sh script
 scripts/verify_phase2.sh --replay-mlflow  # populate local MLflow from scratch outputs
 make test       # pytest
 make lint       # ruff check
@@ -96,47 +121,34 @@ This fits the configured dummy and TF-IDF model family, writes artifacts under
 `models/` and `reports/`, and runs the full Phase 2 DVC graph:
 
 ```text
-sample -> clean -> split -> transformer_dataset
-                 -> train -> inference_latency
+sample -> clean -> split -> validate -> transformer_dataset
+                              -> train -> inference_latency
                           -> plot_model_comparison
 sample + source_manifest + train -> divergence
 ```
 
 ## 6. Repo layout
 
-Data is versioned with DVC and stored on AWS S3. Request AWS credentials then run.
-Bash:
-```bash
-git pull                 # get latest config
-uv pip install dvc-s3   # install DVC S3 plugin
-aws configure           # enter credentials + region: us-east-2
-dvc pull                # download data from S3
+See **§5 Setup → Data access** for `dvc pull`. Key paths:
+
 ```
-File Structure:
-```
-configs/config.yaml            single source of truth for the pipeline
-conf/                          Hydra experiment overrides
+configs/config.yaml                 single source of truth for the pipeline
+conf/                               Hydra experiment overrides
+dvc.yaml                            DVC stages (sample → … → train → monitoring)
+data/processed/validation_report.json   DVC validate artifact (row/label snapshot)
 src/mlops_crew/
-  config.py                    project paths + YAML loader
-  logging_config.py            shared logger setup
   data/
-    sample.py                  stage 1: stratified sample of the raw CSV
-    clean.py                   stage 2: schema, labels, text cleaning
-    split.py                   stage 3: stratified train/val/test split
-    validate.py                stage 4: post-split sanity checks
-    source_manifest.py         source-block metadata for divergence monitoring
-    export_transformer_dataset.py
-    make_dataset.py            run all four stages locally
-  models/text_classifiers.py   TF-IDF + classifier sklearn pipeline factory
-  evaluation/metrics.py        recall-oriented binary metrics (F2 + confusion)
-  evaluation/plot_model_comparison.py
-  monitoring/                  resource usage, latency, divergence reports
-  tracking/                    MLflow wrapper
-  utils/                       seed + JSON helpers
-  train_model.py               train every configured model, save artifacts
-  train_hydra.py               Hydra wrapper for MLflow experiment sweeps
-  predict_model.py             batch inference with the saved pipeline
-dvc.yaml                       DVC stages for data, training, monitoring, reports
+    sample.py                       phase partitions + 80% modeling sample
+    source_manifest.py              raw source-block metadata (divergence)
+    clean.py, split.py, validate.py
+    export_transformer_dataset.py   JSONL export for future transformer work
+    make_dataset.py                 local equivalent of data stages through validate
+  models/text_classifiers.py        TF-IDF + classifier sklearn pipelines
+  train_model.py, train_hydra.py, predict_model.py
+  evaluation/, monitoring/, tracking/
+scripts/verify_phase2.ps1|.sh       grader verification (Windows + Bash)
+PHASE2.md                           Phase 2 deliverable narrative
+docs/windows_setup.md               Windows reproduction guide
 ```
 
 ## 7. Contributions
@@ -147,8 +159,9 @@ dvc.yaml                       DVC stages for data, training, monitoring, report
   data documentation
 - **Krishna Kalakonda** — model evaluation, baseline metrics, architecture
   diagram, code organization
-- **Kirtankumar Parekh** — model training, experiment tracking, Makefile,
-  contribution guidelines, repo maintenance
+- **Kirtankumar Parekh** — Phase 2 integration review, Windows verification
+  (`verify_phase2.ps1`, `docs/windows_setup.md`), DVC validate stage, docs and
+  docstrings, repo maintenance
 
 ## 8. References
 

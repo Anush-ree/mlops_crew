@@ -25,6 +25,7 @@ VALID_LABELS = {0, 1}
 
 
 def clean_paths(config: dict[str, Any]) -> dict[str, Path]:
+    """Resolve sampled input, cleaned output, and summary JSON paths."""
     data_config = config["data"]
     interim_dir = resolve_project_path(data_config["interim_dir"])
     processed_dir = resolve_project_path(data_config["processed_dir"])
@@ -103,6 +104,7 @@ def clean_dataset(data: pd.DataFrame, config: dict[str, Any]) -> tuple[pd.DataFr
 
 
 def run(config: dict[str, Any]) -> pd.DataFrame:
+    """Clean the Phase 2 sample CSV and write ``cleaned.csv`` plus a summary."""
     paths = clean_paths(config)
     if not paths["sampled"].exists():
         raise FileNotFoundError(
@@ -121,6 +123,7 @@ def run(config: dict[str, Any]) -> pd.DataFrame:
 
 
 def main() -> None:
+    """CLI entrypoint for the DVC ``clean`` stage."""
     parser = argparse.ArgumentParser(description="Clean the sampled phishing email CSV")
     parser.add_argument("--config", type=Path, default=CONFIG_PATH)
     args = parser.parse_args()

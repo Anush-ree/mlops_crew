@@ -36,12 +36,24 @@ SpamAssassin, Nigerian Fraud, and Nazario. The source order was confirmed from
 source-specific text prefixes in the combined file. This avoids recombining or
 duplicating the existing dataset.
 
+After `split`, the `validate` DVC stage writes `data/processed/validation_report.json`
+(a row-count and label-distribution snapshot). Training and transformer export
+depend on that artifact so `dvc repro` cannot skip validation.
+
+### Pipeline versioning note
+
+Phase 1 used a single 60% stratified sample on `main`. Phase 2 replaces that
+with deterministic phase partitions (`sample.py`), explicit holdout reservation,
+and DVC stages in `dvc.yaml`. There is no separate legacy preprocess script in
+this branch; `reports/metrics/phase1_baseline/` is the frozen Phase 1 metric
+snapshot for comparisons.
+
 ## Monitoring and Debugging
 
 Implemented monitoring/debugging checks:
 
 - Deterministic 60/20/20 phase partitioning with non-overlap checks.
-- Existing cleaning and split validation kept in the data pipeline.
+- Post-split validation writes `data/processed/validation_report.json` (DVC stage).
 - Source manifest validation checks source block row counts and label distributions.
 - Training resource sampling writes `reports/monitoring/training_resource_usage.csv`.
 - Inference latency benchmark writes `reports/monitoring/inference_latency.csv`.
@@ -107,11 +119,18 @@ Baseline profiling findings:
 - Saved-model inference is fast after the model is loaded: the 1,024-row batch
   benchmark is roughly 8k records/second on this machine.
 
-No aggressive optimization was applied in this phase because model quality is
-already strong and the current implementation is simpler to reproduce. The next
-reasonable optimization is caching or sharing TF-IDF features for experiment
-sweeps, but that should be introduced only if repeated training time becomes a
-real blocker.
+### Optimization evaluated (deferred)
+
+| Candidate change | Expected effect | Decision |
+| --- | --- | --- |
+| Shared TF-IDF matrix across the four sklearn pipelines | Large training-time reduction (TF-IDF dominates cProfile) | **Deferred** — adds coupling between models and complicates MLflow per-model artifacts |
+| Smaller `max_features` or fewer n-grams | Faster vectorization, lower memory | **Deferred** — risks recall/F2 on phishing detection |
+| MLflow disabled during profiling (already done) | Cleaner profiler signal | **Applied** in `scripts/profile_train.py` default |
+
+No other code change was applied in this phase because model quality is already
+strong and the current per-model pipelines are easier to reproduce and compare.
+Revisit shared TF-IDF caching if repeated experiment sweeps make training time a
+blocker.
 
 ## Experiment Tracking
 
@@ -345,15 +364,17 @@ scripts/verify_phase2.sh
 > remote `gdrive_backup` is kept as a fallback. If you are without AWS
 > credentials, run `dvc pull -r gdrive_backup` instead.
 
-
 Refer to this file for commands to execute: `docs/phase2_reproduction_commands.md`.
+Windows-specific setup (PowerShell, Git Bash, WSL, Chocolatey, optional `make`):
+`docs/windows_setup.md`. Run `scripts/verify_phase2.ps1` in PowerShell or
+`scripts/verify_phase2.sh` in Bash — same checks.
 
 The full DVC pipeline now runs:
 
 ```text
-sample -> clean -> split -> transformer_dataset
-                 -> train -> inference_latency
-                          -> plot_model_comparison
+sample -> clean -> split -> validate -> transformer_dataset
+                              -> train -> inference_latency
+                                       -> plot_model_comparison
 sample + source_manifest + train -> divergence
 ```
 

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pandas as pd
@@ -12,7 +13,7 @@ from mlops_crew.data.export_transformer_dataset import export_transformer_datase
 from mlops_crew.data.sample import partition_phase_data, sample_dataset
 from mlops_crew.data.source_manifest import build_source_manifest
 from mlops_crew.data.split import split_data
-from mlops_crew.data.validate import validate_dataset
+from mlops_crew.data.validate import validate_dataset, validation_report_path
 from mlops_crew.models.text_classifiers import build_text_classifier
 
 
@@ -193,6 +194,44 @@ def test_export_transformer_dataset_writes_jsonl_splits(tmp_path: Path) -> None:
     assert train_jsonl.exists()
     assert train_jsonl.read_text(encoding="utf-8").strip() == ('{"text":"train email","label":1}')
     assert summary["splits"]["train"]["rows"] == 1
+
+
+def test_validate_run_writes_report_for_valid_splits(tmp_path: Path) -> None:
+    """Successful validation should emit the DVC-tracked report artifact."""
+    processed_dir = tmp_path / "processed"
+    processed_dir.mkdir(parents=True)
+    for name, labels in {
+        "cleaned": [0, 1],
+        "train": [0, 1, 0],
+        "val": [0, 1],
+        "test": [1, 0],
+    }.items():
+        pd.DataFrame(
+            {
+                TEXT_COLUMN: [f"{name} email text {index}" for index in range(len(labels))],
+                LABEL_COLUMN: labels,
+            }
+        ).to_csv(processed_dir / f"{name}.csv", index=False)
+
+    config = {
+        "data": {
+            "processed_dir": str(processed_dir),
+            "cleaned_file": "cleaned.csv",
+            "train_file": "train.csv",
+            "val_file": "val.csv",
+            "test_file": "test.csv",
+        },
+        "cleaning": {"min_text_length": 3},
+    }
+
+    from mlops_crew.data.validate import run
+
+    assert run(config)
+    report_path = validation_report_path(config)
+    assert report_path.exists()
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    assert report["status"] == "passed"
+    assert set(report["datasets"]) == {"cleaned", "train", "val", "test"}
 
 
 def test_validate_dataset_rejects_missing_class(tmp_path: Path) -> None:

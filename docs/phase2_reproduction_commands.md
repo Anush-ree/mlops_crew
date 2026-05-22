@@ -9,7 +9,10 @@ experiment tracking.
 ```bash
 cd mlops_crew
 python -m venv .venv
+# Linux / macOS / WSL:
 source .venv/bin/activate
+# Git Bash on Windows:
+# source .venv/Scripts/activate
 make install
 make dev
 dvc pull
@@ -17,11 +20,19 @@ dvc pull
 scripts/verify_phase2.sh
 ```
 
+**Windows graders:** use PowerShell and `.\scripts\verify_phase2.ps1` — see
+[windows_setup.md](./windows_setup.md). Git Bash can use `verify_phase2.sh`
+(`.venv/Scripts` is detected automatically). WSL uses the Bash script with
+`.venv/bin`.
+
+`scripts/verify_phase2.sh` auto-detects `.venv/bin` (Unix) vs `.venv/Scripts`
+(Windows). If `make` is missing, lint falls back to `ruff` directly.
+
 The script runs:
 
 ```bash
 dvc status
-dvc repro
+dvc repro   # includes validate -> data/processed/validation_report.json
 make lint
 mypy src
 pytest tests/ --cov=mlops_crew --cov-report=xml

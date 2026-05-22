@@ -17,6 +17,7 @@ logger = get_logger(__name__)
 
 
 def transformer_dataset_paths(config: dict[str, Any]) -> dict[str, Path]:
+    """Resolve processed split inputs and JSONL export directory paths."""
     data_config = config["data"]
     processed_dir = resolve_project_path(data_config["processed_dir"])
     transformer_dir = processed_dir / data_config.get("transformer_dir", "transformer")
@@ -56,6 +57,7 @@ def _project_relative(path: Path) -> str:
 
 
 def export_transformer_dataset(config: dict[str, Any]) -> dict[str, Any]:
+    """Export train/val/test CSVs as Hugging Face-compatible JSONL splits."""
     paths = transformer_dataset_paths(config)
     paths["transformer_dir"].mkdir(parents=True, exist_ok=True)
 
@@ -79,6 +81,7 @@ def export_transformer_dataset(config: dict[str, Any]) -> dict[str, Any]:
 
 
 def main() -> None:
+    """CLI entrypoint for the DVC ``transformer_dataset`` stage."""
     parser = argparse.ArgumentParser(description="Export HF-compatible JSONL splits")
     parser.add_argument("--config", type=Path, default=CONFIG_PATH)
     args = parser.parse_args()

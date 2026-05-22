@@ -33,9 +33,10 @@ logger = get_logger(__name__)
 | `source_manifest.run(config)` | Create source-block metadata for divergence monitoring |
 | `clean.run(config)` | Normalize schema, labels, and email text |
 | `split.run(config)` | Create deterministic train/validation/test splits |
+| `validate.run(config)` | Sanity-check cleaned and split CSVs; writes `data/processed/validation_report.json` on success |
+| `validate.validation_report_path(config)` | Path to the DVC-tracked validation report |
 | `export_transformer_dataset.export_transformer_dataset(config)` | Export HF-compatible JSONL train/validation/test splits |
-| `validate.run(config)` | Sanity-check cleaned and split CSVs |
-| `make_dataset.process_data(config_path)` | Run sample → source manifest → clean → split → transformer export → validate |
+| `make_dataset.process_data(config_path)` | Run sample → source manifest → clean → split → validate → transformer export (same order as `dvc repro` through validate) |
 
 CLI: `python -m mlops_crew.data.make_dataset`
 
@@ -62,12 +63,13 @@ CLI: `python -m mlops_crew.evaluation.plot_model_comparison`
 
 ## `mlops_crew.monitoring`
 
-```bash
-python -m mlops_crew.monitoring.inference_latency
-python -m mlops_crew.monitoring.divergence
-```
+| Module | `run(config)` writes |
+|---|---|
+| `inference_latency` | `reports/monitoring/inference_latency.csv` |
+| `divergence` | `reports/divergence/phase2_divergence_report.json` and `phase2_divergence_summary.md` |
 
-These modules write Phase 2 latency and divergence reports under `reports/`.
+`ResourceMonitor` in `resource_monitor.py` samples CPU/memory during training;
+`train_model.py` writes `reports/monitoring/training_resource_usage.csv`.
 
 ## `mlops_crew.tracking`
 

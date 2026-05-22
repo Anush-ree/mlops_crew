@@ -87,4 +87,5 @@ def setup_logging_from_config(config: Mapping[str, Any]) -> None:
 
 
 def get_logger(name: str) -> logging.Logger:
+    """Return a module logger after ``setup_logging`` has configured the root."""
     return logging.getLogger(name)

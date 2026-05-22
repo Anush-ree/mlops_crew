@@ -21,12 +21,12 @@ stages:
       size: 208
     - path: src/mlops_crew/data/clean.py
       hash: md5
-      md5: 8206b5fc001be868c1330fd8eef6d845
-      size: 4742
+      md5: 82214c44b425621e5a83df4813bf0f68
+      size: 4950
     - path: src/mlops_crew/utils/io.py
       hash: md5
-      md5: 68b56fdd09e2a27a8996e2fd9f9e1e14
-      size: 474
+      md5: 4ce856e73d0f05e58a86c186e00e3fb9
+      size: 571
     outs:
     - path: data/processed/cleaned.csv
       hash: md5
@@ -57,12 +57,12 @@ stages:
       size: 208
     - path: src/mlops_crew/data/split.py
       hash: md5
-      md5: b567563fa9ca1dfbaa222267b36a6977
-      size: 3824
+      md5: 0c982b0933d41f71475e64fc6cd4f372
+      size: 4011
     - path: src/mlops_crew/utils/io.py
       hash: md5
-      md5: 68b56fdd09e2a27a8996e2fd9f9e1e14
-      size: 474
+      md5: 4ce856e73d0f05e58a86c186e00e3fb9
+      size: 571
     outs:
     - path: data/processed/split_summary.json
       hash: md5
@@ -99,6 +99,10 @@ stages:
       hash: md5
       md5: ec83a7b5fee0d2c790dfbd14ea3242c7
       size: 11830015
+    - path: data/processed/validation_report.json
+      hash: md5
+      md5: 3cd7b2d0012759f40e79dae972876d4c
+      size: 708
     - path: src/mlops_crew/config.py
       hash: md5
       md5: b475307081d7f6039e1dcff0decb86c2
@@ -113,48 +117,48 @@ stages:
       size: 1875
     - path: src/mlops_crew/models/text_classifiers.py
       hash: md5
-      md5: 792beffff6d8878ae813c2761977e682
-      size: 2682
+      md5: c0736b9eed6040181a86c73189e32668
+      size: 2762
     - path: src/mlops_crew/monitoring/resource_monitor.py
       hash: md5
-      md5: dd0a8f137b31d09edefa5b58972bb5aa
-      size: 2189
+      md5: 9c3b683b6f9d8e3b14ccacd8a56dc07a
+      size: 2755
     - path: src/mlops_crew/tracking/mlflow_tracking.py
       hash: md5
-      md5: bb036016c18f9b5eb7d53cf62c66dcae
-      size: 4920
+      md5: 40624f62099c7603951572dc8d662703
+      size: 5436
     - path: src/mlops_crew/train_model.py
       hash: md5
-      md5: 9b0aeea6cd9881ec8033dcbdeb071ae8
-      size: 8984
+      md5: f3e79b183b8622549f7f408970bb94c3
+      size: 9038
     - path: src/mlops_crew/utils/io.py
       hash: md5
-      md5: 68b56fdd09e2a27a8996e2fd9f9e1e14
-      size: 474
+      md5: 4ce856e73d0f05e58a86c186e00e3fb9
+      size: 571
     - path: src/mlops_crew/utils/seed.py
       hash: md5
-      md5: 6d36b32ba9bc38b44d301a8908aa0c59
-      size: 264
+      md5: fee15b9c71449aac9f80e98207affb88
+      size: 335
     outs:
     - path: models/best_model.joblib
       hash: md5
-      md5: 5580c70977cdb4633ed3f6243744df9a
+      md5: f212cbb70372ea5df8ac30d5939a5d2b
       size: 960048
     - path: models/complement_nb.joblib
       hash: md5
-      md5: 9b57a952aed4d1976244b283981c9321
+      md5: a98d6b64b89dda42b56a39af29ef8ef4
       size: 1600177
     - path: models/dummy.joblib
       hash: md5
-      md5: 7eb370cfb7c7eb05bdb93b9aa831dc0b
+      md5: ec9bed8a4987d39f601a9c2f08cc418a
       size: 799905
     - path: models/linear_svc.joblib
       hash: md5
-      md5: 5580c70977cdb4633ed3f6243744df9a
+      md5: f212cbb70372ea5df8ac30d5939a5d2b
       size: 960048
     - path: models/logistic_regression.joblib
       hash: md5
-      md5: 191dedb74de1b3252da646d330d3e576
+      md5: 611de9934619c4fe388fba8a4788bd37
       size: 960192
     - path: reports/metrics/best_model_metrics.json
       hash: md5
@@ -186,8 +190,8 @@ stages:
       size: 5361
     - path: reports/monitoring/training_resource_usage.csv
       hash: md5
-      md5: e4765a99a011b2ce27f6c18f0bca93e6
-      size: 6000
+      md5: 3a3aaa96015dcdaa5f2c2fe0d54b690a
+      size: 5948
     - path: reports/predictions
       hash: md5
       md5: 308f5ae16942d36adf2c4bfe869b086a.dir
@@ -214,12 +218,12 @@ stages:
       size: 208
     - path: src/mlops_crew/data/sample.py
       hash: md5
-      md5: 1368940589eed52a78d5b615c7c82d27
-      size: 7930
+      md5: bdf79a57e9e37a797bbdc1adb49788bb
+      size: 8137
     - path: src/mlops_crew/utils/io.py
       hash: md5
-      md5: 68b56fdd09e2a27a8996e2fd9f9e1e14
-      size: 474
+      md5: 4ce856e73d0f05e58a86c186e00e3fb9
+      size: 571
     outs:
     - path: data/interim/phishing_email_phase1_reference.csv
       hash: md5
@@ -286,12 +290,12 @@ stages:
       size: 208
     - path: src/mlops_crew/data/source_manifest.py
       hash: md5
-      md5: cac1147f598709591d79c8b587a5c1e1
-      size: 5005
+      md5: 34f1a34495994d011d99154319adc17a
+      size: 5222
     - path: src/mlops_crew/utils/io.py
       hash: md5
-      md5: 68b56fdd09e2a27a8996e2fd9f9e1e14
-      size: 474
+      md5: 4ce856e73d0f05e58a86c186e00e3fb9
+      size: 571
     outs:
     - path: data/interim/source_manifest.csv
       hash: md5
@@ -314,7 +318,7 @@ stages:
       size: 12244981
     - path: models/best_model.joblib
       hash: md5
-      md5: 5580c70977cdb4633ed3f6243744df9a
+      md5: f212cbb70372ea5df8ac30d5939a5d2b
       size: 960048
     - path: src/mlops_crew/config.py
       hash: md5
@@ -326,13 +330,13 @@ stages:
       size: 208
     - path: src/mlops_crew/monitoring/inference_latency.py
       hash: md5
-      md5: 46a94bf73dde29063953daae9201ffc1
-      size: 2603
+      md5: 6811b5e5757ebf6965e3c198bc9b7394
+      size: 2905
     outs:
     - path: reports/monitoring/inference_latency.csv
       hash: md5
-      md5: 11fef39cc1e3bf7dbc6f6e5e4c0fbfbe
-      size: 842
+      md5: fb7ef492d14a26c07da9e0297f08afac
+      size: 849
   divergence:
     cmd: python -m mlops_crew.monitoring.divergence
     deps:
@@ -354,7 +358,7 @@ stages:
       size: 1747655
     - path: models/best_model.joblib
       hash: md5
-      md5: 5580c70977cdb4633ed3f6243744df9a
+      md5: f212cbb70372ea5df8ac30d5939a5d2b
       size: 960048
     - path: src/mlops_crew/config.py
       hash: md5
@@ -366,17 +370,17 @@ stages:
       size: 208
     - path: src/mlops_crew/monitoring/divergence.py
       hash: md5
-      md5: a74f32356d641335b74719cccaf0aec4
-      size: 9373
+      md5: 6a8db8aa68cf3f324c6a44dfdd291d53
+      size: 9762
     - path: src/mlops_crew/utils/io.py
       hash: md5
-      md5: 68b56fdd09e2a27a8996e2fd9f9e1e14
-      size: 474
+      md5: 4ce856e73d0f05e58a86c186e00e3fb9
+      size: 571
     outs:
     - path: reports/divergence/phase2_divergence_report.json
       hash: md5
-      md5: 8f26c49f0b3f76debcf51aac3c88118d
-      size: 4834
+      md5: 2f489c3abc6c96c228694bb4270535d0
+      size: 4826
     - path: reports/divergence/phase2_divergence_summary.md
       hash: md5
       md5: 724c95290b42c053b90cde7bab34167a
@@ -398,8 +402,8 @@ stages:
       size: 1056
     - path: src/mlops_crew/evaluation/plot_model_comparison.py
       hash: md5
-      md5: e9ef40b3debe749020780479078e5cc9
-      size: 2258
+      md5: 43e2f0bf235fe61953b5366da4b74d31
+      size: 2480
     outs:
     - path: reports/metrics/model_comparison.png
       hash: md5
@@ -424,6 +428,10 @@ stages:
       hash: md5
       md5: ec83a7b5fee0d2c790dfbd14ea3242c7
       size: 11830015
+    - path: data/processed/validation_report.json
+      hash: md5
+      md5: 3cd7b2d0012759f40e79dae972876d4c
+      size: 708
     - path: src/mlops_crew/config.py
       hash: md5
       md5: b475307081d7f6039e1dcff0decb86c2
@@ -434,15 +442,59 @@ stages:
       size: 208
     - path: src/mlops_crew/data/export_transformer_dataset.py
       hash: md5
-      md5: 7897a31b97993512f98b63bb4398da40
-      size: 3158
+      md5: 528bfd5dce8c116fa3b093987dde29fa
+      size: 3379
     - path: src/mlops_crew/utils/io.py
       hash: md5
-      md5: 68b56fdd09e2a27a8996e2fd9f9e1e14
-      size: 474
+      md5: 4ce856e73d0f05e58a86c186e00e3fb9
+      size: 571
     outs:
     - path: data/processed/transformer
       hash: md5
       md5: 5a5d79bc7106917c4f5d6c92ec298381.dir
       size: 87091537
       nfiles: 4
+  validate:
+    cmd: python -m mlops_crew.data.validate
+    deps:
+    - path: configs/config.yaml
+      hash: md5
+      md5: 53e3d4cb5be1cd003a8eeea7a9c6bdb9
+      size: 2824
+    - path: data/processed/cleaned.csv
+      hash: md5
+      md5: 66e8beffa902a23fd2cf910601e09298
+      size: 85841774
+    - path: data/processed/test.csv
+      hash: md5
+      md5: 5dcc39cd199625283f0ae1c6a8324465
+      size: 12244981
+    - path: data/processed/train.csv
+      hash: md5
+      md5: 4b2d2e08d34ad58121e9fa1fb8ba0857
+      size: 61766818
+    - path: data/processed/val.csv
+      hash: md5
+      md5: ec83a7b5fee0d2c790dfbd14ea3242c7
+      size: 11830015
+    - path: src/mlops_crew/config.py
+      hash: md5
+      md5: b475307081d7f6039e1dcff0decb86c2
+      size: 1056
+    - path: src/mlops_crew/data/__init__.py
+      hash: md5
+      md5: 8f6ae224effb05ddf87e7d75c7ee4411
+      size: 208
+    - path: src/mlops_crew/data/validate.py
+      hash: md5
+      md5: 913123ed6fd75fd18e29ff605073f0bd
+      size: 5099
+    - path: src/mlops_crew/utils/io.py
+      hash: md5
+      md5: 4ce856e73d0f05e58a86c186e00e3fb9
+      size: 571
+    outs:
+    - path: data/processed/validation_report.json
+      hash: md5
+      md5: 3cd7b2d0012759f40e79dae972876d4c
+      size: 708

@@ -222,4 +222,7 @@ __marimo__/
 mlruns/
 logs/*
 !logs/.gitkeep
+
+# Hydra run outputs (per-run configs + logs)
 outputs/
+.multirun/

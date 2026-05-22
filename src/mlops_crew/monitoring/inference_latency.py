@@ -18,6 +18,7 @@ logger = get_logger(__name__)
 
 
 def latency_paths(config: dict[str, Any]) -> dict[str, Path]:
+    """Resolve best model, test input, and latency CSV output paths."""
     processed_dir = resolve_project_path(config["data"]["processed_dir"])
     monitoring_dir = resolve_project_path(config["reports"]["monitoring_dir"])
     return {
@@ -34,6 +35,7 @@ def measure_latency(
     batch_sizes: list[int],
     repeats: int = 3,
 ) -> pd.DataFrame:
+    """Benchmark ``model.predict`` at several batch sizes and return timing rows."""
     rows = []
     for batch_size in batch_sizes:
         batch = data.head(batch_size)
@@ -56,6 +58,7 @@ def measure_latency(
 
 
 def run(config: dict[str, Any]) -> pd.DataFrame:
+    """Load the best model, benchmark inference, and write the latency CSV."""
     paths = latency_paths(config)
     model = joblib.load(paths["model"])
     data = pd.read_csv(paths["input"])
@@ -68,6 +71,7 @@ def run(config: dict[str, Any]) -> pd.DataFrame:
 
 
 def main() -> None:
+    """CLI entrypoint for the DVC ``inference_latency`` stage."""
     parser = argparse.ArgumentParser(description="Measure inference latency")
     parser.add_argument("--config", type=Path, default=CONFIG_PATH)
     args = parser.parse_args()
