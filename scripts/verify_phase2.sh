@@ -104,7 +104,7 @@ run_lint() {
   printf '\n==> lint\n'
   # Always use the venv Python. `make lint` often fails on Windows/WSL because
   # Make invokes `ruff` without .venv/Scripts on PATH.
-  "$PYTHON" -m ruff check .
+  "$PYTHON" -m ruff check --no-cache .
   "$PYTHON" -m ruff format --check .
 }
 
@@ -121,7 +121,7 @@ from pathlib import Path
 
 from mlops_crew.config import CONFIG_PATH, load_project_config
 from mlops_crew.logging_config import setup_logging_from_config
-from mlops_crew.train_model import train
+from mlops_crew.models.train_model import train
 
 config = deepcopy(load_project_config(CONFIG_PATH))
 setup_logging_from_config(config)

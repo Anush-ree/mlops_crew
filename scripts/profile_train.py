@@ -11,7 +11,7 @@ from typing import Any
 
 from mlops_crew.config import CONFIG_PATH, load_project_config, resolve_project_path
 from mlops_crew.logging_config import setup_logging_from_config
-from mlops_crew.train_model import train
+from mlops_crew.models.train_model import train
 
 
 def _isolated_config(config: dict[str, Any], *, with_tracking: bool) -> dict[str, Any]:
