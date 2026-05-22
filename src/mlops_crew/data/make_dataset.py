@@ -18,7 +18,7 @@ from mlops_crew.data import (
     split,
     validate,
 )
-from mlops_crew.logging_config import get_logger, setup_logging
+from mlops_crew.logging_config import get_logger, setup_logging_from_config
 
 logger = get_logger(__name__)
 
@@ -38,7 +38,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Run the full data preparation pipeline")
     parser.add_argument("--config", type=Path, default=CONFIG_PATH)
     args = parser.parse_args()
-    setup_logging()
+    setup_logging_from_config(load_project_config(args.config))
     process_data(args.config)
     logger.info("Data pipeline complete")
 

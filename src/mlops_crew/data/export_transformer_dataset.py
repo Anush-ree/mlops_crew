@@ -10,7 +10,7 @@ import pandas as pd
 
 from mlops_crew.config import CONFIG_PATH, PROJECT_ROOT, load_project_config, resolve_project_path
 from mlops_crew.data import LABEL_COLUMN, TEXT_COLUMN
-from mlops_crew.logging_config import get_logger, setup_logging
+from mlops_crew.logging_config import get_logger, setup_logging_from_config
 from mlops_crew.utils.io import save_json
 
 logger = get_logger(__name__)
@@ -82,8 +82,9 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Export HF-compatible JSONL splits")
     parser.add_argument("--config", type=Path, default=CONFIG_PATH)
     args = parser.parse_args()
-    setup_logging()
-    export_transformer_dataset(load_project_config(args.config))
+    config = load_project_config(args.config)
+    setup_logging_from_config(config)
+    export_transformer_dataset(config)
 
 
 if __name__ == "__main__":

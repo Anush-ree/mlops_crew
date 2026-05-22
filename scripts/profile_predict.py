@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from mlops_crew.config import CONFIG_PATH, load_project_config, resolve_project_path
+from mlops_crew.logging_config import setup_logging_from_config
 from mlops_crew.monitoring.inference_latency import run as run_latency
 
 
@@ -35,6 +36,7 @@ def main() -> None:
     args = parser.parse_args()
 
     config = load_project_config(args.config)
+    setup_logging_from_config(config)
     output_dir = (
         resolve_project_path(args.output_dir)
         if args.output_dir is not None

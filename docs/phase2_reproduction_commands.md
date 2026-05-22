@@ -89,6 +89,26 @@ dirty DVC-tracked model, metric, prediction, monitoring, or MLflow artifacts by
 default. The verification script also writes its profile output to scratch so a
 clean worktree stays clean after verification.
 
+## Logging and Hydra checks
+
+Rich console logging and rotating file logging are configured through
+`configs/config.yaml`. To smoke-test logging:
+
+```bash
+python -m mlops_crew.data.validate
+tail -n 20 logs/pipeline.log
+```
+
+Hydra experiment configs live under `conf/`. To run the two-config MLflow demo:
+
+```bash
+make hydra-demo
+make mlflow-ui
+```
+
+The Hydra runs write model/report artifacts under ignored `outputs/hydra/...`
+paths so the demo does not dirty DVC-tracked outputs.
+
 ## Expected final artifacts
 
 After `dvc repro`, these are the key files a grader should inspect:

@@ -3,17 +3,19 @@
 ## Scope
 
 Phase 2 extends the Phase 1 phishing classifier from a 60% baseline run to an
-80% reproducible modeling run. This branch implements the model-development
-portion of Phase 2:
+80% reproducible modeling run. This branch implements the model-development and
+experiment-operations portion of Phase 2:
 
 - Section 2: Monitoring and debugging
 - Section 3: Profiling Python and ML code
 - Section 4: Experiment management and tracking
+- Section 5: Application logging with Rich and rotating log files
+- Section 6: Hydra configuration experiments
 
-Containerization, richer application logging, and Hydra-style configuration are
-tracked separately. This branch keeps the existing single `configs/config.yaml`
-pattern as the source of truth so it can be merged cleanly with the rest of the
-team work.
+Containerization is tracked separately. The DVC production pipeline keeps
+`configs/config.yaml` as the source of truth, while Hydra uses `conf/` as an
+experiment wrapper that overlays config changes and writes scratch artifacts
+under ignored `outputs/hydra/` directories.
 
 ## Data Versioning
 
@@ -173,6 +175,73 @@ The filesystem MLflow backend (`file:./mlruns`) is acceptable for this
 class/local workflow — MLflow 3 prints a deprecation note in favor of a SQLite
 or PostgreSQL backend for shared use; for Phase 3 deployment we will switch the
 URI accordingly without touching any of the call sites above.
+
+## Application Logging
+
+Application logging is configured in `configs/config.yaml` and implemented in
+`src/mlops_crew/logging_config.py`.
+
+```yaml
+logging:
+  level: INFO
+  log_dir: logs
+  log_file: pipeline.log
+  max_bytes: 10485760
+  backup_count: 5
+  rich_tracebacks: true
+```
+
+Every pipeline entrypoint calls `setup_logging_from_config(config)`, which
+attaches:
+
+- a Rich stdout handler for readable terminal output and tracebacks
+- a rotating structured file handler under `logs/pipeline.log`
+
+The log file format is:
+
+```text
+timestamp | level | module | message
+```
+
+Actual log files are local runtime artifacts and are ignored by Git; `logs/.gitkeep`
+keeps the directory visible in the repository.
+
+## Hydra Configuration Experiments
+
+Hydra config files live under `conf/`:
+
+```text
+conf/config.yaml
+conf/experiment/phase2_default.yaml
+conf/experiment/phase2_experimental.yaml
+```
+
+This `conf/` directory is intentionally not a replacement for `configs/`.
+`configs/config.yaml` remains the source of truth for the normal DVC pipeline.
+`conf/` is the required Hydra experiment layer from the assignment: it loads the
+base config, applies only experiment overrides, and records the exact Hydra run
+configuration in `outputs/hydra/.../.hydra/`.
+
+Hydra is used for experiment sweeps through:
+
+```bash
+make hydra-train
+make hydra-demo
+```
+
+`make hydra-demo` runs the same Hydra training script twice:
+
+```bash
+python -m mlops_crew.train_hydra experiment=phase2_default
+python -m mlops_crew.train_hydra experiment=phase2_experimental
+```
+
+The Hydra wrapper logs both runs to the `phishing-email-phase2-hydra` MLflow
+experiment. It writes models, metrics, predictions, monitoring CSVs, and the
+effective config under ignored `outputs/hydra/...` paths so demo runs do not
+modify DVC-tracked artifacts. Each run logs tags such as `config_source=hydra`,
+`hydra_experiment`, `data_version`, and `model_version`, plus the effective YAML
+config artifact.
 
 ## Model Experiments
 

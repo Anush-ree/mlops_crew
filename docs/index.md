@@ -56,11 +56,13 @@ mlops_crew/                  # Repository root
 │       ├── tracking/                  # MLflow helpers
 │       ├── utils/                     # seed, io
 │       ├── train_model.py             # Training CLI
+│       ├── train_hydra.py             # Hydra experiment CLI
 │       └── predict_model.py           # Inference CLI
 ├── data/                              # raw/ and processed/
 ├── models/                            # Trained artifacts
 ├── tests/                             # Unit tests
 ├── docs/                              # MkDocs docs
+├── conf/                              # Hydra experiment overrides
 ├── Makefile                           # Common commands
 └── pyproject.toml                     # Packaging & deps
 ```

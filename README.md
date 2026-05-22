@@ -72,6 +72,7 @@ make latency              # benchmark saved-model inference latency
 make divergence           # compare Phase 1 reference vs Phase 2 increment
 make profile-train        # cProfile the training entrypoint
 make profile-predict      # cProfile saved-model inference
+make hydra-demo           # run two Hydra-configured MLflow experiments
 make mlflow-ui            # open local MLflow UI on port 5001
 make repro      # reproduce the full DVC pipeline end to end
 scripts/verify_phase2.sh  # run DVC repro + CI checks + Phase 2 smoke checks
@@ -114,6 +115,7 @@ dvc pull                # download data from S3
 File Structure:
 ```
 configs/config.yaml            single source of truth for the pipeline
+conf/                          Hydra experiment overrides
 src/mlops_crew/
   config.py                    project paths + YAML loader
   logging_config.py            shared logger setup
@@ -132,6 +134,7 @@ src/mlops_crew/
   tracking/                    MLflow wrapper
   utils/                       seed + JSON helpers
   train_model.py               train every configured model, save artifacts
+  train_hydra.py               Hydra wrapper for MLflow experiment sweeps
   predict_model.py             batch inference with the saved pipeline
 dvc.yaml                       DVC stages for data, training, monitoring, reports
 ```

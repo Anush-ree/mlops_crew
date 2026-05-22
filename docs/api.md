@@ -19,9 +19,9 @@ against the repo root regardless of the current working directory.
 ## `mlops_crew.logging_config`
 
 ```python
-from mlops_crew.logging_config import setup_logging, get_logger
+from mlops_crew.logging_config import setup_logging_from_config, get_logger
 
-setup_logging(level="INFO")
+setup_logging_from_config(config)
 logger = get_logger(__name__)
 ```
 
@@ -74,6 +74,18 @@ These modules write Phase 2 latency and divergence reports under `reports/`.
 `mlops_crew.tracking.mlflow_tracking` wraps MLflow setup, nested model runs,
 metric logging, and artifact logging for `train_model.py`.
 
+## `mlops_crew.train_hydra`
+
+Hydra entrypoint for Section 6 experiment configs. It loads the normal
+`configs/config.yaml`, applies a `conf/experiment/*.yaml` override, routes
+scratch artifacts to `outputs/hydra/...`, and calls the same `train(config)`
+function used by `train_model.py`.
+
+```bash
+python -m mlops_crew.train_hydra experiment=phase2_default
+python -m mlops_crew.train_hydra experiment=phase2_experimental
+```
+
 ## `mlops_crew.utils`
 
 ```python
@@ -86,6 +98,7 @@ set_seed(42)
 
 ```bash
 python -m mlops_crew.train_model
+python -m mlops_crew.train_hydra experiment=phase2_default
 python -m mlops_crew.predict_model --model-path models/best_model.joblib --input data/processed/test.csv
 ```
 

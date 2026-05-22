@@ -15,7 +15,7 @@ import pandas as pd
 
 from mlops_crew.config import CONFIG_PATH, load_project_config, resolve_project_path
 from mlops_crew.data import LABEL_COLUMN, TEXT_COLUMN
-from mlops_crew.logging_config import get_logger, setup_logging
+from mlops_crew.logging_config import get_logger, setup_logging_from_config
 
 logger = get_logger(__name__)
 
@@ -90,8 +90,9 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Validate cleaned and split datasets")
     parser.add_argument("--config", type=Path, default=CONFIG_PATH)
     args = parser.parse_args()
-    setup_logging()
-    if not run(load_project_config(args.config)):
+    config = load_project_config(args.config)
+    setup_logging_from_config(config)
+    if not run(config):
         logger.error("Validation failed")
         sys.exit(1)
     logger.info("All validation checks passed")

@@ -102,6 +102,21 @@ tracking:
   tracking_uri: file:./mlruns
   log_models: true
   log_predictions: true
+  tags:
+    data_version: phase2_80pct
+    model_version: phase2_v2
+    pipeline_version: dvc_phase2
+    logging_version: rich_rotating_v2
+    hydra_config_version: phase2_hydra_v1
+
+logging:
+  version: rich_rotating_v2
+  level: INFO
+  log_dir: logs
+  log_file: pipeline.log
+  max_bytes: 10485760
+  backup_count: 5
+  rich_tracebacks: true
 
 monitoring:
   resource_sample_seconds: 1.0

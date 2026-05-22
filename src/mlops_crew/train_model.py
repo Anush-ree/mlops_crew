@@ -31,7 +31,7 @@ from mlops_crew.config import (
 )
 from mlops_crew.data import LABEL_COLUMN, TEXT_COLUMN
 from mlops_crew.evaluation.metrics import binary_classification_report
-from mlops_crew.logging_config import get_logger, setup_logging
+from mlops_crew.logging_config import get_logger, setup_logging_from_config
 from mlops_crew.models.text_classifiers import build_text_classifier
 from mlops_crew.monitoring.resource_monitor import ResourceMonitor
 from mlops_crew.tracking import mlflow_tracking
@@ -215,8 +215,9 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Train phishing email classifiers")
     parser.add_argument("--config", type=Path, default=CONFIG_PATH)
     args = parser.parse_args()
-    setup_logging()
-    train(load_project_config(args.config))
+    config = load_project_config(args.config)
+    setup_logging_from_config(config)
+    train(config)
     logger.info("Training complete")
 
 

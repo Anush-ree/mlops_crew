@@ -1,4 +1,4 @@
-.PHONY: install dev data source-manifest transformer-data train predict plot latency divergence profile-train profile-predict mlflow-ui repro test lint format clean
+.PHONY: install dev data source-manifest transformer-data train hydra-train hydra-demo predict plot latency divergence profile-train profile-predict mlflow-ui repro test lint format clean
 
 install:
 	pip install -U pip
@@ -23,6 +23,14 @@ transformer-data:
 # Train every model listed in configs/config.yaml under modeling.models
 train:
 	python -m mlops_crew.train_model
+
+# Train through Hydra using conf/ overrides. Outputs go under ignored outputs/hydra/.
+hydra-train:
+	python -m mlops_crew.train_hydra
+
+hydra-demo:
+	python -m mlops_crew.train_hydra experiment=phase2_default
+	python -m mlops_crew.train_hydra experiment=phase2_experimental
 
 # Score the test set with the best saved model
 predict:

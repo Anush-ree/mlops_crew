@@ -10,7 +10,7 @@ import matplotlib
 import pandas as pd
 
 from mlops_crew.config import CONFIG_PATH, load_project_config, resolve_project_path
-from mlops_crew.logging_config import get_logger, setup_logging
+from mlops_crew.logging_config import get_logger, setup_logging_from_config
 
 matplotlib.use("Agg")
 from matplotlib import pyplot as plt  # noqa: E402
@@ -60,8 +60,9 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Plot model comparison metrics")
     parser.add_argument("--config", type=Path, default=CONFIG_PATH)
     args = parser.parse_args()
-    setup_logging()
-    plot_model_comparison(load_project_config(args.config))
+    config = load_project_config(args.config)
+    setup_logging_from_config(config)
+    plot_model_comparison(config)
 
 
 if __name__ == "__main__":

@@ -24,6 +24,23 @@ def setup_mlflow(config: dict[str, Any]) -> None:
     mlflow.set_experiment(tracking.get("experiment_name", config["project"]["name"]))
 
 
+def _log_tracking_tags(config: dict[str, Any]) -> None:
+    tags = config.get("tracking", {}).get("tags", {})
+    if tags:
+        mlflow.set_tags({str(key): str(value) for key, value in tags.items()})
+
+
+def _log_config_artifacts(config: dict[str, Any]) -> None:
+    paths = [PROJECT_ROOT / "configs" / "config.yaml"]
+    effective_config_path = config.get("tracking", {}).get("effective_config_path")
+    if effective_config_path:
+        paths.append(Path(effective_config_path))
+    for path in paths:
+        resolved = resolve_project_path(path)
+        if resolved.exists():
+            mlflow.log_artifact(str(resolved), artifact_path="config")
+
+
 @contextmanager
 def training_run(config: dict[str, Any]) -> Iterator[Any]:
     """Open the parent MLflow run when tracking is enabled."""
@@ -32,19 +49,22 @@ def training_run(config: dict[str, Any]) -> Iterator[Any]:
         return
 
     setup_mlflow(config)
-    run_name = f"phase{config['project'].get('phase', 2)}-training"
+    tracking = config.get("tracking", {})
+    run_name = tracking.get("run_name", f"phase{config['project'].get('phase', 2)}-training")
     with mlflow.start_run(run_name=run_name) as run:
-        mlflow.log_params(
-            {
-                "project": config["project"]["name"],
-                "phase": config["project"].get("phase", 2),
-                "primary_metric": config["modeling"].get("primary_metric", "f2"),
-                "sample_fraction": config["data"]["sample"]["fraction"],
-            }
-        )
-        config_path = PROJECT_ROOT / "configs" / "config.yaml"
-        if config_path.exists():
-            mlflow.log_artifact(str(config_path), artifact_path="config")
+        _log_tracking_tags(config)
+        params = {
+            "project": config["project"]["name"],
+            "phase": config["project"].get("phase", 2),
+            "primary_metric": config["modeling"].get("primary_metric", "f2"),
+            "sample_fraction": config["data"]["sample"]["fraction"],
+        }
+        for key in ("data_version", "model_version", "pipeline_version", "config_source"):
+            value = tracking.get("tags", {}).get(key)
+            if value is not None:
+                params[key] = value
+        mlflow.log_params(params)
+        _log_config_artifacts(config)
         yield run
 
 

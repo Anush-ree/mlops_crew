@@ -1,0 +1,12 @@
+defaults:
+  - _self_
+  - experiment: phase2_default
+
+base_config_path: configs/config.yaml
+run_outputs_under_hydra_dir: true
+
+hydra:
+  job:
+    chdir: false
+  run:
+    dir: outputs/hydra/${now:%Y-%m-%d}/${now:%H-%M-%S}

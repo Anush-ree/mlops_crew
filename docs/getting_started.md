@@ -134,12 +134,14 @@ mlops_crew/                  # Repository root
 │       ├── tracking/                  # MLflow helpers
 │       ├── utils/                     # seed, io
 │       ├── train_model.py
+│       ├── train_hydra.py
 │       └── predict_model.py
 ├── tests/                             # Unit tests
 ├── data/                              # raw/ and processed/
 ├── models/                            # Trained model artifacts
 ├── docs/                              # MkDocs documentation
 ├── configs/                           # Project configuration
+├── conf/                              # Hydra experiment overrides
 ├── pyproject.toml
 ├── requirements.txt
 └── Makefile
@@ -151,6 +153,10 @@ Edit `configs/config.yaml` to change paths, the 60/20/20 phase partitioning,
 split ratios, TF-IDF settings, tracking settings, monitoring outputs, or the
 list of models to train. Re-run `make repro` after config changes so DVC
 updates the pipeline outputs.
+
+Use `conf/` only for Hydra experiment overlays. For example, `make hydra-demo`
+runs two MLflow-tracked training experiments without changing DVC-tracked
+artifacts.
 
 ## Troubleshooting
 

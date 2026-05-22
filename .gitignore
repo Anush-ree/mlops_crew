@@ -220,4 +220,6 @@ __marimo__/
 
 # Local experiment tracking stores
 mlruns/
-logs/
+logs/*
+!logs/.gitkeep
+outputs/
