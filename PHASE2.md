@@ -1,281 +1,243 @@
-# PHASE 2: Enhancing ML Operations
+# Phase 2 Report: Enhancing ML Operations
 
-## Scope
+This report summarizes the Phase 2 implementation and how to reproduce the
+outputs.
 
-Phase 2 extends the Phase 1 phishing classifier from a 60% baseline run to an
-80% reproducible modeling run. This branch implements the model-development and
-experiment-operations portion of Phase 2:
+## What Phase 2 Adds
 
-- Section 2: Monitoring and debugging
-- Section 3: Profiling Python and ML code
-- Section 4: Experiment management and tracking
-- Section 5: Application logging with Rich and rotating log files
-- Section 6: Hydra configuration experiments
+Phase 2 moves the project from the Phase 1 60% baseline to an 80% data workflow.
+The final 20% of the data is still reserved for Phase 3.
 
-Containerization is tracked separately. The DVC production pipeline keeps
-`configs/config.yaml` as the source of truth, while Hydra uses `conf/` as an
-experiment wrapper that overlays config changes and writes scratch artifacts
-under ignored `outputs/hydra/` directories.
+Implemented in this phase:
 
-For reproducible container runs, the repository also includes
-[train.dockerfile](./train.dockerfile) and [predict.dockerfile](./predict.dockerfile).
-Both images are code-only: they install the project dependencies, copy only the
-package files they need, and rely on host-mounted `data/`, `configs/`, `models/`,
-and `reports/` directories when you run them locally.
-
-**For external collaborators:** Before starting work, see [docs/TOOL_DOCUMENTATION.md](./docs/TOOL_DOCUMENTATION.md)
-for setup and usage instructions for every tool in this project (DVC, MLflow, Hydra, Docker, pytest, ruff, cProfile, etc.).
+For external collaborators: before starting work, see the tool documentation in
+the repository docs for setup and usage instructions for each integrated tool
+(DVC, MLflow, Hydra, Docker, pytest, ruff, cProfile, and related helpers).
+The docs are intended to make it straightforward to clone the repository,
+restore data, build the containers, and reproduce the Phase 2 outputs without
+needing any internal team context.
 
 ## Data Versioning
+- deterministic DVC data partitions for Phase 1 reference, Phase 2 increment,
+  Phase 2 sample, and Phase 3 holdout
+- split validation and source-manifest generation
+- monitoring reports for resource usage, inference latency, and divergence
+- cProfile scripts for training and inference
+- MLflow experiment tracking for model runs and artifacts
+- Rich console logging and rotating runtime file logs
+- Hydra experiment runs for config override demonstrations
+- TF-IDF model comparison across dummy, logistic regression, linear SVC, and
+  Complement NB
+- transformer-ready JSONL dataset export for future fine-tuning
+- Docker containerization
 
-The raw combined dataset has 82,486 rows. Phase 2 uses 80% of that data and
-holds the final 20% for Phase 3.
+The Docker images are intentionally code-only. They do not bake data into the
+image; instead, they mount the local `data/`, `configs/`, `models/`, and
+`reports/` directories so the same build can be used to reproduce training and
+prediction on any machine with Docker installed.
 
-| Partition         |   Rows | Purpose                         |
-| ----------------- | -----: | ------------------------------- |
-| Phase 1 reference | 49,492 | Previous 60% baseline/reference |
-| Phase 2 increment | 16,497 | New 20% added in Phase 2        |
-| Phase 2 sample    | 65,989 | Training input for this phase   |
-| Phase 3 holdout   | 16,497 | Reserved for the final phase    |
+## How to Reproduce
 
-The pipeline also writes `data/interim/source_manifest.csv`, a DVC-tracked
-source-block manifest for the combined raw file. The manifest validates source
-block row counts and label distributions for Enron, Ling, CEAS 2008,
-SpamAssassin, Nigerian Fraud, and Nazario. The source order was confirmed from
-source-specific text prefixes in the combined file. This avoids recombining or
-duplicating the existing dataset.
+Run these commands from the repository root.
 
-After `split`, the `validate` DVC stage writes `data/processed/validation_report.json`
-(a row-count and label-distribution snapshot). Training and transformer export
-depend on that artifact so `dvc repro` cannot skip validation.
-
-### Pipeline versioning note
-
-Phase 1 used a single 60% stratified sample on `main`. Phase 2 replaces that
-with deterministic phase partitions (`sample.py`), explicit holdout reservation,
-and DVC stages in `dvc.yaml`. There is no separate legacy preprocess script in
-this branch; `reports/metrics/phase1_baseline/` is the frozen Phase 1 metric
-snapshot for comparisons.
-
-## Monitoring and Debugging
-
-Implemented monitoring/debugging checks:
-
-- Deterministic 60/20/20 phase partitioning with non-overlap checks.
-- Post-split validation writes `data/processed/validation_report.json` (DVC stage).
-- Source manifest validation checks source block row counts and label distributions.
-- Training resource sampling writes `reports/monitoring/training_resource_usage.csv`.
-- Inference latency benchmark writes `reports/monitoring/inference_latency.csv`.
-- Data and prediction divergence report writes:
-  - `reports/divergence/phase2_divergence_report.json`
-  - `reports/divergence/phase2_divergence_summary.md`
-
-Current divergence summary:
-
-| Check                               |   Result |
-| ----------------------------------- | -------: |
-| Label Jensen-Shannon distance       | 0.000007 |
-| Source Jensen-Shannon distance      | 0.014327 |
-| Text length KS statistic            | 0.005134 |
-| New-token rate in Phase 2 increment | 0.039855 |
-| Prediction Jensen-Shannon distance  | 0.000207 |
-
-The Phase 2 increment is very close to the Phase 1 reference distribution by
-label and prediction distribution. The source distribution is also stable enough
-for this phase, but it is now measurable and should be reviewed again whenever a
-new source is added.
-
-Debugging entry points:
+### 1. Create the Environment
 
 ```bash
-python -m pdb -m mlops_crew.models.train_model
-python -m pdb -m mlops_crew.monitoring.divergence
-PATH="$PWD/.venv/bin:$PATH" dvc repro
-PATH="$PWD/.venv/bin:$PATH" dvc status
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+pip install -r requirements_dev.txt
+pip install -e .
 ```
 
-## Profiling and Optimization
+Windows PowerShell users should follow `docs/windows_setup.md` and run the
+PowerShell verification command instead of the Bash script shown later:
 
-Profiling scripts:
+```powershell
+.\scripts\verify_phase2.ps1 -ReplayMlflow -CheckRemote
+```
+
+### 2. Restore DVC Artifacts
 
 ```bash
-make profile-train
-make profile-predict
+dvc pull
+dvc status
+dvc status -c
 ```
 
-By default the profiling scripts read the normal DVC inputs but write temporary
-outputs under `reports/profiling/scratch/` and disable MLflow tracking. This
-prevents profiling from creating duplicate experiment runs or dirtying the
-DVC-tracked model, prediction, metric, and monitoring outputs. Use
-`python scripts/profile_train.py --with-tracking` only when you explicitly want
-to profile MLflow logging overhead too. Use `--output-dir` to write profile
-summaries to ignored scratch space during verification.
+`dvc pull` and `dvc status -c` require access to the configured DVC remote.
 
-Generated artifacts:
+Expected status:
 
-- `reports/profiling/train_model_cprofile.txt`
-- `reports/profiling/predict_model_cprofile.txt`
-- Raw `.prof` files are generated locally and ignored by Git.
-
-Baseline profiling findings:
-
-- Training under cProfile took about 147 seconds on the local machine used for
-  this run. Normal DVC training can be faster because cProfile adds overhead.
-- TF-IDF `fit_transform` dominates training time, which is expected for this
-  pipeline because every classifier owns a full TF-IDF pipeline.
-- The committed profile disables MLflow tracking so the profiler output stays
-  focused on model training and does not create duplicate local runs.
-- Saved-model inference is fast after the model is loaded: the 1,024-row batch
-  benchmark is roughly 8k records/second on this machine.
-
-### Optimization evaluated (deferred)
-
-| Candidate change                                       | Expected effect                                           | Decision                                                                               |
-| ------------------------------------------------------ | --------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| Shared TF-IDF matrix across the four sklearn pipelines | Large training-time reduction (TF-IDF dominates cProfile) | **Deferred** — adds coupling between models and complicates MLflow per-model artifacts |
-| Smaller `max_features` or fewer n-grams                | Faster vectorization, lower memory                        | **Deferred** — risks recall/F2 on phishing detection                                   |
-| MLflow disabled during profiling (already done)        | Cleaner profiler signal                                   | **Applied** in `scripts/profile_train.py` default                                      |
-
-No other code change was applied in this phase because model quality is already
-strong and the current per-model pipelines are easier to reproduce and compare.
-Revisit shared TF-IDF caching if repeated experiment sweeps make training time a
-blocker.
-
-## Experiment Tracking
-
-MLflow tracking is configured in `configs/config.yaml`:
-
-```yaml
-tracking:
-  enabled: true
-  experiment_name: phishing-email-phase2
-  tracking_uri: file:./mlruns
+```text
+Data and pipelines are up to date.
+Cache and remote 'storage' are in sync.
 ```
 
-The local `mlruns/` directory is gitignored. A training run populates it when
-the train stage actually executes. If `dvc pull` already restored every DVC
-output and `dvc repro` skips training, populate the UI with the scratch replay:
+### 3. Reproduce the Pipeline
+
+```bash
+dvc repro
+```
+
+This regenerates the data partitions, cleaned data, train/validation/test
+splits, validation report, transformer dataset, trained models, metrics,
+monitoring reports, plots, and divergence report if any dependency changed.
+
+### 4. Run Code Quality and Tests
+
+```bash
+ruff check --no-cache .
+ruff format --check .
+mypy src
+pytest tests/ --cov=mlops_crew --cov-report=xml
+```
+
+### 5. Run the Phase 2 Verification Script
+
+```bash
+scripts/verify_phase2.sh --replay-mlflow --check-remote
+```
+
+### 6. Build and Run the Docker Images
+
+Phase 2 includes two code-only container entry points:
+
+- [train.dockerfile](./train.dockerfile) packages the training workflow and
+  runs `mlops_crew.models.train_model`.
+- [predict.dockerfile](./predict.dockerfile) packages the inference workflow
+  and runs `mlops_crew.models.predict_model`.
+
+Purpose: these images reproduce the same training and prediction logic across
+machines, while keeping the project files and DVC-tracked data mounted from the
+host.
+
+Setup: build both images from the repository root after restoring the local
+environment and data.
+
+```bash
+docker build -f train.dockerfile . -t train:latest
+docker build -f predict.dockerfile . -t predict:latest
+```
+
+Use training with the project root, data, and config directories mounted into
+the container:
+
+```bash
+docker run --rm \
+  -e MLOPS_CREW_PROJECT_ROOT=/app \
+  -v "$PWD/data:/app/data" \
+  -v "$PWD/configs:/app/configs" \
+  train:latest
+```
+
+Use prediction with the saved model and report directories mounted from the
+host:
+
+```bash
+docker run --rm \
+  -e MLOPS_CREW_PROJECT_ROOT=/app \
+  -v "$PWD/data:/app/data" \
+  -v "$PWD/configs:/app/configs" \
+  -v "$PWD/models:/app/models" \
+  -v "$PWD/reports:/app/reports" \
+  predict:latest \
+  --model-path /app/models/best_model.joblib \
+  --input /app/data/processed/test.csv \
+  --output /app/reports/predictions/batch_predictions.csv
+```
+
+If you prefer the wrappers used by the rest of the project, run
+`make docker-train` and `make docker-predict` instead.
+
+
+
+Expected summary:
+
+```text
+Best model: linear_svc
+Validation F2: 0.992381
+Test F2: 0.991182
+Test false-negative rate: 0.007778
+Label JS distance: 0.000007
+Source JS distance: 0.014327
+Transformer JSONL rows: test=9862, train=46020, val=9861
+```
+
+## Optional Commands
+
+Run these only when the related evidence needs to be regenerated.
+
+### MLflow UI
 
 ```bash
 scripts/verify_phase2.sh --replay-mlflow
+make mlflow-ui
 ```
 
-Open the UI with:
-
-```bash
-make mlflow-ui              # serves http://localhost:5001
-```
-
-Exact wiring (where logging happens in the code):
-
-| What gets logged                                                    | Code site                                                                                    |
-| ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| Parent run open + close + config artifact                           | `src/mlops_crew/tracking/mlflow_tracking.py:27-48` (`training_run`)                          |
-| Per-model nested run with model params + TF-IDF params              | `src/mlops_crew/tracking/mlflow_tracking.py:51-72` (`model_run`)                             |
-| Dataset rows + label counts                                         | `src/mlops_crew/tracking/mlflow_tracking.py:75-79` (`log_dataset_info`)                      |
-| Validation + test metrics                                           | `src/mlops_crew/tracking/mlflow_tracking.py:82-86` (`log_metrics`)                           |
-| Joblib + sklearn flavor + optional prediction CSVs + monitoring CSV | `src/mlops_crew/tracking/mlflow_tracking.py:89-118` (`log_artifacts`, `log_model_artifacts`) |
-| Call sites that drive all of the above                              | `src/mlops_crew/models/train_model.py` (`train`)                                             |
-
-What a grader will see in the UI after a training run or `--replay-mlflow` +
-`make mlflow-ui`:
-
-- Experiment `phishing-email-phase2`.
-- One parent run named `phase2-training` per training invocation, with
-  `config/config.yaml` attached as an artifact and four nested runs.
-- Each nested run (`dummy`, `logistic_regression`, `linear_svc`,
-  `complement_nb`) has params (`model_name`, `model.*`, `tfidf.*`), metrics
-  prefixed `validation_*` / `test_*`, the saved `<model>.joblib` under
-  `joblib/`, the corresponding `val_predictions.csv` / `test_predictions.csv`
-  under `predictions/`, and the sklearn model flavor.
-- The parent run also has `metrics/model_comparison.csv`,
-  `metrics/model_comparison.json`, `metrics/best_model_metrics.json`, and
-  `monitoring/training_resource_usage.csv` as artifacts.
-- Select all four nested runs in the UI and click **Compare** to see the
-  per-metric side-by-side table the professor expects.
-
-If you want the UI to show only one fresh invocation, use
-`scripts/verify_phase2.sh --clean-mlflow`. The replay writes models, metrics,
-predictions, and monitoring CSVs under ignored scratch paths, so it does not
-affect DVC artifacts or Git-tracked files.
-
-The filesystem MLflow backend (`file:./mlruns`) is acceptable for this
-class/local workflow — MLflow 3 prints a deprecation note in favor of a SQLite
-or PostgreSQL backend for shared use; for Phase 3 deployment we will switch the
-URI accordingly without touching any of the call sites above.
-
-## Application Logging
-
-Application logging is configured in `configs/config.yaml` and implemented in
-`src/mlops_crew/logging_config.py`.
-
-```yaml
-logging:
-  level: INFO
-  log_dir: logs
-  log_file: pipeline.log
-  max_bytes: 10485760
-  backup_count: 5
-  rich_tracebacks: true
-```
-
-Every pipeline entrypoint calls `setup_logging_from_config(config)`, which
-attaches:
-
-- a Rich stdout handler for readable terminal output and tracebacks
-- a rotating structured file handler under `logs/pipeline.log`
-
-The log file format is:
+Open:
 
 ```text
-timestamp | level | module | message
+http://localhost:5001
 ```
 
-Actual log files are local runtime artifacts and are ignored by Git; `logs/.gitkeep`
-keeps the directory visible in the repository.
+`make mlflow-ui` starts a long-running local server. Stop it with `Ctrl+C`.
 
-## Hydra Configuration Experiments
-
-Hydra config files live under `conf/`:
-
-```text
-conf/config.yaml
-conf/experiment/phase2_default.yaml
-conf/experiment/phase2_experimental.yaml
-```
-
-This `conf/` directory is intentionally not a replacement for `configs/`.
-`configs/config.yaml` remains the source of truth for the normal DVC pipeline.
-`conf/` is the required Hydra experiment layer from the assignment: it loads the
-base config, applies only experiment overrides, and records the exact Hydra run
-configuration in `outputs/hydra/.../.hydra/`.
-
-Hydra is used for experiment sweeps through:
+### Hydra Demo
 
 ```bash
-make hydra-train
 make hydra-demo
 ```
 
-`make hydra-demo` runs the same Hydra training script twice:
+This runs:
 
 ```bash
 python -m mlops_crew.train_hydra experiment=phase2_default
 python -m mlops_crew.train_hydra experiment=phase2_experimental
 ```
 
-The Hydra wrapper logs both runs to the `phishing-email-phase2-hydra` MLflow
-experiment. It writes models, metrics, predictions, monitoring CSVs, and the
-effective config under ignored `outputs/hydra/...` paths so demo runs do not
-modify DVC-tracked artifacts. Each run logs tags such as `config_source=hydra`,
-`hydra_experiment`, `data_version`, and `model_version`, plus the effective YAML
-config artifact.
+Hydra outputs are written under ignored `outputs/hydra/...` directories and are
+logged to MLflow.
 
-## Model Experiments
+### Profiling
 
-All models use the same cleaned splits, TF-IDF settings, and evaluation metrics.
-The primary selection metric is validation F2 because recall matters more than
-precision for phishing detection.
+```bash
+make profile-train
+make profile-predict
+```
+
+`make profile-train` is slow because it profiles model training. The
+verification script runs only the lighter profiling smoke check unless
+`--include-slow-profile` is passed.
+
+### Individual Monitoring Commands
+
+```bash
+python -m mlops_crew.data.validate
+python -m mlops_crew.monitoring.inference_latency
+python -m mlops_crew.monitoring.divergence
+```
+
+## Results
+
+### Data Partitions
+
+| Partition | Rows | Use |
+| --- | ---: | --- |
+| Phase 1 reference | 49,492 | Previous 60% baseline reference |
+| Phase 2 increment | 16,497 | New 20% added in Phase 2 |
+| Phase 2 sample | 65,989 | Data used for this phase |
+| Phase 3 holdout | 16,497 | Reserved for final phase |
+
+The existing combined raw dataset is used as the source of truth. Phase 2 does
+not merge the raw source CSVs again. Source membership is tracked through
+`data/interim/source_manifest.csv`.
+
+### Model Summary
+
+All models use the same splits, TF-IDF settings, and evaluation metrics. The
+primary selection metric is validation F2 because phishing false negatives are
+costly.
 
 | Model               |     Val F2 |    Test F2 | Test Recall | Test FNR |
 | ------------------- | ---------: | ---------: | ----------: | -------: |
@@ -286,118 +248,62 @@ precision for phishing detection.
 
 Selected model: `linear_svc`
 
-Artifacts:
+Phase comparison:
 
-- `models/best_model.joblib`
-- `reports/metrics/model_comparison.csv`
-- `reports/metrics/model_comparison.json`
-- `reports/metrics/model_comparison.png`
-- `reports/predictions/*_predictions.csv`
+| Phase | Best model | Val F2 | Test F2 | Test Recall | Test FNR |
+| --- | --- | ---: | ---: | ---: | ---: |
+| Phase 1, 60% data | logistic_regression | 0.9882 | 0.9867 | 0.9881 | 0.0119 |
+| Phase 2, 80% data | linear_svc | 0.9924 | 0.9912 | 0.9922 | 0.0078 |
 
-### Phase 1 → Phase 2 comparison
+### Divergence Summary
 
-`reports/metrics/phase1_baseline/` holds an immutable snapshot of the Phase 1
-metrics (committed from the `main` branch). The Phase 2 model-development
-notebook joins them with the live Phase 2 metrics for a side-by-side view.
+| Check | Value |
+| --- | ---: |
+| Label Jensen-Shannon distance | 0.000007 |
+| Source Jensen-Shannon distance | 0.014327 |
+| Text length KS statistic | 0.005134 |
+| New-token rate in Phase 2 increment | 0.039855 |
+| Prediction Jensen-Shannon distance | 0.000207 |
 
-| Phase                    | Best model          | Val F2 | Test F2 | Test Recall |   Test FNR |
-| ------------------------ | ------------------- | -----: | ------: | ----------: | ---------: |
-| 1 (60% sample, LR only)  | logistic_regression | 0.9882 |  0.9867 |      0.9881 |     0.0119 |
-| 2 (80% sample, 4 models) | linear_svc          | 0.9924 |  0.9912 |      0.9922 | **0.0078** |
+The Phase 2 increment is close to the Phase 1 reference by label distribution
+and prediction distribution. Source distribution is measured and should continue
+to be reviewed when new data is added.
 
-False-negative rate on the test split drops by roughly **35 %** between Phase 1
-and Phase 2. That gain comes from two changes pulling in the same direction:
-the additional 20 % of training data, and the addition of `linear_svc` as a
-candidate model family. Per-model deltas are in
-`notebooks/phase2_model_development.ipynb` (cells 11–14).
+## Artifact Index
 
-### Notebooks (developer experimentation view)
+| Output | Path |
+| --- | --- |
+| DVC pipeline | `dvc.yaml`, `dvc.lock` |
+| Phase partitions | `data/interim/phishing_email_phase*.csv` |
+| Source manifest | `data/interim/source_manifest.csv` |
+| Split validation report | `data/processed/validation_report.json` |
+| Train/validation/test splits | `data/processed/train.csv`, `val.csv`, `test.csv` |
+| Best model | `models/best_model.joblib` |
+| Per-model artifacts | `models/*.joblib` |
+| Metrics | `reports/metrics/*_metrics.json` |
+| Model comparison table | `reports/metrics/model_comparison.csv` |
+| Model comparison plot | `reports/metrics/model_comparison.png` |
+| Predictions | `reports/predictions/*_predictions.csv` |
+| Training resource usage | `reports/monitoring/training_resource_usage.csv` |
+| Inference latency | `reports/monitoring/inference_latency.csv` |
+| Divergence report | `reports/divergence/phase2_divergence_report.json` |
+| Divergence summary | `reports/divergence/phase2_divergence_summary.md` |
+| Training profile | `reports/profiling/train_model_cprofile.txt` |
+| Inference profile | `reports/profiling/predict_model_cprofile.txt` |
+| MLflow screenshots | `reports/mlflow/` |
+| Logging screenshot | `reports/logging/rich_logging.png` |
+| Transformer JSONL dataset | `data/processed/transformer/` |
 
-Two Phase 2 notebooks were added, both committed with executed outputs so
-graders can review without re-running:
+## Transformer Dataset
 
-- `notebooks/phase2_model_development.ipynb` — partition counts, per-model
-  metrics, Phase 1 vs Phase 2 delta table + chart, cross-evaluation of the
-  Phase 1-style LR on the Phase 2 increment, MLflow run enumeration, false
-  negative spot-check.
-- `notebooks/phase2_divergence_analysis.ipynb` — label / source / text-length /
-  vocabulary / prediction drift, plus a per-source false-negative breakdown on
-  the Phase 2 increment.
+Transformer or LLM fine-tuning was not run in Phase 2. The dataset was prepared
+for future use.
 
-Run with `jupyter notebook notebooks/` or read inline on GitHub. Both consume
-only artifacts produced by `make repro`.
+| Split | Rows | Path |
+| --- | ---: | --- |
+| Train | 46,020 | `data/processed/transformer/train.jsonl` |
+| Validation | 9,861 | `data/processed/transformer/val.jsonl` |
+| Test | 9,862 | `data/processed/transformer/test.jsonl` |
 
-## Transformer Dataset Export
-
-Fine-tuning a transformer/LLM is not run in this phase because it would add a
-larger training dependency and compute requirement. The pipeline does prepare a
-versioned dataset for that work:
-
-```bash
-make transformer-data
-```
-
-Outputs:
-
-- `data/processed/transformer/train.jsonl`
-- `data/processed/transformer/val.jsonl`
-- `data/processed/transformer/test.jsonl`
-- `data/processed/transformer/dataset_info.json`
-
-Each JSONL record has `text` and `label` fields and can be loaded with Hugging
-Face `datasets.load_dataset("json", data_files={...})`.
-
-Embedding-based experiments are also deferred. They make sense after the TF-IDF
-baseline is locked because embeddings add external model/version management and
-should be compared under the same metrics and tracking structure.
-
-## Reproduction
-
-Use the project virtualenv so DVC stages run with the same dependencies as CI:
-
-```bash
-python -m venv .venv
-source .venv/bin/activate
-make install
-dvc pull
-make repro
-make test
-make lint
-mypy src/mlops_crew
-scripts/verify_phase2.sh
-```
-
-> The Phase 2 DVC pipeline has been pushed to the S3 remote `storage`
-> (`s3://mlops-crew-data/dvc-store`) so `dvc pull` retrieves every interim,
-> processed, model, and report artifact listed in `dvc.lock`. The Google Drive
-> remote `gdrive_backup` is kept as a fallback. If you are without AWS
-> credentials, run `dvc pull -r gdrive_backup` instead.
-
-Refer to this file for commands to execute: `docs/phase2_reproduction_commands.md`.
-Windows-specific setup (PowerShell, Git Bash, WSL, Chocolatey, optional `make`):
-`docs/windows_setup.md`. Run `scripts/verify_phase2.ps1` in PowerShell or
-`scripts/verify_phase2.sh` in Bash — same checks.
-
-The full DVC pipeline now runs:
-
-```text
-sample -> clean -> split -> validate -> transformer_dataset
-                              -> train -> inference_latency
-                                       -> plot_model_comparison
-sample + source_manifest + train -> divergence
-```
-
-Current `dvc status` result:
-
-```text
-Data and pipelines are up to date.
-```
-
-## Phase 3 Notes
-
-- Use the reserved 20% Phase 3 holdout only when the final model family is
-  selected.
-- If transformer fine-tuning is pursued, start from the JSONL export and log it
-  as a separate MLflow experiment family.
-- For production/shared tracking, replace the file-based MLflow backend with a
-  SQLite or remote tracking backend.
+The JSONL records contain `text` and `label` fields and will be used with
+Hugging Face Datasets in a next transformer experiment.
