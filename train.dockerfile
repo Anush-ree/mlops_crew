@@ -7,6 +7,8 @@
 #       -v ${PWD}/data:/app/data \
 #       -v ${PWD}/configs:/app/configs \
 #       train:latest
+# Verified outcome: successfully trained dummy, logistic_regression,
+# linear_svc, and complement_nb; best model by validation F2 was linear_svc.
 # -----------------------------------------------------------------------------
 
 # Start from a base image
