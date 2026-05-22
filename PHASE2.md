@@ -17,17 +17,26 @@ Containerization is tracked separately. The DVC production pipeline keeps
 experiment wrapper that overlays config changes and writes scratch artifacts
 under ignored `outputs/hydra/` directories.
 
+For reproducible container runs, the repository also includes
+[train.dockerfile](./train.dockerfile) and [predict.dockerfile](./predict.dockerfile).
+Both images are code-only: they install the project dependencies, copy only the
+package files they need, and rely on host-mounted `data/`, `configs/`, `models/`,
+and `reports/` directories when you run them locally.
+
+**For external collaborators:** Before starting work, see [docs/TOOL_DOCUMENTATION.md](./docs/TOOL_DOCUMENTATION.md)
+for setup and usage instructions for every tool in this project (DVC, MLflow, Hydra, Docker, pytest, ruff, cProfile, etc.).
+
 ## Data Versioning
 
 The raw combined dataset has 82,486 rows. Phase 2 uses 80% of that data and
 holds the final 20% for Phase 3.
 
-| Partition | Rows | Purpose |
-| --- | ---: | --- |
+| Partition         |   Rows | Purpose                         |
+| ----------------- | -----: | ------------------------------- |
 | Phase 1 reference | 49,492 | Previous 60% baseline/reference |
-| Phase 2 increment | 16,497 | New 20% added in Phase 2 |
-| Phase 2 sample | 65,989 | Training input for this phase |
-| Phase 3 holdout | 16,497 | Reserved for the final phase |
+| Phase 2 increment | 16,497 | New 20% added in Phase 2        |
+| Phase 2 sample    | 65,989 | Training input for this phase   |
+| Phase 3 holdout   | 16,497 | Reserved for the final phase    |
 
 The pipeline also writes `data/interim/source_manifest.csv`, a DVC-tracked
 source-block manifest for the combined raw file. The manifest validates source
@@ -63,13 +72,13 @@ Implemented monitoring/debugging checks:
 
 Current divergence summary:
 
-| Check | Result |
-| --- | ---: |
-| Label Jensen-Shannon distance | 0.000007 |
-| Source Jensen-Shannon distance | 0.014327 |
-| Text length KS statistic | 0.005134 |
+| Check                               |   Result |
+| ----------------------------------- | -------: |
+| Label Jensen-Shannon distance       | 0.000007 |
+| Source Jensen-Shannon distance      | 0.014327 |
+| Text length KS statistic            | 0.005134 |
 | New-token rate in Phase 2 increment | 0.039855 |
-| Prediction Jensen-Shannon distance | 0.000207 |
+| Prediction Jensen-Shannon distance  | 0.000207 |
 
 The Phase 2 increment is very close to the Phase 1 reference distribution by
 label and prediction distribution. The source distribution is also stable enough
@@ -121,11 +130,11 @@ Baseline profiling findings:
 
 ### Optimization evaluated (deferred)
 
-| Candidate change | Expected effect | Decision |
-| --- | --- | --- |
+| Candidate change                                       | Expected effect                                           | Decision                                                                               |
+| ------------------------------------------------------ | --------------------------------------------------------- | -------------------------------------------------------------------------------------- |
 | Shared TF-IDF matrix across the four sklearn pipelines | Large training-time reduction (TF-IDF dominates cProfile) | **Deferred** — adds coupling between models and complicates MLflow per-model artifacts |
-| Smaller `max_features` or fewer n-grams | Faster vectorization, lower memory | **Deferred** — risks recall/F2 on phishing detection |
-| MLflow disabled during profiling (already done) | Cleaner profiler signal | **Applied** in `scripts/profile_train.py` default |
+| Smaller `max_features` or fewer n-grams                | Faster vectorization, lower memory                        | **Deferred** — risks recall/F2 on phishing detection                                   |
+| MLflow disabled during profiling (already done)        | Cleaner profiler signal                                   | **Applied** in `scripts/profile_train.py` default                                      |
 
 No other code change was applied in this phase because model quality is already
 strong and the current per-model pipelines are easier to reproduce and compare.
@@ -159,14 +168,14 @@ make mlflow-ui              # serves http://localhost:5001
 
 Exact wiring (where logging happens in the code):
 
-| What gets logged | Code site |
-| --- | --- |
-| Parent run open + close + config artifact | `src/mlops_crew/tracking/mlflow_tracking.py:27-48` (`training_run`) |
-| Per-model nested run with model params + TF-IDF params | `src/mlops_crew/tracking/mlflow_tracking.py:51-72` (`model_run`) |
-| Dataset rows + label counts | `src/mlops_crew/tracking/mlflow_tracking.py:75-79` (`log_dataset_info`) |
-| Validation + test metrics | `src/mlops_crew/tracking/mlflow_tracking.py:82-86` (`log_metrics`) |
+| What gets logged                                                    | Code site                                                                                    |
+| ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Parent run open + close + config artifact                           | `src/mlops_crew/tracking/mlflow_tracking.py:27-48` (`training_run`)                          |
+| Per-model nested run with model params + TF-IDF params              | `src/mlops_crew/tracking/mlflow_tracking.py:51-72` (`model_run`)                             |
+| Dataset rows + label counts                                         | `src/mlops_crew/tracking/mlflow_tracking.py:75-79` (`log_dataset_info`)                      |
+| Validation + test metrics                                           | `src/mlops_crew/tracking/mlflow_tracking.py:82-86` (`log_metrics`)                           |
 | Joblib + sklearn flavor + optional prediction CSVs + monitoring CSV | `src/mlops_crew/tracking/mlflow_tracking.py:89-118` (`log_artifacts`, `log_model_artifacts`) |
-| Call sites that drive all of the above | `src/mlops_crew/models/train_model.py` (`train`) |
+| Call sites that drive all of the above                              | `src/mlops_crew/models/train_model.py` (`train`)                                             |
 
 What a grader will see in the UI after a training run or `--replay-mlflow` +
 `make mlflow-ui`:
@@ -268,12 +277,12 @@ All models use the same cleaned splits, TF-IDF settings, and evaluation metrics.
 The primary selection metric is validation F2 because recall matters more than
 precision for phishing detection.
 
-| Model | Val F2 | Test F2 | Test Recall | Test FNR |
-| --- | ---: | ---: | ---: | ---: |
-| Dummy | 0.8449 | 0.8449 | 1.0000 | 0.0000 |
-| Logistic Regression | 0.9882 | 0.9903 | 0.9918 | 0.0082 |
-| Linear SVC | **0.9924** | **0.9912** | 0.9922 | 0.0078 |
-| Complement NB | 0.9453 | 0.9512 | 0.9417 | 0.0583 |
+| Model               |     Val F2 |    Test F2 | Test Recall | Test FNR |
+| ------------------- | ---------: | ---------: | ----------: | -------: |
+| Dummy               |     0.8449 |     0.8449 |      1.0000 |   0.0000 |
+| Logistic Regression |     0.9882 |     0.9903 |      0.9918 |   0.0082 |
+| Linear SVC          | **0.9924** | **0.9912** |      0.9922 |   0.0078 |
+| Complement NB       |     0.9453 |     0.9512 |      0.9417 |   0.0583 |
 
 Selected model: `linear_svc`
 
@@ -291,10 +300,10 @@ Artifacts:
 metrics (committed from the `main` branch). The Phase 2 model-development
 notebook joins them with the live Phase 2 metrics for a side-by-side view.
 
-| Phase | Best model | Val F2 | Test F2 | Test Recall | Test FNR |
-| --- | --- | ---: | ---: | ---: | ---: |
-| 1 (60% sample, LR only) | logistic_regression | 0.9882 | 0.9867 | 0.9881 | 0.0119 |
-| 2 (80% sample, 4 models) | linear_svc | 0.9924 | 0.9912 | 0.9922 | **0.0078** |
+| Phase                    | Best model          | Val F2 | Test F2 | Test Recall |   Test FNR |
+| ------------------------ | ------------------- | -----: | ------: | ----------: | ---------: |
+| 1 (60% sample, LR only)  | logistic_regression | 0.9882 |  0.9867 |      0.9881 |     0.0119 |
+| 2 (80% sample, 4 models) | linear_svc          | 0.9924 |  0.9912 |      0.9922 | **0.0078** |
 
 False-negative rate on the test split drops by roughly **35 %** between Phase 1
 and Phase 2. That gain comes from two changes pulling in the same direction:

@@ -29,9 +29,13 @@ COPY src/mlops_crew/logging_config.py src/mlops_crew/logging_config.py
 COPY src/mlops_crew/data/__init__.py src/mlops_crew/data/__init__.py
 COPY src/mlops_crew/evaluation/__init__.py src/mlops_crew/evaluation/__init__.py
 COPY src/mlops_crew/evaluation/metrics.py src/mlops_crew/evaluation/metrics.py
+COPY src/mlops_crew/monitoring/__init__.py src/mlops_crew/monitoring/__init__.py
+COPY src/mlops_crew/monitoring/resource_monitor.py src/mlops_crew/monitoring/resource_monitor.py
 COPY src/mlops_crew/models/__init__.py src/mlops_crew/models/__init__.py
 COPY src/mlops_crew/models/train_model.py src/mlops_crew/models/train_model.py
 COPY src/mlops_crew/models/text_classifiers.py src/mlops_crew/models/text_classifiers.py
+COPY src/mlops_crew/tracking/__init__.py src/mlops_crew/tracking/__init__.py
+COPY src/mlops_crew/tracking/mlflow_tracking.py src/mlops_crew/tracking/mlflow_tracking.py
 COPY src/mlops_crew/utils/__init__.py src/mlops_crew/utils/__init__.py
 COPY src/mlops_crew/utils/io.py src/mlops_crew/utils/io.py
 COPY src/mlops_crew/utils/seed.py src/mlops_crew/utils/seed.py

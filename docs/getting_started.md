@@ -79,6 +79,47 @@ python -m mlops_crew.models.predict_model \
   --output reports/predictions/manual_predictions.csv
 ```
 
+### Docker Workflow
+
+The repo also includes Docker images for training and batch prediction. Use
+these when you want a reproducible container that mounts the same host data and
+config files used by the local workflow.
+
+Build the images from the repository root:
+
+```bash
+docker build -f train.dockerfile . -t train:latest
+docker build -f predict.dockerfile . -t predict:latest
+```
+
+Run training:
+
+```bash
+docker run --rm \
+  -e MLOPS_CREW_PROJECT_ROOT=/app \
+  -v "$PWD/data:/app/data" \
+  -v "$PWD/configs:/app/configs" \
+  train:latest
+```
+
+Run prediction:
+
+```bash
+docker run --rm \
+  -e MLOPS_CREW_PROJECT_ROOT=/app \
+  -v "$PWD/data:/app/data" \
+  -v "$PWD/configs:/app/configs" \
+  -v "$PWD/models:/app/models" \
+  -v "$PWD/reports:/app/reports" \
+  predict:latest \
+  --model-path /app/models/best_model.joblib \
+  --input /app/data/processed/test.csv \
+  --output /app/reports/predictions/batch_predictions.csv
+```
+
+If you prefer the Makefile wrappers, run `make docker-train` or
+`make docker-predict`.
+
 ## Development Workflow
 
 ### Running Tests

@@ -6,10 +6,10 @@
 
 - Team Name: MLOps Crew
 - Team Members (Name & Email):
-    1. Anushree Bachhav ([abachhav@depaul.edu](mailto:abachhav@depaul.edu))
-    2. Krishna Kalakonda ([kkalakon@depaul.edu](mailto:kkalakon@depaul.edu))
-    3. Muhammad Anas ([MuhammadAnasPSI2@gmail.com](MuhammadAnasPSI2@gmail.com))
-    4. Kirtankumar Parekh ([kparekh2@depaul.edu](mailto:kparekh2@depaul.edu))
+  1. Anushree Bachhav ([abachhav@depaul.edu](mailto:abachhav@depaul.edu))
+  2. Krishna Kalakonda ([kkalakon@depaul.edu](mailto:kkalakon@depaul.edu))
+  3. Muhammad Anas ([MuhammadAnasPSI2@gmail.com](MuhammadAnasPSI2@gmail.com))
+  4. Kirtankumar Parekh ([kparekh2@depaul.edu](mailto:kparekh2@depaul.edu))
 - Course & Section: [SE489] ML Engineering for Production (MLOps)
 
 ## 2. Project overview
@@ -76,6 +76,7 @@ Data is versioned with DVC and stored on S3 (Google Drive is kept as a backup
 remote). Request AWS credentials from a teammate, then:
 
 Bash:
+
 ```bash
 git pull
 pip install dvc-s3
@@ -83,9 +84,68 @@ aws configure          # region: us-east-2
 dvc pull               # download raw + processed data
 ```
 
+### Containerized training and prediction
+
+The repository includes two code-only Docker images:
+
+- [train.dockerfile](./train.dockerfile) builds the training image and runs
+  `mlops_crew.models.train_model`.
+- [predict.dockerfile](./predict.dockerfile) builds the prediction image and
+  runs `mlops_crew.models.predict_model`.
+
+Both images rely on host-mounted project files instead of copying data into the
+image. This keeps the build small and makes the container use the same DVC-
+tracked inputs as the local workflow.
+
+Build them from the repo root:
+
+```bash
+docker build -f train.dockerfile . -t train:latest
+docker build -f predict.dockerfile . -t predict:latest
+```
+
+Run training with the local DVC data and config mounted into `/app`:
+
+```bash
+docker run --rm \
+  -e MLOPS_CREW_PROJECT_ROOT=/app \
+  -v "$PWD/data:/app/data" \
+  -v "$PWD/configs:/app/configs" \
+  train:latest
+```
+
+Run prediction with the saved model, processed test data, and output folder
+mounted from the host:
+
+```bash
+docker run --rm \
+  -e MLOPS_CREW_PROJECT_ROOT=/app \
+  -v "$PWD/data:/app/data" \
+  -v "$PWD/configs:/app/configs" \
+  -v "$PWD/models:/app/models" \
+  -v "$PWD/reports:/app/reports" \
+  predict:latest \
+  --model-path /app/models/best_model.joblib \
+  --input /app/data/processed/test.csv \
+  --output /app/reports/predictions/batch_predictions.csv
+```
+
+If you prefer the one-command wrappers, use `make docker-train` and
+`make docker-predict`.
+
+### Tool Documentation
+
+For complete setup and usage instructions for every tool integrated into this project,
+see [docs/TOOL_DOCUMENTATION.md](./docs/TOOL_DOCUMENTATION.md). This guide covers:
+- Purpose and setup for each tool
+- How to use tools in the project
+- Integration summary and quick reference
+- External collaborators should start here before cloning and reproducing.
+
 ### Common commands
 
 Bash:
+
 ```bash
 make data       # sample, source manifest, clean, split, validate, transformer export
 make train      # train all configured models, write metrics + predictions
@@ -98,6 +158,8 @@ make profile-train        # cProfile the training entrypoint
 make profile-predict      # cProfile saved-model inference
 make hydra-demo           # run two Hydra-configured MLflow experiments
 make mlflow-ui            # open local MLflow UI on port 5001
+make docker-train         # build and run the training container
+make docker-predict       # build and run the prediction container
 make repro      # reproduce the full DVC pipeline end to end
 scripts/verify_phase2.sh  # Bash: DVC repro + CI checks + Phase 2 smoke checks
 scripts/verify_phase2.ps1 # PowerShell (Windows): same checks as the .sh script
@@ -110,6 +172,7 @@ make format     # ruff fix + format
 ### Reproduce results
 
 Bash:
+
 ```bash
 make install
 dvc pull
@@ -150,6 +213,7 @@ src/mlops_crew/
   evaluation/, monitoring/, tracking/
 scripts/verify_phase2.ps1|.sh       grader verification (Windows + Bash)
 PHASE2.md                           Phase 2 deliverable narrative
+docs/TOOL_DOCUMENTATION.md          Complete tool setup and usage guide
 docs/windows_setup.md               Windows reproduction guide
 ```
 
