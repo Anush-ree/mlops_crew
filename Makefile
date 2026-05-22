@@ -22,7 +22,7 @@ transformer-data:
 
 # Train every model listed in configs/config.yaml under modeling.models
 train:
-	python -m mlops_crew.train_model
+	python -m mlops_crew.models.train_model
 
 # Train through Hydra using conf/ overrides. Outputs go under ignored outputs/hydra/.
 hydra-train:
@@ -34,7 +34,7 @@ hydra-demo:
 
 # Score the test set with the best saved model
 predict:
-	python -m mlops_crew.predict_model
+	python -m mlops_crew.models.predict_model
 
 plot:
 	python -m mlops_crew.evaluation.plot_model_comparison

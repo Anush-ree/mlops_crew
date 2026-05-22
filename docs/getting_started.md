@@ -73,7 +73,7 @@ make predict
 With custom paths:
 
 ```bash
-python -m mlops_crew.predict_model \
+python -m mlops_crew.models.predict_model \
   --model-path models/best_model.joblib \
   --input data/processed/test.csv \
   --output reports/predictions/manual_predictions.csv
@@ -133,6 +133,9 @@ mlops_crew/                  # Repository root
 │       ├── monitoring/                # Divergence, latency, resource usage
 │       ├── tracking/                  # MLflow helpers
 │       ├── utils/                     # seed, io
+│       ├── models/                    # train/predict CLI wrappers
+│       │   ├── train_model.py
+│       │   └── predict_model.py
 │       ├── train_model.py
 │       ├── train_hydra.py
 │       └── predict_model.py

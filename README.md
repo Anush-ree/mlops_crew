@@ -144,6 +144,8 @@ src/mlops_crew/
     export_transformer_dataset.py   JSONL export for future transformer work
     make_dataset.py                 local equivalent of data stages through validate
   models/text_classifiers.py        TF-IDF + classifier sklearn pipelines
+  models/train_model.py             CLI wrapper for Phase 2 training
+  models/predict_model.py           CLI wrapper for Phase 2 prediction
   train_model.py, train_hydra.py, predict_model.py
   evaluation/, monitoring/, tracking/
 scripts/verify_phase2.ps1|.sh       grader verification (Windows + Bash)
