@@ -1,0 +1,13 @@
+# @package _global_
+
+tracking:
+  experiment_name: phishing-email-phase2-hydra
+
+features:
+  tfidf:
+    max_features: 20000
+    ngram_range: [1, 2]
+
+modeling:
+  logistic_regression:
+    C: 1.0

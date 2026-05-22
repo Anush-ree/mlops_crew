@@ -9,14 +9,36 @@ stages:
       - src/mlops_crew/data/sample.py
       - src/mlops_crew/utils/io.py
     outs:
-      - data/interim/phishing_email_phase1_sample.csv
+      - data/interim/phishing_email_phase1_reference.csv
+      - data/interim/phishing_email_phase2_increment.csv
+      - data/interim/phishing_email_phase2_sample.csv
+      - data/interim/phishing_email_phase3_holdout.csv
       - data/interim/sample_summary.json
+
+  source_manifest:
+    cmd: python -m mlops_crew.data.source_manifest
+    deps:
+      - configs/config.yaml
+      - data/raw/archive/CEAS_08.csv
+      - data/raw/archive/Enron.csv
+      - data/raw/archive/Ling.csv
+      - data/raw/archive/Nazario.csv
+      - data/raw/archive/Nigerian_Fraud.csv
+      - data/raw/archive/SpamAssasin.csv
+      - data/raw/archive/phishing_email.csv
+      - src/mlops_crew/config.py
+      - src/mlops_crew/data/__init__.py
+      - src/mlops_crew/data/source_manifest.py
+      - src/mlops_crew/utils/io.py
+    outs:
+      - data/interim/source_manifest.csv
+      - data/interim/source_manifest_summary.json
 
   clean:
     cmd: python -m mlops_crew.data.clean
     deps:
       - configs/config.yaml
-      - data/interim/phishing_email_phase1_sample.csv
+      - data/interim/phishing_email_phase2_sample.csv
       - src/mlops_crew/config.py
       - src/mlops_crew/data/__init__.py
       - src/mlops_crew/data/clean.py
@@ -40,29 +62,69 @@ stages:
       - data/processed/test.csv
       - data/processed/split_summary.json
 
+  validate:
+    cmd: python -m mlops_crew.data.validate
+    deps:
+      - configs/config.yaml
+      - data/processed/cleaned.csv
+      - data/processed/train.csv
+      - data/processed/val.csv
+      - data/processed/test.csv
+      - src/mlops_crew/config.py
+      - src/mlops_crew/data/__init__.py
+      - src/mlops_crew/data/validate.py
+      - src/mlops_crew/utils/io.py
+    outs:
+      - data/processed/validation_report.json
+
+  transformer_dataset:
+    cmd: python -m mlops_crew.data.export_transformer_dataset
+    deps:
+      - configs/config.yaml
+      - data/processed/validation_report.json
+      - data/processed/train.csv
+      - data/processed/val.csv
+      - data/processed/test.csv
+      - src/mlops_crew/config.py
+      - src/mlops_crew/data/__init__.py
+      - src/mlops_crew/data/export_transformer_dataset.py
+      - src/mlops_crew/utils/io.py
+    outs:
+      - data/processed/transformer
+
   train:
     cmd: python -m mlops_crew.models.train_model
     deps:
       - configs/config.yaml
+      - data/processed/validation_report.json
       - data/processed/train.csv
       - data/processed/val.csv
       - data/processed/test.csv
       - src/mlops_crew/config.py
       - src/mlops_crew/data/__init__.py
       - src/mlops_crew/evaluation/metrics.py
+      - src/mlops_crew/monitoring/resource_monitor.py
       - src/mlops_crew/models/text_classifiers.py
       - src/mlops_crew/models/train_model.py
+      - src/mlops_crew/tracking/mlflow_tracking.py
       - src/mlops_crew/utils/io.py
       - src/mlops_crew/utils/seed.py
     outs:
       - models/dummy.joblib
       - models/logistic_regression.joblib
+      - models/linear_svc.joblib
+      - models/complement_nb.joblib
       - models/best_model.joblib
+      - reports/monitoring/training_resource_usage.csv
       - reports/predictions
     metrics:
       - reports/metrics/dummy_metrics.json:
           cache: false
       - reports/metrics/logistic_regression_metrics.json:
+          cache: false
+      - reports/metrics/linear_svc_metrics.json:
+          cache: false
+      - reports/metrics/complement_nb_metrics.json:
           cache: false
       - reports/metrics/best_model_metrics.json:
           cache: false
@@ -70,3 +132,41 @@ stages:
           cache: false
       - reports/metrics/model_comparison.csv:
           cache: false
+
+  inference_latency:
+    cmd: python -m mlops_crew.monitoring.inference_latency
+    deps:
+      - configs/config.yaml
+      - data/processed/test.csv
+      - models/best_model.joblib
+      - src/mlops_crew/config.py
+      - src/mlops_crew/data/__init__.py
+      - src/mlops_crew/monitoring/inference_latency.py
+    outs:
+      - reports/monitoring/inference_latency.csv
+
+  plot_model_comparison:
+    cmd: python -m mlops_crew.evaluation.plot_model_comparison
+    deps:
+      - configs/config.yaml
+      - reports/metrics/model_comparison.csv
+      - src/mlops_crew/config.py
+      - src/mlops_crew/evaluation/plot_model_comparison.py
+    outs:
+      - reports/metrics/model_comparison.png
+
+  divergence:
+    cmd: python -m mlops_crew.monitoring.divergence
+    deps:
+      - configs/config.yaml
+      - data/interim/phishing_email_phase1_reference.csv
+      - data/interim/phishing_email_phase2_increment.csv
+      - data/interim/source_manifest.csv
+      - models/best_model.joblib
+      - src/mlops_crew/config.py
+      - src/mlops_crew/data/__init__.py
+      - src/mlops_crew/monitoring/divergence.py
+      - src/mlops_crew/utils/io.py
+    outs:
+      - reports/divergence/phase2_divergence_report.json
+      - reports/divergence/phase2_divergence_summary.md

@@ -10,12 +10,13 @@ import pandas as pd
 
 from mlops_crew.config import CONFIG_PATH, load_project_config, resolve_project_path
 from mlops_crew.data import TEXT_COLUMN
-from mlops_crew.logging_config import get_logger, setup_logging
+from mlops_crew.logging_config import get_logger, setup_logging_from_config
 
 logger = get_logger(__name__)
 
 
 def predict(model_path: Path, input_path: Path, output_path: Path) -> None:
+    """Score ``input_path`` and write predictions (and probabilities when available)."""
     logger.info("Loading model from %s", model_path)
     model = joblib.load(model_path)
 
@@ -34,6 +35,7 @@ def predict(model_path: Path, input_path: Path, output_path: Path) -> None:
 
 
 def main() -> None:
+    """CLI entrypoint for batch inference with the saved best model."""
     parser = argparse.ArgumentParser(
         description="Score a CSV file with the trained phishing classifier"
     )
@@ -43,8 +45,8 @@ def main() -> None:
     parser.add_argument("--output", type=Path, default=None)
     args = parser.parse_args()
 
-    setup_logging()
     config = load_project_config(args.config)
+    setup_logging_from_config(config)
     processed_dir = resolve_project_path(config["data"]["processed_dir"])
     model_dir = resolve_project_path(config["modeling"]["output_dir"])
     predictions_dir = resolve_project_path(config["reports"]["predictions_dir"])

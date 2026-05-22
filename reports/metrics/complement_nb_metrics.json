@@ -1,0 +1,36 @@
+{
+  "model_name": "complement_nb",
+  "model_path": "models/complement_nb.joblib",
+  "test": {
+    "accuracy": 0.9652200365037518,
+    "average_precision": 0.9972151837135885,
+    "f1": 0.9657991823711237,
+    "f2": 0.9511744834629586,
+    "false_negative": 300.0,
+    "false_negative_rate": 0.058331713007972,
+    "false_positive": 43.0,
+    "false_positive_rate": 0.00911210002119093,
+    "precision": 0.9911993450675399,
+    "recall": 0.941668286992028,
+    "roc_auc": 0.997204016824684,
+    "true_negative": 4676.0,
+    "true_positive": 4843.0
+  },
+  "test_prediction_path": "reports/predictions/complement_nb_test_predictions.csv",
+  "val_prediction_path": "reports/predictions/complement_nb_val_predictions.csv",
+  "validation": {
+    "accuracy": 0.9604502585944631,
+    "average_precision": 0.9960751902085702,
+    "f1": 0.961023385968419,
+    "f2": 0.9452658068575024,
+    "false_negative": 334.0,
+    "false_negative_rate": 0.06495527032283158,
+    "false_positive": 56.0,
+    "false_positive_rate": 0.01186692095783005,
+    "precision": 0.9884868421052632,
+    "recall": 0.9350447296771685,
+    "roc_auc": 0.9965990246567313,
+    "true_negative": 4663.0,
+    "true_positive": 4808.0
+  }
+}

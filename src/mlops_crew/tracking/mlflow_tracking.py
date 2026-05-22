@@ -1,0 +1,147 @@
+"""Small MLflow wrapper used by the Phase 2 training pipeline."""
+
+from __future__ import annotations
+
+from collections.abc import Iterator
+from contextlib import contextmanager
+from pathlib import Path
+from typing import Any
+
+import mlflow
+import mlflow.sklearn
+import pandas as pd
+
+from mlops_crew.config import PROJECT_ROOT, resolve_project_path
+
+# MLflow params must be scalars; lists/tuples (e.g. ngram_range) are skipped.
+_MLFLOW_PARAM_TYPES = (str, int, float, bool)
+_MLFLOW_METRIC_TYPES = (int, float)
+
+
+def tracking_enabled(config: dict[str, Any]) -> bool:
+    """Return whether MLflow logging is turned on in the project config."""
+    return bool(config.get("tracking", {}).get("enabled", False))
+
+
+def setup_mlflow(config: dict[str, Any]) -> None:
+    """Configure tracking URI and experiment name from config."""
+    tracking = config.get("tracking", {})
+    mlflow.set_tracking_uri(tracking.get("tracking_uri", "file:./mlruns"))
+    mlflow.set_experiment(tracking.get("experiment_name", config["project"]["name"]))
+
+
+def _log_tracking_tags(config: dict[str, Any]) -> None:
+    tags = config.get("tracking", {}).get("tags", {})
+    if tags:
+        mlflow.set_tags({str(key): str(value) for key, value in tags.items()})
+
+
+def _log_config_artifacts(config: dict[str, Any]) -> None:
+    paths = [PROJECT_ROOT / "configs" / "config.yaml"]
+    effective_config_path = config.get("tracking", {}).get("effective_config_path")
+    if effective_config_path:
+        paths.append(Path(effective_config_path))
+    for path in paths:
+        resolved = resolve_project_path(path)
+        if resolved.exists():
+            mlflow.log_artifact(str(resolved), artifact_path="config")
+
+
+@contextmanager
+def training_run(config: dict[str, Any]) -> Iterator[Any]:
+    """Open the parent MLflow run when tracking is enabled."""
+    if not tracking_enabled(config):
+        yield None
+        return
+
+    setup_mlflow(config)
+    tracking = config.get("tracking", {})
+    run_name = tracking.get("run_name", f"phase{config['project'].get('phase', 2)}-training")
+    with mlflow.start_run(run_name=run_name) as run:
+        _log_tracking_tags(config)
+        params = {
+            "project": config["project"]["name"],
+            "phase": config["project"].get("phase", 2),
+            "primary_metric": config["modeling"].get("primary_metric", "f2"),
+            "sample_fraction": config["data"]["sample"]["fraction"],
+        }
+        for key in ("data_version", "model_version", "pipeline_version", "config_source"):
+            value = tracking.get("tags", {}).get(key)
+            if value is not None:
+                params[key] = value
+        mlflow.log_params(params)
+        _log_config_artifacts(config)
+        yield run
+
+
+@contextmanager
+def model_run(config: dict[str, Any], model_name: str) -> Iterator[Any]:
+    """Open a nested MLflow run for one trained model."""
+    if not tracking_enabled(config):
+        yield None
+        return
+
+    with mlflow.start_run(run_name=model_name, nested=True) as run:
+        params = {
+            "model_name": model_name,
+            "phase": config["project"].get("phase", 2),
+            **{
+                f"tfidf.{key}": value
+                for key, value in config["features"]["tfidf"].items()
+                if isinstance(value, _MLFLOW_PARAM_TYPES)
+            },
+        }
+        for key, value in config["modeling"].get(model_name, {}).items():
+            if isinstance(value, _MLFLOW_PARAM_TYPES):
+                params[f"model.{key}"] = value
+        mlflow.log_params(params)
+        yield run
+
+
+def log_dataset_info(frames: dict[str, pd.DataFrame]) -> None:
+    """Log row counts and per-label counts for each training split."""
+    for split_name, frame in frames.items():
+        mlflow.log_metric(f"{split_name}_rows", len(frame))
+        for label, count in frame["label"].value_counts().items():
+            mlflow.log_metric(f"{split_name}_label_{label}", int(count))
+
+
+def log_metrics(metrics: dict[str, Any]) -> None:
+    """Log validation and test metrics from a model training result dict."""
+    for split_name in ("validation", "test"):
+        for metric_name, value in metrics[split_name].items():
+            if isinstance(value, _MLFLOW_METRIC_TYPES):
+                mlflow.log_metric(f"{split_name}_{metric_name}", float(value))
+
+
+def log_artifacts(paths: list[Path], artifact_path: str) -> None:
+    """Upload existing local files into the active MLflow run."""
+    for path in paths:
+        resolved = resolve_project_path(path)
+        if resolved.exists():
+            mlflow.log_artifact(str(resolved), artifact_path=artifact_path)
+
+
+def log_model_artifacts(
+    config: dict[str, Any],
+    model_name: str,
+    model: Any,
+    model_path: Path,
+    metrics: dict[str, Any],
+) -> None:
+    """Log metrics, model flavor, and local artifacts for one model."""
+    if not tracking_enabled(config):
+        return
+
+    log_metrics(metrics)
+    log_artifacts([model_path], artifact_path="joblib")
+    if config.get("tracking", {}).get("log_predictions", True):
+        prediction_paths = [
+            Path(path)
+            for key, path in metrics.items()
+            if key.endswith("_prediction_path") and isinstance(path, str)
+        ]
+        log_artifacts(prediction_paths, artifact_path="predictions")
+
+    if config.get("tracking", {}).get("log_models", True):
+        mlflow.sklearn.log_model(model, name=f"{model_name}_pipeline")

@@ -1,1 +1,5 @@
 /predictions
+/divergence
+/monitoring
+/profiling/*.prof
+/profiling/scratch

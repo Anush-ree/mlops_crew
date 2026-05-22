@@ -21,8 +21,9 @@ data versioning (DVC), reproducible stages, deterministic training, and tracked
 metrics. We optimize for **recall** — missing a phishing email is worse than
 flagging a legitimate one — and select models by **F2**.
 
-Phase 1 trains on a stratified 60% sample of `phishing_email.csv` so iteration
-is fast; later phases will pull in more data and additional model families.
+Phase 1 trained on a stratified 60% sample of `phishing_email.csv`. Phase 2
+uses 80% of the raw data, preserves the final 20% as a Phase 3 holdout, tracks
+experiments with MLflow, and adds monitoring, profiling, and divergence reports.
 
 ## 3. Architecture
 
@@ -36,14 +37,38 @@ is fast; later phases will pull in more data and additional model families.
 
 ## 5. Setup
 
-Bash:
+### Windows, macOS, and Linux
+
+We support **native Windows (PowerShell)**, **Git Bash**, **WSL**, and Unix
+shells. Graders on Windows can follow [docs/windows_setup.md](docs/windows_setup.md)
+for Chocolatey/`make`, AWS CLI, and verification without bash.
+
+**PowerShell (Windows — recommended):**
+
+```powershell
+git clone https://github.com/Anush-ree/mlops_crew.git
+cd mlops_crew
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt -r requirements_dev.txt
+pip install -e .
+aws configure          # region: us-east-2
+dvc pull
+.\scripts\verify_phase2.ps1
+```
+
+**Bash (Linux / macOS / WSL / Git Bash):**
+
 ```bash
 git clone https://github.com/Anush-ree/mlops_crew.git
 cd mlops_crew
-python -m venv .venv && source .venv/bin/activate
-make install            # installs runtime deps + the package in editable mode
+python -m venv .venv && source .venv/bin/activate   # Windows Git Bash: .venv/Scripts/activate
+make install            # or: pip install -r requirements.txt && pip install -e .
 make dev                # adds dev tools and pre-commit hooks
 ```
+
+`make` is optional on Windows; see [docs/windows_setup.md](docs/windows_setup.md)
+for direct `pip` / `dvc` / `pytest` equivalents.
 
 ### Data access (DVC + AWS S3)
 
@@ -62,10 +87,21 @@ dvc pull               # download raw + processed data
 
 Bash:
 ```bash
-make data       # sample -> clean -> split -> validate
+make data       # sample, source manifest, clean, split, validate, transformer export
 make train      # train all configured models, write metrics + predictions
 make predict    # score the test split with the saved best model
+make source-manifest      # build raw source metadata for divergence analysis
+make transformer-data     # export JSONL train/val/test splits for transformer work
+make latency              # benchmark saved-model inference latency
+make divergence           # compare Phase 1 reference vs Phase 2 increment
+make profile-train        # cProfile the training entrypoint
+make profile-predict      # cProfile saved-model inference
+make hydra-demo           # run two Hydra-configured MLflow experiments
+make mlflow-ui            # open local MLflow UI on port 5001
 make repro      # reproduce the full DVC pipeline end to end
+scripts/verify_phase2.sh  # Bash: DVC repro + CI checks + Phase 2 smoke checks
+scripts/verify_phase2.ps1 # PowerShell (Windows): same checks as the .sh script
+scripts/verify_phase2.sh --replay-mlflow  # populate local MLflow from scratch outputs
 make test       # pytest
 make lint       # ruff check
 make format     # ruff fix + format
@@ -78,39 +114,43 @@ Bash:
 make install
 dvc pull
 make repro
+scripts/verify_phase2.sh
 ```
 
-This runs sample → clean → split → train, fits the dummy and TF-IDF + Logistic
-Regression baselines, and writes the artifacts under `models/` and `reports/`.
+This fits the configured dummy and TF-IDF model family, writes artifacts under
+`models/` and `reports/`, and runs the full Phase 2 DVC graph:
+
+```text
+sample -> clean -> split -> validate -> transformer_dataset
+                              -> train -> inference_latency
+                          -> plot_model_comparison
+sample + source_manifest + train -> divergence
+```
 
 ## 6. Repo layout
 
-Data is versioned with DVC and stored on AWS S3. Request AWS credentials then run.
-Bash:
-```bash
-git pull                 # get latest config
-uv pip install dvc-s3   # install DVC S3 plugin
-aws configure           # enter credentials + region: us-east-2
-dvc pull                # download data from S3
+See **§5 Setup → Data access** for `dvc pull`. Key paths:
+
 ```
-File Structure:
-```
-configs/config.yaml            single source of truth for the pipeline
+configs/config.yaml                 single source of truth for the pipeline
+conf/                               Hydra experiment overrides
+dvc.yaml                            DVC stages (sample → … → train → monitoring)
+data/processed/validation_report.json   DVC validate artifact (row/label snapshot)
 src/mlops_crew/
-  config.py                    project paths + YAML loader
-  logging_config.py            shared logger setup
   data/
-    sample.py                  stage 1: stratified sample of the raw CSV
-    clean.py                   stage 2: schema, labels, text cleaning
-    split.py                   stage 3: stratified train/val/test split
-    validate.py                stage 4: post-split sanity checks
-    make_dataset.py            run all four stages locally
-  models/text_classifiers.py   TF-IDF + classifier sklearn pipeline factory
-  evaluation/metrics.py        recall-oriented binary metrics (F2 + confusion)
-  utils/                       seed + JSON helpers
-  models/train_model.py        train every configured model, save artifacts
-  models/predict_model.py      batch inference with the saved pipeline
-dvc.yaml                       DVC stages (sample, clean, split, train)
+    sample.py                       phase partitions + 80% modeling sample
+    source_manifest.py              raw source-block metadata (divergence)
+    clean.py, split.py, validate.py
+    export_transformer_dataset.py   JSONL export for future transformer work
+    make_dataset.py                 local equivalent of data stages through validate
+  models/text_classifiers.py        TF-IDF + classifier sklearn pipelines
+  models/train_model.py             Phase 2 training CLI + implementation
+  models/predict_model.py           Phase 2 prediction CLI + implementation
+  train_hydra.py                    Hydra experiment wrapper
+  evaluation/, monitoring/, tracking/
+scripts/verify_phase2.ps1|.sh       grader verification (Windows + Bash)
+PHASE2.md                           Phase 2 deliverable narrative
+docs/windows_setup.md               Windows reproduction guide
 ```
 
 ## 7. Contributions
@@ -121,8 +161,9 @@ dvc.yaml                       DVC stages (sample, clean, split, train)
   data documentation
 - **Krishna Kalakonda** — model evaluation, baseline metrics, architecture
   diagram, code organization
-- **Kirtankumar Parekh** — model training, experiment tracking, Makefile,
-  contribution guidelines, repo maintenance
+- **Kirtankumar Parekh** — Phase 2 integration review, Windows verification
+  (`verify_phase2.ps1`, `docs/windows_setup.md`), DVC validate stage, docs and
+  docstrings, repo maintenance
 
 ## 8. References
 

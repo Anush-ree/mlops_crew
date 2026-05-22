@@ -1,3 +1,5 @@
 /dummy.joblib
 /logistic_regression.joblib
+/linear_svc.joblib
+/complement_nb.joblib
 /best_model.joblib

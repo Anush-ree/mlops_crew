@@ -1,2 +1,8 @@
 /phishing_email_phase1_sample.csv
+/phishing_email_phase1_reference.csv
+/phishing_email_phase2_sample.csv
+/phishing_email_phase2_increment.csv
+/phishing_email_phase3_holdout.csv
+/source_manifest.csv
 /sample_summary.json
+/source_manifest_summary.json

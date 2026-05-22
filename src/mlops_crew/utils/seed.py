@@ -9,6 +9,7 @@ import numpy as np
 
 
 def set_seed(seed: int) -> None:
+    """Set Python, NumPy, and hash seeds for reproducible training."""
     os.environ["PYTHONHASHSEED"] = str(seed)
     random.seed(seed)
     np.random.seed(seed)

@@ -1,0 +1,48 @@
+         159331637 function calls (158204085 primitive calls) in 146.588 seconds
+
+   Ordered by: cumulative time
+   List reduced from 1429 to 40 due to restriction <40>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+  500/491   43.977    0.088  232.908    0.474 {method 'acquire' of '_thread.lock' objects}
+  124/123    9.053    0.073  152.918    1.243 threading.py:637(wait)
+        1    0.000    0.000  146.589  146.589 train_model.py:142(train)
+        1    0.000    0.000  145.751  145.751 resource_monitor.py:44(stop)
+        1    0.000    0.000  145.751  145.751 threading.py:1115(join)
+        1    0.000    0.000  145.751  145.751 threading.py:1153(_wait_for_tstate_lock)
+        1    0.000    0.000  145.751  145.751 threading.py:1016(_bootstrap)
+        1    0.000    0.000  145.751  145.751 threading.py:1056(_bootstrap_inner)
+        1    0.089    0.089  145.751  145.751 threading.py:999(run)
+        4    0.003    0.001  145.661   36.415 train_model.py:102(_train_one)
+  124/123   11.407    0.092  115.790    0.941 threading.py:323(wait)
+     17/4    0.009    0.001  106.554   26.639 base.py:1319(wrapper)
+        4    0.000    0.000  106.545   26.636 pipeline.py:562(fit)
+        4    0.000    0.000  104.850   26.212 pipeline.py:512(_fit)
+        4    0.000    0.000  104.849   26.212 memory.py:325(__call__)
+        4    0.000    0.000  104.849   26.212 pipeline.py:1471(_fit_transform_one)
+        4    0.001    0.000  104.849   26.212 text.py:2078(fit_transform)
+   341864    0.429    0.000   35.873    0.000 text.py:77(_analyze)
+        8    0.003    0.000   35.114    4.389 train_model.py:86(_evaluate)
+       16    0.000    0.000   23.455    1.466 text.py:2110(transform)
+   341864   11.136    0.000   20.837    0.000 text.py:247(_word_ngrams)
+      131   20.801    0.159   20.801    0.159 {built-in method builtins.sorted}
+       16    0.003    0.000   17.776    1.111 text.py:1408(transform)
+        8    0.001    0.000   17.741    2.218 pipeline.py:697(predict)
+        8    0.003    0.000   17.179    2.147 train_model.py:78(_scores_for)
+        6    0.000    0.000   12.919    2.153 pipeline.py:815(predict_proba)
+       20    4.212    0.211   10.826    0.541 text.py:1256(_count_vocab)
+   341864    9.814    0.000    9.814    0.000 {method 'findall' of 're.Pattern' objects}
+ 52035712    6.516    0.000    6.516    0.000 {method 'join' of 'str' objects}
+   341864    0.134    0.000    4.659    0.000 text.py:51(_preprocess)
+        2    0.000    0.000    4.256    2.128 pipeline.py:869(decision_function)
+   341864    2.087    0.000    4.013    0.000 text.py:124(strip_accents_unicode)
+ 52371363    3.301    0.000    3.301    0.000 {method 'append' of 'list' objects}
+        4    0.031    0.008    3.181    0.795 text.py:1340(fit_transform)
+        4    2.918    0.730    3.150    0.788 text.py:1217(_limit_features)
+2109/1801    2.918    0.001    2.924    0.002 {built-in method numpy.asarray}
+        4    0.015    0.004    2.751    0.688 numpy_pickle.py:474(dump)
+        4    0.000    0.000    2.733    0.683 pickle.py:470(dump)
+ 481018/4    0.222    0.000    2.733    0.683 numpy_pickle.py:360(save)
+ 481018/4    0.693    0.000    2.733    0.683 pickle.py:529(save)
+
+
