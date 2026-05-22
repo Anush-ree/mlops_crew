@@ -15,11 +15,11 @@ data:
 
 # Train every model listed in configs/config.yaml under modeling.models
 train:
-	python -m mlops_crew.train_model
+	python -m mlops_crew.models.train_model
 
 # Score the test set with the best saved model
 predict:
-	python -m mlops_crew.predict_model
+	python -m mlops_crew.models.predict_model
 
 # Reproduce the whole DVC pipeline end to end
 repro:

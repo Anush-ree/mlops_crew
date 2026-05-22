@@ -67,8 +67,8 @@ set_seed(42)
 ## Training / Prediction CLIs
 
 ```bash
-python -m mlops_crew.train_model
-python -m mlops_crew.predict_model --model-path models/best_model.joblib --input data/processed/test.csv
+python -m mlops_crew.models.train_model
+python -m mlops_crew.models.predict_model --model-path models/best_model.joblib --input data/processed/test.csv
 ```
 
 ---
