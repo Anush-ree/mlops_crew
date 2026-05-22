@@ -107,7 +107,6 @@ stages:
       - src/mlops_crew/models/text_classifiers.py
       - src/mlops_crew/models/train_model.py
       - src/mlops_crew/tracking/mlflow_tracking.py
-      - src/mlops_crew/train_model.py
       - src/mlops_crew/utils/io.py
       - src/mlops_crew/utils/seed.py
     outs:

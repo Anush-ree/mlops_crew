@@ -55,9 +55,9 @@ mlops_crew/                  # Repository root
 │       ├── monitoring/                # divergence, latency, resource usage
 │       ├── tracking/                  # MLflow helpers
 │       ├── utils/                     # seed, io
-│       ├── train_model.py             # Training CLI
+│       ├── models/train_model.py      # Training CLI
 │       ├── train_hydra.py             # Hydra experiment CLI
-│       └── predict_model.py           # Inference CLI
+│       └── models/predict_model.py    # Inference CLI
 ├── data/                              # raw/ and processed/
 ├── models/                            # Trained artifacts
 ├── tests/                             # Unit tests

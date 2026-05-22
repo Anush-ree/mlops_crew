@@ -79,7 +79,7 @@ new source is added.
 Debugging entry points:
 
 ```bash
-python -m pdb -m mlops_crew.train_model
+python -m pdb -m mlops_crew.models.train_model
 python -m pdb -m mlops_crew.monitoring.divergence
 PATH="$PWD/.venv/bin:$PATH" dvc repro
 PATH="$PWD/.venv/bin:$PATH" dvc status
@@ -166,7 +166,7 @@ Exact wiring (where logging happens in the code):
 | Dataset rows + label counts | `src/mlops_crew/tracking/mlflow_tracking.py:75-79` (`log_dataset_info`) |
 | Validation + test metrics | `src/mlops_crew/tracking/mlflow_tracking.py:82-86` (`log_metrics`) |
 | Joblib + sklearn flavor + optional prediction CSVs + monitoring CSV | `src/mlops_crew/tracking/mlflow_tracking.py:89-118` (`log_artifacts`, `log_model_artifacts`) |
-| Call sites that drive all of the above | `src/mlops_crew/train_model.py:154,161,165,174-176,205-209` |
+| Call sites that drive all of the above | `src/mlops_crew/models/train_model.py` (`train`) |
 
 What a grader will see in the UI after a training run or `--replay-mlflow` +
 `make mlflow-ui`:

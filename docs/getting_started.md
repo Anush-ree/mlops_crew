@@ -133,12 +133,10 @@ mlops_crew/                  # Repository root
 │       ├── monitoring/                # Divergence, latency, resource usage
 │       ├── tracking/                  # MLflow helpers
 │       ├── utils/                     # seed, io
-│       ├── models/                    # train/predict CLI wrappers
+│       ├── models/                    # Classifier factory + train/predict CLIs
 │       │   ├── train_model.py
 │       │   └── predict_model.py
-│       ├── train_model.py
-│       ├── train_hydra.py
-│       └── predict_model.py
+│       └── train_hydra.py
 ├── tests/                             # Unit tests
 ├── data/                              # raw/ and processed/
 ├── models/                            # Trained model artifacts

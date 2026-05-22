@@ -69,19 +69,19 @@ CLI: `python -m mlops_crew.evaluation.plot_model_comparison`
 | `divergence` | `reports/divergence/phase2_divergence_report.json` and `phase2_divergence_summary.md` |
 
 `ResourceMonitor` in `resource_monitor.py` samples CPU/memory during training;
-`train_model.py` writes `reports/monitoring/training_resource_usage.csv`.
+`models/train_model.py` writes `reports/monitoring/training_resource_usage.csv`.
 
 ## `mlops_crew.tracking`
 
 `mlops_crew.tracking.mlflow_tracking` wraps MLflow setup, nested model runs,
-metric logging, and artifact logging for `train_model.py`.
+metric logging, and artifact logging for `models/train_model.py`.
 
 ## `mlops_crew.train_hydra`
 
 Hydra entrypoint for Section 6 experiment configs. It loads the normal
 `configs/config.yaml`, applies a `conf/experiment/*.yaml` override, routes
 scratch artifacts to `outputs/hydra/...`, and calls the same `train(config)`
-function used by `train_model.py`.
+function used by `models/train_model.py`.
 
 ```bash
 python -m mlops_crew.train_hydra experiment=phase2_default
@@ -99,9 +99,9 @@ set_seed(42)
 ## Training / Prediction CLIs
 
 ```bash
-python -m mlops_crew.train_model
+python -m mlops_crew.models.train_model
 python -m mlops_crew.train_hydra experiment=phase2_default
-python -m mlops_crew.predict_model --model-path models/best_model.joblib --input data/processed/test.csv
+python -m mlops_crew.models.predict_model --model-path models/best_model.joblib --input data/processed/test.csv
 ```
 
 ---

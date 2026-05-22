@@ -20,7 +20,7 @@ from omegaconf import DictConfig, OmegaConf
 
 from mlops_crew.config import PROJECT_ROOT, load_project_config, resolve_project_path
 from mlops_crew.logging_config import get_logger, setup_logging_from_config
-from mlops_crew.train_model import train
+from mlops_crew.models.train_model import train
 
 logger = get_logger(__name__)
 

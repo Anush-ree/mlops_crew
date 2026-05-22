@@ -105,7 +105,7 @@ runs `python -m dvc` via your Windows `python.exe`. For fewer surprises, use
 | `make test` | `pytest tests/` |
 | `make lint` | `ruff check .` then `ruff format --check .` |
 | `make mlflow-ui` | `mlflow ui --backend-store-uri ./mlruns --port 5001` |
-| `make train` | `python -m mlops_crew.train_model` |
+| `make train` | `python -m mlops_crew.models.train_model` |
 
 ## Verification script options
 
