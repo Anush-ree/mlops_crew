@@ -60,13 +60,13 @@ def classify_email(text: str) -> tuple[str, str, str, dict[str, Any]]:
 
     score = payload.get("score")
     score_type = payload.get("score_type") or "not available"
-    if isinstance(score, int | float):
+    if isinstance(score, (int, float)):
         score_text = f"{score:.4f} ({score_type})"
     else:
         score_text = f"N/A ({score_type})"
 
     latency = payload.get("latency_ms")
-    latency_text = f"{float(latency):.2f} ms" if isinstance(latency, int | float) else "N/A"
+    latency_text = f"{float(latency):.2f} ms" if isinstance(latency, (int, float)) else "N/A"
     return verdict, score_text, latency_text, payload
 
 

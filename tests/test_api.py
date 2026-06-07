@@ -43,6 +43,19 @@ def test_health_reports_loaded_model(monkeypatch) -> None:  # type: ignore[no-un
     assert response.json()["model_loaded"] is True
 
 
+def test_health_returns_503_without_internal_details(monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    def fail_to_load_model() -> None:
+        raise FileNotFoundError("/internal/path/model.joblib")
+
+    monkeypatch.setattr(api_main, "get_model_service", fail_to_load_model)
+    client = TestClient(api_main.app)
+
+    response = client.get("/health")
+
+    assert response.status_code == 503
+    assert response.json() == {"detail": "Service unavailable"}
+
+
 def test_predict_returns_schema(monkeypatch) -> None:  # type: ignore[no-untyped-def]
     monkeypatch.setattr(api_main, "get_model_service", lambda: FakeService())
     client = TestClient(api_main.app)

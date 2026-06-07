@@ -37,7 +37,9 @@ jobs:
           echo '```json' >> report.md
           cat reports/metrics/best_model_metrics.json >> report.md
           echo '```' >> report.md
-          echo "" >> report.md
-          echo "### Comparison plot" >> report.md
-          echo '![](./reports/metrics/model_comparison.png)' >> report.md
+          if [ -f reports/metrics/model_comparison.png ]; then
+            echo "" >> report.md
+            echo "### Comparison plot" >> report.md
+            echo '![](./reports/metrics/model_comparison.png)' >> report.md
+          fi
           cml comment update --publish report.md

@@ -59,9 +59,9 @@ def health() -> HealthResponse:
     try:
         service = get_model_service()
         return HealthResponse(**service.health())
-    except Exception as exc:
+    except Exception:
         logger.exception("Health check failed")
-        return HealthResponse(status="error", model_loaded=False, detail=str(exc))
+        raise HTTPException(status_code=503, detail="Service unavailable") from None
 
 
 @app.post("/predict", response_model=PredictResponse)
