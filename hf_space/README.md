@@ -1,6 +1,6 @@
 ---
 title: Phishing Email Detection
-emoji: ""
+emoji: "🛡️"
 colorFrom: blue
 colorTo: green
 sdk: gradio
