@@ -2,7 +2,7 @@
 
 **SE489 · ML Engineering for Production (MLOps) · DePaul University**
 
-🚀 **Live Demo:** [Try the phishing email detector](https://huggingface.co/spaces/manas01AI/phishing-email-detector)
+**Live Demo:** [Try the phishing email detector](https://huggingface.co/spaces/manas01AI/phishing-email-detector)
 
 ## 1. Team
 
@@ -38,7 +38,10 @@ FastAPI backend on GCP Cloud Run.
 - [PHASE1.md](./PHASE1.md) — Project design & baseline model
 - [PHASE2.md](./PHASE2.md) — Enhancing ML operations
 - [PHASE3.md](./PHASE3.md) — Continuous ML & deployment
-- 🚀 [Live Demo](https://huggingface.co/spaces/manas01AI/phishing-email-detector) — Gradio UI on Hugging Face Spaces
+- [Live Demo](https://huggingface.co/spaces/manas01AI/phishing-email-detector) —
+  Gradio UI on Hugging Face Spaces
+- [Phase 3 environment setup](./docs/phase3_environment_setup.md) — GitHub,
+  Docker Hub, GCP, Cloud Run, Cloud Functions, and Hugging Face setup
 
 ## 5. Setup
 
@@ -138,27 +141,39 @@ docker run --rm \
 If you prefer the one-command wrappers, use `make docker-train` and
 `make docker-predict`.
 
-### Gradio UI (Phase 3)
+### Phase 3 local API and UI
 
-The Gradio app is deployed on Hugging Face Spaces and can be accessed at:
+Phase 3 adds a FastAPI service and a Gradio UI on top of the Phase 2 saved
+model. The API uses the same cleaning settings from `configs/config.yaml`
+before calling the saved sklearn `Pipeline(TfidfVectorizer -> classifier)`.
 
-```
-https://huggingface.co/spaces/manas01AI/phishing-email-detector
-```
-
-To run locally:
+Run the API locally:
 
 ```bash
-pip install gradio requests
-python app/app.py
+make api
+curl -X POST http://localhost:8080/predict \
+  -H "Content-Type: application/json" \
+  -d '{"text":"Urgent account verification required. Click the secure link now."}'
 ```
 
-To connect to the Cloud Run backend, set the environment variable:
+Run the Gradio UI locally in another terminal:
 
 ```bash
-export BACKEND_PREDICT_URL=https://your-cloud-run-url
-python app/app.py
+make ui
 ```
+
+Build and run the Cloud Run-ready serving image:
+
+```bash
+make docker-serve
+curl http://localhost:8080/health
+```
+
+The serving image is code-only like the Phase 2 images. Local Docker runs mount
+`models/`; Cloud Run should set `MODEL_GCS_URI` to a GCS-hosted
+`best_model.joblib`. For Hugging Face Spaces, deploy the contents of
+`hf_space/` and set the Space secret `BACKEND_PREDICT_URL` to the deployed
+`/predict` endpoint.
 
 ### Tool Documentation
 
@@ -187,6 +202,10 @@ make hydra-demo           # run two Hydra-configured MLflow experiments
 make mlflow-ui            # open local MLflow UI on port 5001
 make docker-train         # build and run the training container
 make docker-predict       # build and run the prediction container
+make api                  # start the Phase 3 FastAPI service on port 8080
+make ui                   # start the Gradio UI from hf_space/
+make docker-serve         # build/run the Cloud Run-ready API container
+make load-test-api        # send 10 prediction requests to BACKEND_PREDICT_URL
 make repro      # reproduce the full DVC pipeline end to end
 scripts/verify_phase2.sh  # Bash: DVC repro + CI checks + Phase 2 smoke checks
 scripts/verify_phase2.ps1 # PowerShell (Windows): same checks as the .sh script
@@ -223,10 +242,9 @@ See **§5 Setup → Data access** for `dvc pull`. Key paths:
 
 ```
 configs/config.yaml                 single source of truth for the pipeline
-conf/                               Hydra experiment overrides
+configs/hydra/                      Hydra experiment overrides
 dvc.yaml                            DVC stages (sample → … → train → monitoring)
 data/processed/validation_report.json   DVC validate artifact (row/label snapshot)
-app/app.py                          Gradio UI for phishing email detection
 src/mlops_crew/
   data/
     sample.py                       phase partitions + 80% modeling sample
@@ -239,6 +257,9 @@ src/mlops_crew/
   models/predict_model.py           Phase 2 prediction CLI + implementation
   train_hydra.py                    Hydra experiment wrapper
   evaluation/, monitoring/, tracking/
+api/                                FastAPI service entrypoint and schemas
+hf_space/                           Gradio app for Hugging Face Spaces
+serve.dockerfile                    Cloud Run-ready API serving image
 scripts/verify_phase2.ps1|.sh       grader verification (Windows + Bash)
 PHASE2.md                           Phase 2 deliverable narrative
 PHASE3.md                           Phase 3 deliverable narrative

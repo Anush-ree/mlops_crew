@@ -107,7 +107,7 @@ def write_effective_config(config: Mapping[str, Any], output_dir: str | Path) ->
     return path
 
 
-@hydra.main(config_path="../../conf", config_name="config", version_base="1.3")
+@hydra.main(config_path="../../configs/hydra", config_name="config", version_base="1.3")
 def main(cfg: DictConfig) -> None:
     runtime = HydraConfig.get().runtime
     experiment_name = str(runtime.choices.get("experiment", "unknown"))

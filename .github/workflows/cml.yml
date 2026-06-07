@@ -1,0 +1,43 @@
+name: Continuous Machine Learning
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up CML
+        uses: iterative/setup-cml@v2
+        with:
+          vega: false
+
+      - name: Write CML report
+        env:
+          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "## Phase 3 model report" > report.md
+          echo "" >> report.md
+          echo "### Model comparison" >> report.md
+          echo '```csv' >> report.md
+          cat reports/metrics/model_comparison.csv >> report.md
+          echo '```' >> report.md
+          echo "" >> report.md
+          echo "### Best model metrics" >> report.md
+          echo '```json' >> report.md
+          cat reports/metrics/best_model_metrics.json >> report.md
+          echo '```' >> report.md
+          echo "" >> report.md
+          echo "### Comparison plot" >> report.md
+          echo '![](./reports/metrics/model_comparison.png)' >> report.md
+          cml comment update --publish report.md

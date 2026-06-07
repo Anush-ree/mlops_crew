@@ -1,4 +1,4 @@
-.PHONY: install dev data source-manifest transformer-data train hydra-train hydra-demo predict plot latency divergence profile-train profile-predict mlflow-ui repro test lint format clean docker-train docker-predict
+.PHONY: install dev data source-manifest transformer-data train hydra-train hydra-demo predict api ui plot latency divergence profile-train profile-predict mlflow-ui repro test lint format clean docker-train docker-predict docker-serve load-test-api
 
 install:
 	pip install -U pip
@@ -24,7 +24,7 @@ transformer-data:
 train:
 	python -m mlops_crew.models.train_model
 
-# Train through Hydra using conf/ overrides. Outputs go under ignored outputs/hydra/.
+# Train through Hydra using configs/hydra overrides. Outputs go under ignored outputs/hydra/.
 hydra-train:
 	python -m mlops_crew.train_hydra
 
@@ -35,6 +35,12 @@ hydra-demo:
 # Score the test set with the best saved model
 predict:
 	python -m mlops_crew.models.predict_model
+
+api:
+	uvicorn api.main:app --host 0.0.0.0 --port 8080
+
+ui:
+	cd hf_space && BACKEND_PREDICT_URL="$${BACKEND_PREDICT_URL:-http://localhost:8080/predict}" python app.py
 
 plot:
 	python -m mlops_crew.evaluation.plot_model_comparison
@@ -64,6 +70,19 @@ docker-predict:
 		--model-path /app/models/best_model.joblib \
 		--input /app/data/processed/test.csv \
 		--output /app/reports/predictions/batch_predictions.csv
+
+docker-serve:
+	docker build -f serve.dockerfile . -t mlops-crew-api:latest
+	docker run --rm \
+		-p 8080:8080 \
+		-e PORT=8080 \
+		-v "$$(pwd)/models:/app/models" \
+		mlops-crew-api:latest
+
+load-test-api:
+	python scripts/load_test_api.py \
+		--endpoint "$${BACKEND_PREDICT_URL:-http://localhost:8080/predict}" \
+		--requests 10
 
 # Reproduce the whole DVC pipeline end to end
 repro:
