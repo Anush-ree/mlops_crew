@@ -43,7 +43,42 @@ FastAPI backend on GCP Cloud Run.
 - [Phase 3 environment setup](./docs/phase3_environment_setup.md) — GitHub,
   Docker Hub, GCP, Cloud Run, Cloud Functions, and Hugging Face setup
 
-## 5. Setup
+## 5. Phase 3 — Continuous ML & Deployment
+
+For full evidence and explanations see [PHASE3.md](./PHASE3.md).
+
+### What's new in Phase 3
+
+| Area | What was added |
+|---|---|
+| CI/CD | GitHub Actions workflows for lint, type check, test, Docker build/push, and CML reporting |
+| Docker | `serve.dockerfile` — Cloud Run-ready FastAPI serving image, auto-pushed to Docker Hub on merge to main |
+| CML | Automated model metrics report posted as a PR comment on every pull request |
+| FastAPI | `/health` and `/predict` endpoints — [`api/main.py`](api/main.py) |
+| GCP Cloud Run | Live inference API — https://mlops-crew-api-1043076962701.us-central1.run.app |
+| GCP Cloud Functions | Serverless HTTP wrapper — https://us-central1-ml-ops-497304.cloudfunctions.net/mlops-crew-predict |
+| Hugging Face Spaces | Live Gradio demo — https://huggingface.co/spaces/mlops-crew-depaul/phishing-email-detector |
+| Phase 3 holdout | Final evaluation on 16,496 unseen emails — **98.6% F2**, results in [`reports/metrics/phase3_holdout_metrics.json`](reports/metrics/phase3_holdout_metrics.json) |
+
+### Demo recording
+
+> Recording will be added here.
+
+### Quick API test
+
+- **Health check** (open in browser): https://mlops-crew-api-1043076962701.us-central1.run.app/health
+- **Interactive docs** (open in browser): https://mlops-crew-api-1043076962701.us-central1.run.app/docs
+- **Predict** (POST only, use curl):
+
+```bash
+curl -X POST https://mlops-crew-api-1043076962701.us-central1.run.app/predict \
+  -H "Content-Type: application/json" \
+  -d '{"text": "Urgent: verify your account now or it will be suspended."}'
+```
+
+---
+
+## 7. Setup
 
 ### Windows, macOS, and Linux
 
@@ -236,7 +271,7 @@ sample -> clean -> split -> validate -> transformer_dataset
 sample + source_manifest + train -> divergence
 ```
 
-## 6. Repo layout
+## 8. Repo layout
 
 See **§5 Setup → Data access** for `dvc pull`. Key paths:
 
@@ -267,7 +302,7 @@ docs/TOOL_DOCUMENTATION.md          Complete tool setup and usage guide
 docs/windows_setup.md               Windows reproduction guide
 ```
 
-## 7. Contributions
+## 9. Contributions
 
 - **Anushree Bachhav** — proposal, repo/cookiecutter setup, environment
   configuration, DVC + S3 + Google Drive remotes, GCP setup
@@ -279,7 +314,7 @@ docs/windows_setup.md               Windows reproduction guide
   (`verify_phase2.ps1`, `docs/windows_setup.md`), DVC validate stage, docs and
   docstrings, CI/CD pipelines, repo maintenance
 
-## 8. References
+## 10. References
 
 - Dataset: Phishing Email Dataset (SpamAssassin, Enron, Nazario, Ling, CEAS, Nigerian)
 - Source: https://www.kaggle.com/datasets/naserabdullahalam/phishing-email-dataset?select=SpamAssasin.csv
