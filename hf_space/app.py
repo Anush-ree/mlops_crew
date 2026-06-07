@@ -10,7 +10,6 @@ from __future__ import annotations
 import os
 from typing import Any
 
-import gradio as gr
 import requests
 
 DEFAULT_BACKEND_URL = "http://localhost:8080/predict"
@@ -86,33 +85,39 @@ EXAMPLES = [
 ]
 
 
-with gr.Blocks(title="Phishing Email Detection") as demo:
-    gr.Markdown("# Phishing Email Detection")
-    gr.Markdown(
-        "Paste an email body below. The app calls the deployed Phishing Email Detection endpoint "
-        "and returns the model prediction."
-    )
-    with gr.Row():
-        with gr.Column(scale=2):
-            email_text = gr.Textbox(
-                label="Email text",
-                lines=10,
-                placeholder="Paste the email body here...",
-            )
-            classify = gr.Button("Classify Email", variant="primary")
-        with gr.Column(scale=1):
-            verdict = gr.Textbox(label="Prediction")
-            score = gr.Textbox(label="Score")
-            latency = gr.Textbox(label="API latency")
-    raw_json = gr.JSON(label="Raw API response")
-    gr.Examples(examples=EXAMPLES, inputs=email_text)
+def build_demo() -> Any:
+    """Build the Gradio app lazily so helper tests do not require Gradio."""
+    import gradio as gr
 
-    classify.click(
-        fn=classify_email,
-        inputs=email_text,
-        outputs=[verdict, score, latency, raw_json],
-    )
+    with gr.Blocks(title="Phishing Email Detection") as demo:
+        gr.Markdown("# Phishing Email Detection")
+        gr.Markdown(
+            "Paste an email body below. The app calls the deployed Phishing Email Detection "
+            "endpoint and returns the model prediction."
+        )
+        with gr.Row():
+            with gr.Column(scale=2):
+                email_text = gr.Textbox(
+                    label="Email text",
+                    lines=10,
+                    placeholder="Paste the email body here...",
+                )
+                classify = gr.Button("Classify Email", variant="primary")
+            with gr.Column(scale=1):
+                verdict = gr.Textbox(label="Prediction")
+                score = gr.Textbox(label="Score")
+                latency = gr.Textbox(label="API latency")
+        raw_json = gr.JSON(label="Raw API response")
+        gr.Examples(examples=EXAMPLES, inputs=email_text)
+
+        classify.click(
+            fn=classify_email,
+            inputs=email_text,
+            outputs=[verdict, score, latency, raw_json],
+        )
+
+    return demo
 
 
 if __name__ == "__main__":
-    demo.launch()
+    build_demo().launch()

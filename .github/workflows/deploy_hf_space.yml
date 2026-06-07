@@ -6,7 +6,7 @@ on:
       - main
     paths:
       - "hf_space/**"
-      - ".github/workflows/deploy-to-hf.yml"
+      - ".github/workflows/deploy_hf_space.yml"
   workflow_dispatch:
 
 permissions:
