@@ -71,60 +71,6 @@ Flags can be combined:
 scripts/verify_phase2.sh --clean-mlflow --include-slow-profile --check-remote
 ```
 
-## Docker-based verification
-
-Prerequisites: Docker installed and able to access your DVC remote (set
-credentials as needed). These commands run the repo inside a container so you
-don't need a host virtualenv.
-
-Build an image for the training/verification environment (uses
-`train.dockerfile`):
-
-```bash
-docker build -f train.dockerfile -t mlops_crew:train .
-```
-
-Run the verification script in a disposable container (binds the repository
-into `/workspace`):
-
-```bash
-# From the repository root (Linux / macOS)
-docker run --rm -it \
-  -v "$(pwd)":/workspace \
-  -w /workspace \
-  mlops_crew:train /bin/bash -lc \
-  "pip install -r requirements.txt && pip install -r requirements_dev.txt && dvc pull && scripts/verify_phase2.sh"
-```
-
-If you want the MLflow UI available on the host and to persist `mlruns`:
-
-```bash
-mkdir -p mlruns
-docker run --rm -it -p 5000:5000 \
-  -v "$(pwd)":/workspace -v "$(pwd)/mlruns":/workspace/mlruns \
-  -w /workspace \
-  mlops_crew:train /bin/bash -lc \
-  "pip install -r requirements.txt && pip install -r requirements_dev.txt && dvc pull && make mlflow-ui"
-```
-
-To build an inference-focused image instead, use `predict.dockerfile`:
-
-```bash
-docker build -f predict.dockerfile -t mlops_crew:predict .
-```
-
-To debug interactively, drop into a shell inside the training image:
-
-```bash
-docker run --rm -it -v "$(pwd)":/workspace -w /workspace mlops_crew:train bash
-```
-
-Notes:
-- Use `$(pwd)` so the container sees repository files and generated outputs.
-- If your DVC remote requires credentials, pass environment variables with
-  `-e NAME=value` or configure credentials inside the container beforehand.
-
-
 ## Manual command sequence
 
 Use this when you want to inspect each step separately:
