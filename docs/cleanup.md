@@ -2,6 +2,10 @@
 
 Run these commands after screenshots and demo are captured. All resources are in `us-central1` under project `ml-ops-497304`.
 You don't run this file except you run it after you're done with the project.
+
+**Deployed services:**
+- Cloud Run: https://mlops-crew-api-1043076962701.us-central1.run.app
+- Cloud Function: https://us-central1-ml-ops-497304.cloudfunctions.net/mlops-crew-predict
 ---
 
 ## 1. Delete Cloud Run Service

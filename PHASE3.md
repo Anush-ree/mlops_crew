@@ -140,6 +140,8 @@ Evidence: [`reports/gcp/gcp_runs.png`](reports/gcp/gcp_runs.png)
 Deployed from Artifact Registry using [`serve.dockerfile`](serve.dockerfile).
 Listens on `$PORT` (default 8080). Model loaded from GCS via `MODEL_GCS_URI` env var.
 
+**Live URL:** https://mlops-crew-api-1043076962701.us-central1.run.app
+
 Evidence:
 - [`reports/gcp/gcp_live_api.png`](reports/gcp/gcp_live_api.png) — live API response
 - [`reports/gcp/gcp_logs.png`](reports/gcp/gcp_logs.png) — Cloud Run logs
@@ -151,6 +153,8 @@ Evidence:
 
 Thin HTTP wrapper that forwards requests to the Cloud Run FastAPI backend.
 Configured via `BACKEND_PREDICT_URL` environment variable.
+
+**Live URL:** https://us-central1-ml-ops-497304.cloudfunctions.net/mlops-crew-predict
 
 Evidence:
 - [`reports/gcp/cloud_function.png`](reports/gcp/cloud_function.png)
