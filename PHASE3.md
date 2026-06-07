@@ -13,12 +13,12 @@ Phase 3 productionizes the phishing email detector built in Phases 1–2. It add
 
 ### 1.2 GitHub Actions CI Workflow
 
-- [x] **File/dir reference:** [`.github/workflows/ci.yml`](.github/workflows/ci.yml)
-- [x] **Screenshot:**
+- **File/dir reference:** [`.github/workflows/ci.yml`](.github/workflows/ci.yml)
+- **Screenshot:**
 
 ![CI green run](docs/phase3_evidence/ci_green.png)
 
-- [x] **Explanation:** The CI workflow runs on every push to `main` and every pull request using Python 3.11 and `actions/checkout@v5`. It enforces code quality with `ruff check`, `ruff format --check`, `mypy src`, and `pytest tests/ --cov=mlops_crew`. DVC pull is intentionally excluded from this job because the shared S3 remote requires teammate AWS credentials that are not available in GitHub Actions secrets yet; unit tests use fixtures and do not need the full dataset.
+- **Explanation:** The CI workflow runs on every push to `main` and every pull request using Python 3.11 and `actions/checkout@v5`. It enforces code quality with `ruff check`, `ruff format --check`, `mypy src`, and `pytest tests/ --cov=mlops_crew`. DVC pull is intentionally excluded from this job because the shared S3 remote requires teammate AWS credentials that are not available in GitHub Actions secrets yet; unit tests use fixtures and do not need the full dataset.
 
 **Steps run in CI:**
 
@@ -46,14 +46,14 @@ Phase 3 productionizes the phishing email detector built in Phases 1–2. It add
 
 ### 2.1 Automated Docker Builds
 
-- [x] **File/dir reference:** [`.github/workflows/docker-publish.yml`](.github/workflows/docker-publish.yml), [`serve.dockerfile`](serve.dockerfile)
-- [x] **Screenshot:**
+- **File/dir reference:** [`.github/workflows/docker-publish.yml`](.github/workflows/docker-publish.yml), [`serve.dockerfile`](serve.dockerfile)
+- **Screenshot:**
 
 ![Docker build and push](docs/phase3_evidence/docker_build_push.png)
 
 ![Docker registry](docs/phase3_evidence/docker_build_push_artifact.png)
 
-- [x] **Explanation:** The Docker workflow reuses the Phase 2/3 `serve.dockerfile` serving image with Docker Buildx, `docker/metadata-action`, and GitHub Actions layer cache (`type=gha`). Pull requests build only (`push: false`) to validate the Dockerfile without publishing. Pushes to `main` log in to Docker Hub and publish `sha-<commit>` and `latest` tags when repository secrets are configured.
+- **Explanation:** The Docker workflow reuses the Phase 2/3 `serve.dockerfile` serving image with Docker Buildx, `docker/metadata-action`, and GitHub Actions layer cache (`type=gha`). Pull requests build only (`push: false`) to validate the Dockerfile without publishing. Pushes to `main` log in to Docker Hub and publish `sha-<commit>` and `latest` tags when repository secrets are configured.
 
 **Build locally:**
 
@@ -66,13 +66,13 @@ docker run --rm -p 8080:8080 -e PORT=8080 -v "$PWD/models:/app/models" mlops-cre
 
 ### 2.2 Continuous Machine Learning (CML)
 
-- [x] **File/dir reference:** [`.github/workflows/cml.yml`](.github/workflows/cml.yml), [`reports/metrics/`](reports/metrics/)
+- **File/dir reference:** [`.github/workflows/cml.yml`](.github/workflows/cml.yml), [`reports/metrics/`](reports/metrics/)
 - [ ] **PR link:** _Add after opening the `kirtan-phase3-cicd` pull request._
-- [x] **Screenshot:**
+- **Screenshot:**
 
 ![CML PR comment](docs/phase3_evidence/cml_pr_comment.png)
 
-- [x] **Explanation:** CML runs on pull requests to `main` using `iterative/setup-cml@v2` with `vega: false` and the required `contents: read` / `pull-requests: write` permissions. It builds a markdown report from committed model-comparison artifacts and posts it with `cml comment update --publish` so the same PR comment is updated on each push instead of creating duplicate bot comments.
+- **Explanation:** CML runs on pull requests to `main` using `iterative/setup-cml@v2` with `vega: false` and the required `contents: read` / `pull-requests: write` permissions. It builds a markdown report from committed model-comparison artifacts and posts it with `cml comment update --publish` so the same PR comment is updated on each push instead of creating duplicate bot comments.
 
 **Model comparison summary:**
 
@@ -112,12 +112,10 @@ Evidence: [`reports/gcp/gcp_runs.png`](reports/gcp/gcp_runs.png)
 
 **Code:** [`api/main.py`](api/main.py) | **Schemas:** [`api/schemas.py`](api/schemas.py)
 
-
 | Endpoint   | Method | Description                                       |
 | ---------- | ------ | ------------------------------------------------- |
 | `/health`  | GET    | Service readiness and model load status           |
 | `/predict` | POST   | Classify a single email as phishing or legitimate |
-
 
 **Request:**
 
@@ -212,7 +210,6 @@ The holdout set (20% of data, reserved since Phase 2 sampling) was evaluated onc
 **Script:** [`src/mlops_crew/evaluation/phase3_holdout_eval.py`](src/mlops_crew/evaluation/phase3_holdout_eval.py)
 **Results:** [`reports/metrics/phase3_holdout_metrics.json`](reports/metrics/phase3_holdout_metrics.json)
 
-
 | Metric              | Value     |
 | ------------------- | --------- |
 | Holdout rows        | 16,496    |
@@ -225,13 +222,11 @@ The holdout set (20% of data, reserved since Phase 2 sampling) was evaluated onc
 | False Positive Rate | 2.01%     |
 | ROC-AUC             | 99.84%    |
 
-
 The model generalizes well — F2 drops only 0.6 points from test (99.1%) to holdout (98.6%), confirming no overfitting.
 
 ---
 
 ## 6. Team Contributions
-
 
 | Workstream                                              | Primary          | Support  |
 | ------------------------------------------------------- | ---------------- | -------- |
