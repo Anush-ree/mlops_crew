@@ -7,6 +7,18 @@ from typing import Any
 from hf_space import app as hf_app
 
 
+def test_backend_url_accepts_service_root(monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    monkeypatch.setenv("BACKEND_PREDICT_URL", "https://example.run.app")
+
+    assert hf_app.backend_url() == "https://example.run.app/predict"
+
+
+def test_backend_url_accepts_predict_endpoint(monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    monkeypatch.setenv("BACKEND_PREDICT_URL", "https://example.run.app/predict")
+
+    assert hf_app.backend_url() == "https://example.run.app/predict"
+
+
 class FakeResponse:
     def raise_for_status(self) -> None:
         return None

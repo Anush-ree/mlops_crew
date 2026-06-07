@@ -1,9 +1,4 @@
-"""
-Gradio UI for phishing email detector.
-
-This app provides a simple interface to test the deployed FastAPI prediction endpoint.
-Users paste an email body and see the predicted label, score, and API latency.
-"""
+"""Gradio UI for phishing email detector."""
 
 from __future__ import annotations
 
@@ -15,10 +10,39 @@ import requests
 DEFAULT_BACKEND_URL = "http://localhost:8080/predict"
 REQUEST_TIMEOUT_SECONDS = 20
 
+PHISHING_EXAMPLE = """Subject: Urgent: Your account has been compromised
+
+Dear Customer,
+
+We have detected suspicious activity on your account. Your account will be suspended
+within 24 hours unless you verify your information immediately.
+
+Click here to verify: http://secure-login-verify.suspicious-domain.com/verify?id=12345
+
+Please provide your username, password, and credit card details to restore access.
+
+Regards,
+Security Team"""
+
+LEGITIMATE_EXAMPLE = """Subject: Team meeting rescheduled to Thursday
+
+Hi everyone,
+
+Just a quick note that our weekly team sync has been moved from Wednesday to Thursday
+at 2pm due to a conflict with the client presentation.
+
+Please update your calendars. The Zoom link remains the same.
+
+Let me know if you have any questions.
+
+Thanks,
+Sarah"""
+
 
 def backend_url() -> str:
     """Return the configured prediction endpoint."""
-    return os.getenv("BACKEND_PREDICT_URL", DEFAULT_BACKEND_URL).rstrip("/")
+    configured_url = os.getenv("BACKEND_PREDICT_URL", DEFAULT_BACKEND_URL).rstrip("/")
+    return configured_url if configured_url.endswith("/predict") else f"{configured_url}/predict"
 
 
 def classify_email(text: str) -> tuple[str, str, str, dict[str, Any]]:
@@ -69,51 +93,78 @@ def classify_email(text: str) -> tuple[str, str, str, dict[str, Any]]:
     return verdict, score_text, latency_text, payload
 
 
-EXAMPLES = [
-    [
-        "Your mailbox storage is full. Verify your password immediately at "
-        "http://example.com/account to avoid suspension."
-    ],
-    [
-        "Hi team, attached are the notes from today's project sync. Please review before "
-        "tomorrow's meeting."
-    ],
-    [
-        "Urgent security alert: unusual login detected. Confirm your identity now to keep "
-        "your account active."
-    ],
-]
+def analyze(email_text: str) -> tuple[str, str, str, str]:
+    """Run the backend prediction and return values for visible UI fields."""
+    verdict, score_text, latency_text, payload = classify_email(email_text)
+    model_version = str(payload.get("model_version", "N/A")) if payload else "N/A"
+    return verdict, score_text, model_version, latency_text
 
 
 def build_demo() -> Any:
     """Build the Gradio app lazily so helper tests do not require Gradio."""
     import gradio as gr
 
-    with gr.Blocks(title="Phishing Email Detection") as demo:
-        gr.Markdown("# Phishing Email Detection")
+    with gr.Blocks(
+        title="Phishing Email Detector",
+        theme=gr.themes.Soft(),
+    ) as demo:
         gr.Markdown(
-            "Paste an email body below. The app calls the deployed Phishing Email Detection "
-            "endpoint and returns the model prediction."
+            """
+            # 🛡️ Phishing Email Detector
+            **MLOps Crew · SE489 · DePaul University**
+
+            Paste an email (subject + body) below to check whether it's a
+            phishing attempt or a legitimate message. The model is a TF-IDF +
+            Linear SVC classifier trained on 65,000+ emails.
+            """
         )
+
         with gr.Row():
             with gr.Column(scale=2):
                 email_text = gr.Textbox(
-                    label="Email text",
-                    lines=10,
-                    placeholder="Paste the email body here...",
+                    label="Email Content",
+                    lines=12,
+                    placeholder="Paste the full email text here (subject + body)...",
                 )
-                classify = gr.Button("Classify Email", variant="primary")
+                with gr.Row():
+                    submit = gr.Button("Analyze", variant="primary")
+                    clear = gr.Button("Clear")
             with gr.Column(scale=1):
-                verdict = gr.Textbox(label="Prediction")
-                score = gr.Textbox(label="Score")
-                latency = gr.Textbox(label="API latency")
-        raw_json = gr.JSON(label="Raw API response")
-        gr.Examples(examples=EXAMPLES, inputs=email_text)
+                verdict = gr.Textbox(label="Prediction", interactive=False)
+                score = gr.Textbox(label="Confidence", interactive=False)
+                model_version = gr.Textbox(label="Model Version", interactive=False)
+                latency = gr.Textbox(label="Latency", interactive=False)
 
-        classify.click(
-            fn=classify_email,
+        gr.Markdown("### Try these examples:")
+        with gr.Row():
+            gr.Examples(
+                examples=[
+                    [PHISHING_EXAMPLE],
+                    [LEGITIMATE_EXAMPLE],
+                ],
+                inputs=email_text,
+                label="Example emails",
+            )
+
+        gr.Markdown(
+            """
+            ---
+            **Note:** The deployed Space reads `BACKEND_PREDICT_URL` from
+            Hugging Face variables or secrets. It can point either to the Cloud
+            Run service root or directly to the `/predict` endpoint.
+
+            **Source:** [GitHub Repository](https://github.com/Anush-ree/mlops_crew)
+            """
+        )
+
+        submit.click(
+            fn=analyze,
             inputs=email_text,
-            outputs=[verdict, score, latency, raw_json],
+            outputs=[verdict, score, model_version, latency],
+        )
+        clear.click(
+            fn=lambda: ("", "", "", ""),
+            outputs=[verdict, score, model_version, latency],
         )
 
     return demo

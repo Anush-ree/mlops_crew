@@ -35,8 +35,8 @@ jobs:
             exit 1
           fi
           git clone "https://${HF_USERNAME}:${HF_TOKEN}@huggingface.co/spaces/${HF_USERNAME}/${HF_SPACE_NAME}" space
-          rsync -av --delete hf_space/ space/
+          rsync -av --delete --exclude='.git' --exclude='.gitattributes' hf_space/ space/
           cd space
           git add .
           git commit -m "Deploy Phase 3 UI from GitHub Actions" --allow-empty
-          git push origin main
+          git push origin HEAD:main
