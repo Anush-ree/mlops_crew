@@ -25,8 +25,7 @@ logger = get_logger(__name__)
 def evaluate_holdout(config: dict) -> dict:
     model_path = resolve_project_path(config["modeling"]["output_dir"]) / "best_model.joblib"
     holdout_path = (
-        resolve_project_path(config["data"]["interim_dir"])
-        / config["data"]["phase3_holdout_file"]
+        resolve_project_path(config["data"]["interim_dir"]) / config["data"]["phase3_holdout_file"]
     )
     output_path = (
         resolve_project_path(config["reports"]["metrics_dir"]) / "phase3_holdout_metrics.json"
