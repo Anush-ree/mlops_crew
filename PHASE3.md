@@ -40,6 +40,8 @@ Triggers on every push to `main` and every pull request.
 
 Run locally with `make dev` to install hooks.
 
+![CI green run](docs/phase3_evidence/ci_green.png)
+
 ---
 
 ## 2. Docker Automation & CML
@@ -52,6 +54,9 @@ Run locally with `make dev` to install hooks.
 - **On push to main:** builds and pushes to Docker Hub using `docker/metadata-action` tags (`sha-<hash>` + `latest`)
 - Uses Docker Buildx and GitHub Actions layer cache (`type=gha`)
 - Image: `serve.dockerfile` → FastAPI serving container
+
+![Docker build and push](docs/phase3_evidence/docker_build_push.png)
+![Docker build artifact](docs/phase3_evidence/docker_build_push_artifact.png)
 
 **Build locally:**
 ```bash
@@ -72,6 +77,8 @@ Generates a markdown report posted as a PR comment containing:
 - Model comparison plot `reports/metrics/model_comparison.png`
 
 Uses `cml comment update --publish` to update the same comment on each push (no duplicate bot comments).
+
+![CML PR comment](docs/phase3_evidence/cml_pr_comment.png)
 
 **Model comparison summary:**
 
@@ -147,6 +154,10 @@ Evidence:
 - [`reports/gcp/gcp_logs.png`](reports/gcp/gcp_logs.png) — Cloud Run logs
 - [`reports/gcp/gcp_metrics.png`](reports/gcp/gcp_metrics.png) — request metrics
 
+![Cloud Run live API](reports/gcp/gcp_live_api.png)
+![Cloud Run logs](reports/gcp/gcp_logs.png)
+![Cloud Run metrics](reports/gcp/gcp_metrics.png)
+
 ### Cloud Functions Deployment
 
 **Code:** [`functions/predict/main.py`](functions/predict/main.py)
@@ -160,6 +171,10 @@ Evidence:
 - [`reports/gcp/cloud_function.png`](reports/gcp/cloud_function.png)
 - [`reports/gcp/cloud_function_log.png`](reports/gcp/cloud_function_log.png)
 - [`reports/gcp/cloud_function_local_run.png`](reports/gcp/cloud_function_local_run.png)
+
+![Cloud Function](reports/gcp/cloud_function.png)
+![Cloud Function logs](reports/gcp/cloud_function_log.png)
+![Cloud Function local run](reports/gcp/cloud_function_local_run.png)
 
 ### Load Testing
 
@@ -185,6 +200,8 @@ Reports mean latency and p95 latency across N requests.
 Triggers on push to `main` when `hf_space/` changes. Pushes the `hf_space/` directory to the HF Space repo using `HF_TOKEN`, `HF_USERNAME`, and `HF_SPACE_NAME` secrets.
 
 The app reads `BACKEND_PREDICT_URL` from the environment. When the Cloud Run service URL is set as a Space secret, predictions go through the real model. Falls back to a mock prediction during development.
+
+![Hugging Face Space](docs/phase3_evidence/hf_space.png)
 
 ---
 
