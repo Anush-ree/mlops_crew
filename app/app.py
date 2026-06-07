@@ -3,7 +3,7 @@ import gradio as gr
 import requests
 
 # Backend URL - reads from environment variable, falls back to mock
-BACKEND_URL = os.environ.get("BACKEND_PREDICT_URL", "")
+BACKEND_URL = os.environ.get("BACKEND_PREDICT_URL", "https://mlops-crew-api-1043076962701.us-central1.run.app")
 
 # Example emails for the interface
 PHISHING_EXAMPLE = """Subject: Urgent: Your account has been compromised
