@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+from math import exp
 from typing import Any
 
 import requests
@@ -45,6 +46,39 @@ def backend_url() -> str:
     return configured_url if configured_url.endswith("/predict") else f"{configured_url}/predict"
 
 
+def prediction_label(payload: dict[str, Any]) -> str:
+    """Return a user-facing prediction label."""
+    if "is_phishing" in payload:
+        return "Phishing" if bool(payload["is_phishing"]) else "Legitimate"
+
+    label = str(payload.get("label", "")).strip().lower()
+    if label in {"phishing", "legitimate"}:
+        return label.title()
+
+    prediction = payload.get("prediction")
+    if prediction == 1:
+        return "Phishing"
+    if prediction == 0:
+        return "Legitimate"
+    return "Unknown"
+
+
+def confidence_text(score: Any, score_type: Any) -> str:
+    """Convert model score output into a 0-100 confidence display."""
+    if not isinstance(score, (int, float)):
+        return "N/A"
+
+    score_value = float(score)
+    score_type_text = str(score_type or "").lower()
+    if "probability" in score_type_text or "confidence" in score_type_text:
+        percent = score_value * 100 if 0 <= score_value <= 1 else score_value
+    else:
+        percent = 100 / (1 + exp(-abs(score_value)))
+
+    percent = max(0, min(100, percent))
+    return f"{percent:.1f}%"
+
+
 def classify_email(text: str) -> tuple[str, str, str, dict[str, Any]]:
     """
     Call the deployed FastAPI endpoint and format the response for the UI.
@@ -55,8 +89,8 @@ def classify_email(text: str) -> tuple[str, str, str, dict[str, Any]]:
 
     Output:
     ---
-    - verdict: The predicted label and recommendation for the email.
-    - score_text: The confidence score and its type (e.g., probability).
+    - verdict: The predicted user-facing label for the email.
+    - score_text: The confidence score normalized to a 0-100 display.
     - latency_text: The time taken for the API call in milliseconds.
     - payload: The raw JSON response from the API for debugging purposes.
     """
@@ -74,23 +108,11 @@ def classify_email(text: str) -> tuple[str, str, str, dict[str, Any]]:
         return "Request failed", str(exc), "N/A", {"backend_url": backend_url()}
 
     payload: dict[str, Any] = response.json()
-    label = str(payload.get("label", "unknown")).title()
-    prediction = int(payload.get("prediction", -1))
-    is_phishing = bool(payload.get("is_phishing", False))
-    verdict = f"{label} (class {prediction})"
-    if is_phishing:
-        verdict = f"{verdict} - review before trusting this email"
-
     score = payload.get("score")
-    score_type = payload.get("score_type") or "not available"
-    if isinstance(score, (int, float)):
-        score_text = f"{score:.4f} ({score_type})"
-    else:
-        score_text = f"N/A ({score_type})"
-
+    score_type = payload.get("score_type")
     latency = payload.get("latency_ms")
     latency_text = f"{float(latency):.2f} ms" if isinstance(latency, (int, float)) else "N/A"
-    return verdict, score_text, latency_text, payload
+    return prediction_label(payload), confidence_text(score, score_type), latency_text, payload
 
 
 def analyze(email_text: str) -> tuple[str, str, str, str]:
@@ -145,17 +167,6 @@ def build_demo() -> Any:
                 inputs=email_text,
                 label="Example emails",
             )
-
-        gr.Markdown(
-            """
-            ---
-            **Note:** The deployed Space reads `BACKEND_PREDICT_URL` from
-            Hugging Face variables or secrets. It can point either to the Cloud
-            Run service root or directly to the `/predict` endpoint.
-
-            **Source:** [GitHub Repository](https://github.com/Anush-ree/mlops_crew)
-            """
-        )
 
         submit.click(
             fn=analyze,

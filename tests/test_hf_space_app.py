@@ -39,7 +39,15 @@ def test_classify_email_formats_numeric_response(monkeypatch) -> None:  # type: 
 
     verdict, score_text, latency_text, payload = hf_app.classify_email("Verify account now")
 
-    assert verdict == "Phishing (class 1) - review before trusting this email"
-    assert score_text == "1.2346 (decision_function)"
+    assert verdict == "Phishing"
+    assert score_text == "77.5%"
     assert latency_text == "12.35 ms"
     assert payload["is_phishing"] is True
+
+
+def test_confidence_text_formats_negative_margin_as_confidence() -> None:
+    assert hf_app.confidence_text(-1.5, "decision_function") == "81.8%"
+
+
+def test_confidence_text_formats_probability_as_percent() -> None:
+    assert hf_app.confidence_text(0.91, "probability") == "91.0%"
