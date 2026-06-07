@@ -1,0 +1,20 @@
+{
+  "holdout_path": "/Users/anush/Downloads/DePaul/MLOPS/mlops_crew/data/interim/phishing_email_phase3_holdout.csv",
+  "holdout_rows": 16496,
+  "metrics": {
+    "accuracy": 0.9836930164888458,
+    "average_precision": 0.998479891601348,
+    "f1": 0.9843631924664302,
+    "f2": 0.9860483532864397,
+    "false_negative": 110.0,
+    "false_negative_rate": 0.012824997085227935,
+    "false_positive": 159.0,
+    "false_positive_rate": 0.020078292713726482,
+    "precision": 0.9815673545096221,
+    "recall": 0.9871750029147721,
+    "roc_auc": 0.9984022970833155,
+    "true_negative": 7760.0,
+    "true_positive": 8467.0
+  },
+  "model_path": "/Users/anush/Downloads/DePaul/MLOPS/mlops_crew/models/best_model.joblib"
+}
