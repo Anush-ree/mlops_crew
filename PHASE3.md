@@ -53,6 +53,8 @@ Phase 3 productionizes the phishing email detector built in Phases 1–2. It add
 
 ![Docker registry](docs/phase3_evidence/docker_build_push_artifact.png)
 
+![All checks passed on PR #19](docs/phase3_evidence/All_checks_passed.png)
+
 - **Explanation:** The Docker workflow reuses the Phase 2/3 `serve.dockerfile` serving image with Docker Buildx, `docker/metadata-action`, and GitHub Actions layer cache (`type=gha`). Pull requests build only (`push: false`) to validate the Dockerfile without publishing. Pushes to `main` log in to Docker Hub and publish `sha-<commit>` and `latest` tags when repository secrets are configured.
 
 **Build locally:**
@@ -67,7 +69,7 @@ docker run --rm -p 8080:8080 -e PORT=8080 -v "$PWD/models:/app/models" mlops-cre
 ### 2.2 Continuous Machine Learning (CML)
 
 - **File/dir reference:** [`.github/workflows/cml.yml`](.github/workflows/cml.yml), [`reports/metrics/`](reports/metrics/)
-- [ ] **PR link:** _Add after opening the `kirtan-phase3-cicd` pull request._
+- **PR link:** <https://github.com/Anush-ree/mlops_crew/pull/19>
 - **Screenshot:**
 
 ![CML PR comment](docs/phase3_evidence/cml_pr_comment.png)
