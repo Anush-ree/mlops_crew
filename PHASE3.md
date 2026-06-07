@@ -11,20 +11,26 @@ Phase 3 productionizes the phishing email detector built in Phases 1–2. It add
 
 ## 1. Continuous Integration & Testing
 
-**Workflow:** [`.github/workflows/ci.yml`](.github/workflows/ci.yml)
-Triggers on every push to `main` and every pull request.
+### 1.2 GitHub Actions CI Workflow
+
+- [x] **File/dir reference:** [`.github/workflows/ci.yml`](.github/workflows/ci.yml)
+- [x] **Screenshot:**
+
+![CI green run](docs/phase3_evidence/ci_green.png)
+
+- [x] **Explanation:** The CI workflow runs on every push to `main` and every pull request using Python 3.11 and `actions/checkout@v5`. It enforces code quality with `ruff check`, `ruff format --check`, `mypy src`, and `pytest tests/ --cov=mlops_crew`. DVC pull is intentionally excluded from this job because the shared S3 remote requires teammate AWS credentials that are not available in GitHub Actions secrets yet; unit tests use fixtures and do not need the full dataset.
 
 **Steps run in CI:**
+
 - `ruff check` — linting
 - `ruff format --check` — formatting
 - `mypy src` — type checking
 - `pytest tests/ --cov=mlops_crew --cov-report=xml` — tests with coverage
 
-**Python version:** 3.11 (pinned via matrix)
-
 **Test files:**
+
 | File | What it tests |
-|---|---|
+| --- | --- |
 | `tests/test_api.py` | FastAPI `/health` and `/predict` endpoints |
 | `tests/test_serving.py` | `ModelService` text normalization and prediction |
 | `tests/test_hf_space_app.py` | Gradio UI helpers |
@@ -32,33 +38,25 @@ Triggers on every push to `main` and every pull request.
 | `tests/test_phase2_monitoring.py` | Divergence and latency monitoring |
 | `tests/test_logging_and_hydra.py` | Logging config and Hydra integration |
 
-**Pre-commit hooks:** [`.pre-commit-config.yaml`](.pre-commit-config.yaml)
-- `ruff` (lint + autofix)
-- `ruff-format`
-- `mypy` (type checking)
-- `trailing-whitespace`, `end-of-file-fixer`, `check-yaml`
-
-Run locally with `make dev` to install hooks.
-
-![CI green run](docs/phase3_evidence/ci_green.png)
+**Pre-commit hooks:** [`.pre-commit-config.yaml`](.pre-commit-config.yaml) — install locally with `make dev`.
 
 ---
 
 ## 2. Docker Automation & CML
 
-### Docker Build and Push
+### 2.1 Automated Docker Builds
 
-**Workflow:** [`.github/workflows/docker-publish.yml`](.github/workflows/docker-publish.yml)
-
-- **On pull requests:** builds the serving image only (no push) to validate the Dockerfile
-- **On push to main:** builds and pushes to Docker Hub using `docker/metadata-action` tags (`sha-<hash>` + `latest`)
-- Uses Docker Buildx and GitHub Actions layer cache (`type=gha`)
-- Image: `serve.dockerfile` → FastAPI serving container
+- [x] **File/dir reference:** [`.github/workflows/docker-publish.yml`](.github/workflows/docker-publish.yml), [`serve.dockerfile`](serve.dockerfile)
+- [x] **Screenshot:**
 
 ![Docker build and push](docs/phase3_evidence/docker_build_push.png)
-![Docker build artifact](docs/phase3_evidence/docker_build_push_artifact.png)
+
+![Docker registry](docs/phase3_evidence/docker_build_push_artifact.png)
+
+- [x] **Explanation:** The Docker workflow reuses the Phase 2/3 `serve.dockerfile` serving image with Docker Buildx, `docker/metadata-action`, and GitHub Actions layer cache (`type=gha`). Pull requests build only (`push: false`) to validate the Dockerfile without publishing. Pushes to `main` log in to Docker Hub and publish `sha-<commit>` and `latest` tags when repository secrets are configured.
 
 **Build locally:**
+
 ```bash
 make docker-serve
 # or
@@ -66,24 +64,20 @@ docker build -f serve.dockerfile . -t mlops-crew-api:latest
 docker run --rm -p 8080:8080 -e PORT=8080 -v "$PWD/models:/app/models" mlops-crew-api:latest
 ```
 
-### CML (Continuous Machine Learning)
+### 2.2 Continuous Machine Learning (CML)
 
-**Workflow:** [`.github/workflows/cml.yml`](.github/workflows/cml.yml)
-Triggers on pull requests to `main`.
-
-Generates a markdown report posted as a PR comment containing:
-- Model comparison table from `reports/metrics/model_comparison.csv`
-- Best model metrics from `reports/metrics/best_model_metrics.json`
-- Model comparison plot `reports/metrics/model_comparison.png`
-
-Uses `cml comment update --publish` to update the same comment on each push (no duplicate bot comments).
+- [x] **File/dir reference:** [`.github/workflows/cml.yml`](.github/workflows/cml.yml), [`reports/metrics/`](reports/metrics/)
+- [ ] **PR link:** _Add after opening the `kirtan-phase3-cicd` pull request._
+- [x] **Screenshot:**
 
 ![CML PR comment](docs/phase3_evidence/cml_pr_comment.png)
+
+- [x] **Explanation:** CML runs on pull requests to `main` using `iterative/setup-cml@v2` with `vega: false` and the required `contents: read` / `pull-requests: write` permissions. It builds a markdown report from committed model-comparison artifacts and posts it with `cml comment update --publish` so the same PR comment is updated on each push instead of creating duplicate bot comments.
 
 **Model comparison summary:**
 
 | Model | Val F2 | Test F2 | Test Recall |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | linear_svc | 99.2% | 99.1% | 99.2% |
 | logistic_regression | 98.8% | 99.0% | 99.2% |
 | complement_nb | 94.5% | 95.1% | 94.2% |
@@ -118,17 +112,21 @@ Evidence: [`reports/gcp/gcp_runs.png`](reports/gcp/gcp_runs.png)
 
 **Code:** [`api/main.py`](api/main.py) | **Schemas:** [`api/schemas.py`](api/schemas.py)
 
-| Endpoint | Method | Description |
-|---|---|---|
-| `/health` | GET | Service readiness and model load status |
-| `/predict` | POST | Classify a single email as phishing or legitimate |
+
+| Endpoint   | Method | Description                                       |
+| ---------- | ------ | ------------------------------------------------- |
+| `/health`  | GET    | Service readiness and model load status           |
+| `/predict` | POST   | Classify a single email as phishing or legitimate |
+
 
 **Request:**
+
 ```json
 {"text": "Verify your account now or it will be suspended."}
 ```
 
 **Response:**
+
 ```json
 {
   "label": "phishing",
@@ -147,9 +145,10 @@ Evidence: [`reports/gcp/gcp_runs.png`](reports/gcp/gcp_runs.png)
 Deployed from Artifact Registry using [`serve.dockerfile`](serve.dockerfile).
 Listens on `$PORT` (default 8080). Model loaded from GCS via `MODEL_GCS_URI` env var.
 
-**Live URL:** https://mlops-crew-api-1043076962701.us-central1.run.app
+**Live URL:** [https://mlops-crew-api-1043076962701.us-central1.run.app](https://mlops-crew-api-1043076962701.us-central1.run.app)
 
 Evidence:
+
 - [`reports/gcp/gcp_live_api.png`](reports/gcp/gcp_live_api.png) — live API response
 - [`reports/gcp/gcp_logs.png`](reports/gcp/gcp_logs.png) — Cloud Run logs
 - [`reports/gcp/gcp_metrics.png`](reports/gcp/gcp_metrics.png) — request metrics
@@ -165,9 +164,10 @@ Evidence:
 Thin HTTP wrapper that forwards requests to the Cloud Run FastAPI backend.
 Configured via `BACKEND_PREDICT_URL` environment variable.
 
-**Live URL:** https://us-central1-ml-ops-497304.cloudfunctions.net/mlops-crew-predict
+**Live URL:** [https://us-central1-ml-ops-497304.cloudfunctions.net/mlops-crew-predict](https://us-central1-ml-ops-497304.cloudfunctions.net/mlops-crew-predict)
 
 Evidence:
+
 - [`reports/gcp/cloud_function.png`](reports/gcp/cloud_function.png)
 - [`reports/gcp/cloud_function_log.png`](reports/gcp/cloud_function_log.png)
 - [`reports/gcp/cloud_function_local_run.png`](reports/gcp/cloud_function_local_run.png)
@@ -192,7 +192,7 @@ Reports mean latency and p95 latency across N requests.
 
 ## 4. Hugging Face Spaces Demo
 
-**Live demo:** https://huggingface.co/spaces/manas01AI/phishing-email-detector
+**Live demo:** [https://huggingface.co/spaces/manas01AI/phishing-email-detector](https://huggingface.co/spaces/manas01AI/phishing-email-detector)
 
 **Code:** [`hf_space/app.py`](hf_space/app.py) — Gradio interface
 **Auto-deploy workflow:** [`.github/workflows/deploy_hf_space.yml`](.github/workflows/deploy_hf_space.yml)
@@ -212,17 +212,19 @@ The holdout set (20% of data, reserved since Phase 2 sampling) was evaluated onc
 **Script:** [`src/mlops_crew/evaluation/phase3_holdout_eval.py`](src/mlops_crew/evaluation/phase3_holdout_eval.py)
 **Results:** [`reports/metrics/phase3_holdout_metrics.json`](reports/metrics/phase3_holdout_metrics.json)
 
-| Metric | Value |
-|---|---|
-| Holdout rows | 16,496 |
-| Accuracy | 98.4% |
-| Precision | 98.2% |
-| Recall | 98.7% |
-| F1 | 98.4% |
-| **F2** | **98.6%** |
-| False Negative Rate | 1.28% |
-| False Positive Rate | 2.01% |
-| ROC-AUC | 99.84% |
+
+| Metric              | Value     |
+| ------------------- | --------- |
+| Holdout rows        | 16,496    |
+| Accuracy            | 98.4%     |
+| Precision           | 98.2%     |
+| Recall              | 98.7%     |
+| F1                  | 98.4%     |
+| **F2**              | **98.6%** |
+| False Negative Rate | 1.28%     |
+| False Positive Rate | 2.01%     |
+| ROC-AUC             | 99.84%    |
+
 
 The model generalizes well — F2 drops only 0.6 points from test (99.1%) to holdout (98.6%), confirming no overfitting.
 
@@ -230,8 +232,9 @@ The model generalizes well — F2 drops only 0.6 points from test (99.1%) to hol
 
 ## 6. Team Contributions
 
-| Workstream | Primary | Support |
-|---|---|---|
-| CI, Docker, CML workflows | Kirtan | Anushree |
+
+| Workstream                                              | Primary          | Support  |
+| ------------------------------------------------------- | ---------------- | -------- |
+| CI, Docker, CML workflows                               | Kirtan           | Anushree |
 | GCP infrastructure, Cloud Run, Cloud Functions, FastAPI | Krishna (Kirtan) | Anushree |
-| Gradio UI, Hugging Face Spaces | Anas | — |
+| Gradio UI, Hugging Face Spaces                          | Anas             | —        |
