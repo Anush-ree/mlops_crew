@@ -31,7 +31,7 @@ Purpose: run configuration-driven experiment variants without editing the main p
 
 Setup: ensure the project is installed in editable mode so the `mlops_crew.train_hydra` module can be imported.
 
-Use: run `make hydra-demo` or invoke `python -m mlops_crew.train_hydra experiment=phase2_default` and `python -m mlops_crew.train_hydra experiment=phase2_experimental` to compare overrides.
+Use: run `make hydra-demo` or invoke `python -m mlops_crew.train_hydra experiment=phase2_default` and `python -m mlops_crew.train_hydra experiment=phase2_experimental` to compare overrides. Hydra overlays live under `configs/hydra/`.
 
 ## Pytest
 

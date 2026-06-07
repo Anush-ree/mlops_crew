@@ -11,3 +11,9 @@ __pycache__
 notebooks/
 docs/
 reports/
+data/
+models/
+logs/
+mlruns/
+outputs/
+.multirun/

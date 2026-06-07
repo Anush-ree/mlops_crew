@@ -110,7 +110,7 @@ python -m mlops_crew.data.validate
 tail -n 20 logs/pipeline.log
 ```
 
-Hydra experiment configs live under `conf/`. To run the two-config MLflow demo:
+Hydra experiment configs live under `configs/hydra/`. To run the two-config MLflow demo:
 
 ```bash
 make hydra-demo

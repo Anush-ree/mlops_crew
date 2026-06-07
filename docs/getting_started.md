@@ -79,6 +79,34 @@ python -m mlops_crew.models.predict_model \
   --output reports/predictions/manual_predictions.csv
 ```
 
+### Phase 3 API and UI
+
+Start the FastAPI prediction service:
+
+```bash
+make api
+```
+
+Send a JSON request:
+
+```bash
+curl -X POST http://localhost:8080/predict \
+  -H "Content-Type: application/json" \
+  -d '{"text":"Urgent account verification required. Click the secure link now."}'
+```
+
+Start the Gradio UI:
+
+```bash
+make ui
+```
+
+Build the Cloud Run-ready serving container:
+
+```bash
+make docker-serve
+```
+
 ### Docker Workflow
 
 The repo also includes Docker images for training and batch prediction. Use
@@ -182,8 +210,8 @@ mlops_crew/                  # Repository root
 ├── data/                              # raw/ and processed/
 ├── models/                            # Trained model artifacts
 ├── docs/                              # MkDocs documentation
-├── configs/                           # Project configuration
-├── conf/                              # Hydra experiment overrides
+├── configs/                           # Project and Hydra configuration
+│   └── hydra/                         # Hydra experiment overrides
 ├── pyproject.toml
 ├── requirements.txt
 └── Makefile
@@ -196,9 +224,9 @@ split ratios, TF-IDF settings, tracking settings, monitoring outputs, or the
 list of models to train. Re-run `make repro` after config changes so DVC
 updates the pipeline outputs.
 
-Use `conf/` only for Hydra experiment overlays. For example, `make hydra-demo`
-runs two MLflow-tracked training experiments without changing DVC-tracked
-artifacts.
+Use `configs/hydra/` only for Hydra experiment overlays. For example,
+`make hydra-demo` runs two MLflow-tracked training experiments without changing
+DVC-tracked artifacts.
 
 ## Troubleshooting
 

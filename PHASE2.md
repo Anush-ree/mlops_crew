@@ -168,6 +168,13 @@ Transformer JSONL rows: test=9862, train=46020, val=9861
 
 Run these only when the related evidence needs to be regenerated.
 
+### Debugging Example
+
+The professor feedback requested an explicit `pdb`/`ipdb` debugging example.
+The normal code path is unchanged, but [docs/debugging_examples.md](docs/debugging_examples.md)
+now documents how to run the prediction CLI under `pdb`, where to set a
+breakpoint, and which variables to inspect when debugging model inference.
+
 ### MLflow UI
 
 ```bash

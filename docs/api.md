@@ -79,7 +79,7 @@ metric logging, and artifact logging for `models/train_model.py`.
 ## `mlops_crew.train_hydra`
 
 Hydra entrypoint for Section 6 experiment configs. It loads the normal
-`configs/config.yaml`, applies a `conf/experiment/*.yaml` override, routes
+`configs/config.yaml`, applies a `configs/hydra/experiment/*.yaml` override, routes
 scratch artifacts to `outputs/hydra/...`, and calls the same `train(config)`
 function used by `models/train_model.py`.
 
@@ -102,6 +102,55 @@ set_seed(42)
 python -m mlops_crew.models.train_model
 python -m mlops_crew.train_hydra experiment=phase2_default
 python -m mlops_crew.models.predict_model --model-path models/best_model.joblib --input data/processed/test.csv
+```
+
+## Phase 3 Serving API
+
+The Phase 3 FastAPI app lives in `api/main.py` and uses
+`mlops_crew.models.serving.ModelService` for model loading, text normalization,
+and prediction. Incoming text is cleaned with the same `clean_text` behavior
+used during training: lowercase, whitespace collapse, and minimum length
+validation. The saved sklearn pipeline still owns TF-IDF transformation and
+classification.
+
+Run locally:
+
+```bash
+uvicorn api.main:app --host 0.0.0.0 --port 8080
+```
+
+Health check:
+
+```bash
+curl http://localhost:8080/health
+```
+
+Prediction request:
+
+```bash
+curl -X POST http://localhost:8080/predict \
+  -H "Content-Type: application/json" \
+  -d '{"text":"Urgent account verification required. Click the secure link now."}'
+```
+
+Response fields:
+
+| Field | Meaning |
+| --- | --- |
+| `label` | `phishing` or `legitimate` |
+| `prediction` | integer class ID, where `1` is phishing |
+| `is_phishing` | boolean convenience field |
+| `score` | phishing probability when available, otherwise LinearSVC decision margin |
+| `score_type` | `probability`, `decision_function`, or null |
+| `model_version` | deployment metadata from `MODEL_VERSION` |
+| `latency_ms` | API-side model latency |
+| `normalized_text_length` | text length after serving-time cleaning |
+
+Cloud Run-ready container:
+
+```bash
+docker build -f serve.dockerfile . -t mlops-crew-api:latest
+docker run --rm -p 8080:8080 -e PORT=8080 -v "$PWD/models:/app/models" mlops-crew-api:latest
 ```
 
 ---
