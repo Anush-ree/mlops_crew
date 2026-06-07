@@ -2,7 +2,7 @@
 
 **SE489 · ML Engineering for Production (MLOps) · DePaul University**
 
-**Live Demo:** [Try the phishing email detector](https://huggingface.co/spaces/manas01AI/phishing-email-detector)
+**Live Demo:** [Try the phishing email detector](https://huggingface.co/spaces/mlops-crew-depaul/phishing-email-detector)
 
 ## 1. Team
 
@@ -38,7 +38,7 @@ FastAPI backend on GCP Cloud Run.
 - [PHASE1.md](./PHASE1.md) — Project design & baseline model
 - [PHASE2.md](./PHASE2.md) — Enhancing ML operations
 - [PHASE3.md](./PHASE3.md) — Continuous ML & deployment
-- [Live Demo](https://huggingface.co/spaces/manas01AI/phishing-email-detector) —
+- [Live Demo](https://huggingface.co/spaces/mlops-crew-depaul/phishing-email-detector) —
   Gradio UI on Hugging Face Spaces
 - [Phase 3 environment setup](./docs/phase3_environment_setup.md) — GitHub,
   Docker Hub, GCP, Cloud Run, Cloud Functions, and Hugging Face setup
@@ -78,7 +78,7 @@ curl -X POST https://mlops-crew-api-1043076962701.us-central1.run.app/predict \
 
 ---
 
-## 7. Setup
+## 6. Setup
 
 ### Windows, macOS, and Linux
 
@@ -271,9 +271,9 @@ sample -> clean -> split -> validate -> transformer_dataset
 sample + source_manifest + train -> divergence
 ```
 
-## 8. Repo layout
+## 7. Repo layout
 
-See **§5 Setup → Data access** for `dvc pull`. Key paths:
+See **§6 Setup → Data access** for `dvc pull`. Key paths:
 
 ```
 configs/config.yaml                 single source of truth for the pipeline
@@ -302,19 +302,14 @@ docs/TOOL_DOCUMENTATION.md          Complete tool setup and usage guide
 docs/windows_setup.md               Windows reproduction guide
 ```
 
-## 9. Contributions
+## 8. Contributions
 
-- **Anushree Bachhav** — proposal, repo/cookiecutter setup, environment
-  configuration, DVC + S3 + Google Drive remotes, GCP setup
-- **Muhammad Anas** — data cleaning, EDA, normalization, train/val/test splits,
-  data documentation, Gradio UI, Hugging Face Spaces deployment
-- **Krishna Kalakonda** — model evaluation, baseline metrics, architecture
-  diagram, code organization, FastAPI backend
-- **Kirtankumar Parekh** — Phase 2 integration review, Windows verification
-  (`verify_phase2.ps1`, `docs/windows_setup.md`), DVC validate stage, docs and
-  docstrings, CI/CD pipelines, repo maintenance
+- **Anushree Bachhav** — proposal, repo setup, cookiecutter setup, DVC remotes, Dockerfiles, documentation; holdout evaluation, model comparison plot, PHASE3.md evidence report, README updates, cleanup docs, phase3 evidence screenshots
+- **Muhammad Anas** — data cleaning, EDA, normalization, train/val/test splits, data documentation; Gradio UI, Hugging Face Spaces deployment
+- **Krishna Kalakonda** — model evaluation, baseline metrics, architecture diagram, code organization; FastAPI backend, Cloud Run, Cloud Functions, GCP deployment, CI/Docker/CML workflows, load testing
+- **Kirtankumar Parekh** — Phase 2 integration review, Windows verification (`verify_phase2.ps1`, `docs/windows_setup.md`), DVC validate stage, docs and docstrings, CI/CD pipelines, repo maintenance
 
-## 10. References
+## 9. References
 
 - Dataset: Phishing Email Dataset (SpamAssassin, Enron, Nazario, Ling, CEAS, Nigerian)
 - Source: https://www.kaggle.com/datasets/naserabdullahalam/phishing-email-dataset?select=SpamAssasin.csv
