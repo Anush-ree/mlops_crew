@@ -2,6 +2,8 @@
 
 **SE489 · ML Engineering for Production (MLOps) · DePaul University**
 
+🚀 **Live Demo:** [Try the phishing email detector](https://huggingface.co/spaces/manas01AI/phishing-email-detector)
+
 ## 1. Team
 
 - Team Name: MLOps Crew
@@ -24,6 +26,8 @@ flagging a legitimate one — and select models by **F2**.
 Phase 1 trained on a stratified 60% sample of `phishing_email.csv`. Phase 2
 uses 80% of the raw data, preserves the final 20% as a Phase 3 holdout, tracks
 experiments with MLflow, and adds monitoring, profiling, and divergence reports.
+Phase 3 deploys the model as a live Gradio app on Hugging Face Spaces with a
+FastAPI backend on GCP Cloud Run.
 
 ## 3. Architecture
 
@@ -34,6 +38,7 @@ experiments with MLflow, and adds monitoring, profiling, and divergence reports.
 - [PHASE1.md](./PHASE1.md) — Project design & baseline model
 - [PHASE2.md](./PHASE2.md) — Enhancing ML operations
 - [PHASE3.md](./PHASE3.md) — Continuous ML & deployment
+- 🚀 [Live Demo](https://huggingface.co/spaces/manas01AI/phishing-email-detector) — Gradio UI on Hugging Face Spaces
 
 ## 5. Setup
 
@@ -133,6 +138,28 @@ docker run --rm \
 If you prefer the one-command wrappers, use `make docker-train` and
 `make docker-predict`.
 
+### Gradio UI (Phase 3)
+
+The Gradio app is deployed on Hugging Face Spaces and can be accessed at:
+
+```
+https://huggingface.co/spaces/manas01AI/phishing-email-detector
+```
+
+To run locally:
+
+```bash
+pip install gradio requests
+python app/app.py
+```
+
+To connect to the Cloud Run backend, set the environment variable:
+
+```bash
+export BACKEND_PREDICT_URL=https://your-cloud-run-url
+python app/app.py
+```
+
 ### Tool Documentation
 
 For complete setup and usage instructions for every tool integrated into this project,
@@ -199,6 +226,7 @@ configs/config.yaml                 single source of truth for the pipeline
 conf/                               Hydra experiment overrides
 dvc.yaml                            DVC stages (sample → … → train → monitoring)
 data/processed/validation_report.json   DVC validate artifact (row/label snapshot)
+app/app.py                          Gradio UI for phishing email detection
 src/mlops_crew/
   data/
     sample.py                       phase partitions + 80% modeling sample
@@ -213,6 +241,7 @@ src/mlops_crew/
   evaluation/, monitoring/, tracking/
 scripts/verify_phase2.ps1|.sh       grader verification (Windows + Bash)
 PHASE2.md                           Phase 2 deliverable narrative
+PHASE3.md                           Phase 3 deliverable narrative
 docs/TOOL_DOCUMENTATION.md          Complete tool setup and usage guide
 docs/windows_setup.md               Windows reproduction guide
 ```
@@ -220,14 +249,14 @@ docs/windows_setup.md               Windows reproduction guide
 ## 7. Contributions
 
 - **Anushree Bachhav** — proposal, repo/cookiecutter setup, environment
-  configuration, DVC + S3 + Google Drive remotes
+  configuration, DVC + S3 + Google Drive remotes, GCP setup
 - **Muhammad Anas** — data cleaning, EDA, normalization, train/val/test splits,
-  data documentation
+  data documentation, Gradio UI, Hugging Face Spaces deployment
 - **Krishna Kalakonda** — model evaluation, baseline metrics, architecture
-  diagram, code organization
+  diagram, code organization, FastAPI backend
 - **Kirtankumar Parekh** — Phase 2 integration review, Windows verification
   (`verify_phase2.ps1`, `docs/windows_setup.md`), DVC validate stage, docs and
-  docstrings, repo maintenance
+  docstrings, CI/CD pipelines, repo maintenance
 
 ## 8. References
 
