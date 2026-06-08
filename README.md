@@ -4,6 +4,8 @@
 
 **Live Demo:** [Try the phishing email detector](https://huggingface.co/spaces/mlops-crew-depaul/phishing-email-detector)
 
+**Video Demo** [▶ Watch Demo Video](https://drive.google.com/file/d/11pSo_hvUUvmee0k4NPlNiJT7gbRFSxBW/view)
+
 ## 1. Team
 
 - Team Name: MLOps Crew
