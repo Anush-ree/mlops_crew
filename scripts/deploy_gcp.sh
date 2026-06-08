@@ -117,7 +117,7 @@ fi
 
 printf '\n==> Uploading model artifact\n'
 gcloud storage cp "$MODEL_PATH" "$MODEL_GCS_URI"
-gcloud storage ls -lh "$MODEL_GCS_URI"
+gcloud storage ls "$MODEL_GCS_URI"
 
 printf '\n==> Ensuring Cloud Run runtime service account exists\n'
 if ! gcloud iam service-accounts describe "$RUN_SA_EMAIL" \
