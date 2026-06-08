@@ -40,7 +40,6 @@ make repro
 
 - [Getting Started](getting_started.md)
 - [API Reference](api.md)
-- [Phase 3 Environment Setup](phase3_environment_setup.md)
 
 ## Project Structure
 

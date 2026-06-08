@@ -95,20 +95,46 @@ Best model selected by validation F2: **LinearSVC**
 
 - **Project region:** us-central1
 - **Artifact Registry:** Docker-format repository for serving image
-- **GCS bucket:** versioned bucket for training data and model artifacts
+- **GCS bucket:** Cloud Storage bucket for model artifacts used by serving
 - **IAM:** service account with roles for Cloud Run, Cloud Functions, Artifact Registry, and Storage
 
-Evidence screenshots: [`reports/gcp/`](reports/gcp/)
+Evidence:
+
+- [`reports/gcp/artifact_registry.png`](reports/gcp/artifact_registry.png) — Artifact Registry image repository
+- [`reports/gcp/gcs_buckets.png`](reports/gcp/gcs_buckets.png) — Cloud Storage buckets
+- [`reports/gcp/gcs_model_artifact.png`](reports/gcp/gcs_model_artifact.png) — GCS `best_model.joblib` object used by Cloud Run
+
+![Artifact Registry](reports/gcp/artifact_registry.png)
+![GCS buckets](reports/gcp/gcs_buckets.png)
+![GCS model artifact](reports/gcp/gcs_model_artifact.png)
 
 ### Cloud Training
 
-Training image built from [`train.dockerfile`](train.dockerfile).
+**Training path:** Compute Engine VM in `us-central1-a`
+**Training code:** [`src/mlops_crew/models/train_model.py`](src/mlops_crew/models/train_model.py)
+**Config:** [`configs/config.yaml`](configs/config.yaml)
+**Training image/entrypoint reference:** [`train.dockerfile`](train.dockerfile)
 
-- Mounts data from GCS to `/app/data` before training
-- Copies model artifacts back to GCS after training
-- Entrypoint: `python -m mlops_crew.models.train_model`
+Training data was staged in Cloud Storage under the project model bucket, then copied onto a temporary Compute Engine VM. On the VM, the existing Phase 2 training entrypoint `python -m mlops_crew.models.train_model` trained the configured TF-IDF model family and selected LinearSVC by validation F2. The resulting VM-trained `best_model.joblib` artifact was uploaded back to GCS as `models/best_model_compute_engine.joblib` for evidence and reproducibility.
 
-Evidence: [`reports/gcp/gcp_runs.png`](reports/gcp/gcp_runs.png)
+Evidence:
+
+- [`reports/gcp/cloud_training_data_gcs.png`](reports/gcp/cloud_training_data_gcs.png) — GCS training-data folders used by the VM
+- [`reports/gcp/cloud_training_vm.png`](reports/gcp/cloud_training_vm.png) — Compute Engine VM created for training
+- [`reports/gcp/cloud_training_terminal.png`](reports/gcp/cloud_training_terminal.png) — training completed on the VM
+- [`reports/gcp/cloud_training_metrics.png`](reports/gcp/cloud_training_metrics.png) — VM-generated best-model metrics
+- [`reports/gcp/cloud_training_model_artifact.png`](reports/gcp/cloud_training_model_artifact.png) — VM-trained model uploaded to GCS
+
+Supporting VM monitoring evidence:
+
+- [`reports/gcp/cloud_training_vm_metrics.png`](reports/gcp/cloud_training_vm_metrics.png)
+- [`reports/gcp/cloud_training_vm_logs.png`](reports/gcp/cloud_training_vm_logs.png)
+
+![Cloud training data in GCS](reports/gcp/cloud_training_data_gcs.png)
+![Cloud training VM](reports/gcp/cloud_training_vm.png)
+![Cloud training terminal](reports/gcp/cloud_training_terminal.png)
+![Cloud training metrics](reports/gcp/cloud_training_metrics.png)
+![Cloud training model artifact](reports/gcp/cloud_training_model_artifact.png)
 
 ### FastAPI Inference Service
 
@@ -149,13 +175,13 @@ Listens on `$PORT` (default 8080). Model loaded from GCS via `MODEL_GCS_URI` env
 
 Evidence:
 
-- [`reports/gcp/gcp_live_api.png`](reports/gcp/gcp_live_api.png) — live API response
-- [`reports/gcp/gcp_logs.png`](reports/gcp/gcp_logs.png) — Cloud Run logs
-- [`reports/gcp/gcp_metrics.png`](reports/gcp/gcp_metrics.png) — request metrics
+- [`reports/gcp/cloud_run_predict.png`](reports/gcp/cloud_run_predict.png) — live API response
+- [`reports/gcp/cloud_run_logs.png`](reports/gcp/cloud_run_logs.png) — Cloud Run logs
+- [`reports/gcp/cloud_run_metrics.png`](reports/gcp/cloud_run_metrics.png) — request metrics
 
-![Cloud Run live API](reports/gcp/gcp_live_api.png)
-![Cloud Run logs](reports/gcp/gcp_logs.png)
-![Cloud Run metrics](reports/gcp/gcp_metrics.png)
+![Cloud Run live API](reports/gcp/cloud_run_predict.png)
+![Cloud Run logs](reports/gcp/cloud_run_logs.png)
+![Cloud Run metrics](reports/gcp/cloud_run_metrics.png)
 
 ### Cloud Functions Deployment
 
@@ -168,13 +194,13 @@ Configured via `BACKEND_PREDICT_URL` environment variable.
 
 Evidence:
 
-- [`reports/gcp/cloud_function.png`](reports/gcp/cloud_function.png)
-- [`reports/gcp/cloud_function_log.png`](reports/gcp/cloud_function_log.png)
-- [`reports/gcp/cloud_function_local_run.png`](reports/gcp/cloud_function_local_run.png)
+- [`reports/gcp/cloud_function_service.png`](reports/gcp/cloud_function_service.png)
+- [`reports/gcp/cloud_function_logs.png`](reports/gcp/cloud_function_logs.png)
+- [`reports/gcp/cloud_function_response.png`](reports/gcp/cloud_function_response.png)
 
-![Cloud Function](reports/gcp/cloud_function.png)
-![Cloud Function logs](reports/gcp/cloud_function_log.png)
-![Cloud Function local run](reports/gcp/cloud_function_local_run.png)
+![Cloud Function](reports/gcp/cloud_function_service.png)
+![Cloud Function logs](reports/gcp/cloud_function_logs.png)
+![Cloud Function response](reports/gcp/cloud_function_response.png)
 
 ### Load Testing
 
@@ -188,18 +214,22 @@ python3 scripts/load_test_api.py --endpoint http://localhost:8080/predict --requ
 
 Reports mean latency and p95 latency across N requests.
 
+Evidence: [`reports/gcp/api_load_test.png`](reports/gcp/api_load_test.png)
+
+![API load test](reports/gcp/api_load_test.png)
+
 ---
 
 ## 4. Hugging Face Spaces Demo
 
-**Live demo:** [https://huggingface.co/spaces/manas01AI/phishing-email-detector](https://huggingface.co/spaces/manas01AI/phishing-email-detector)
+**Live demo:** [https://huggingface.co/spaces/mlops-crew-depaul/phishing-email-detector](https://huggingface.co/spaces/mlops-crew-depaul/phishing-email-detector)
 
 **Code:** [`hf_space/app.py`](hf_space/app.py) — Gradio interface
 **Auto-deploy workflow:** [`.github/workflows/deploy_hf_space.yml`](.github/workflows/deploy_hf_space.yml)
 
 Triggers on push to `main` when `hf_space/` changes. Pushes the `hf_space/` directory to the HF Space repo using `HF_TOKEN`, `HF_USERNAME`, and `HF_SPACE_NAME` secrets.
 
-The app reads `BACKEND_PREDICT_URL` from the environment. When the Cloud Run service URL is set as a Space secret, predictions go through the real model. Falls back to a mock prediction during development.
+The app reads `BACKEND_PREDICT_URL` from the Hugging Face Space environment. When the Cloud Run service URL is set as a Space variable or secret, predictions go through the real deployed model; if the backend is unavailable, the UI shows a request error instead of using a mock prediction.
 
 ![Hugging Face Space](docs/phase3_evidence/hf_space.png)
 
