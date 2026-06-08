@@ -40,8 +40,7 @@ FastAPI backend on GCP Cloud Run.
 - [PHASE3.md](./PHASE3.md) — Continuous ML & deployment
 - [Live Demo](https://huggingface.co/spaces/mlops-crew-depaul/phishing-email-detector) —
   Gradio UI on Hugging Face Spaces
-- [Phase 3 environment setup](./docs/phase3_environment_setup.md) — GitHub,
-  Docker Hub, GCP, Cloud Run, Cloud Functions, and Hugging Face setup
+
 
 ## 5. Phase 3 — Continuous ML & Deployment
 
