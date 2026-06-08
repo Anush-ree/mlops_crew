@@ -50,14 +50,14 @@ For full evidence and explanations see [PHASE3.md](./PHASE3.md).
 ### What's new in Phase 3
 
 | Area | What was added |
-|---|---|
+| --- | --- |
 | CI/CD | GitHub Actions workflows for lint, type check, test, Docker build/push, and CML reporting |
 | Docker | `serve.dockerfile` — Cloud Run-ready FastAPI serving image, auto-pushed to Docker Hub on merge to main |
 | CML | Automated model metrics report posted as a PR comment on every pull request |
 | FastAPI | `/health` and `/predict` endpoints — [`api/main.py`](api/main.py) |
-| GCP Cloud Run | Live inference API — https://mlops-crew-api-1043076962701.us-central1.run.app |
-| GCP Cloud Functions | Serverless HTTP wrapper — https://us-central1-ml-ops-497304.cloudfunctions.net/mlops-crew-predict |
-| Hugging Face Spaces | Live Gradio demo — https://huggingface.co/spaces/mlops-crew-depaul/phishing-email-detector |
+| GCP Cloud Run | Live inference API — <https://mlops-crew-api-1043076962701.us-central1.run.app> |
+| GCP Cloud Functions | Serverless HTTP wrapper — <https://us-central1-ml-ops-497304.cloudfunctions.net/mlops-crew-predict> |
+| Hugging Face Spaces | Live Gradio demo — <https://huggingface.co/spaces/mlops-crew-depaul/phishing-email-detector> |
 | Phase 3 holdout | Final evaluation on 16,496 unseen emails — **98.6% F2**, results in [`reports/metrics/phase3_holdout_metrics.json`](reports/metrics/phase3_holdout_metrics.json) |
 
 ### Demo recording
@@ -66,8 +66,8 @@ For full evidence and explanations see [PHASE3.md](./PHASE3.md).
 
 ### Quick API test
 
-- **Health check** (open in browser): https://mlops-crew-api-1043076962701.us-central1.run.app/health
-- **Interactive docs** (open in browser): https://mlops-crew-api-1043076962701.us-central1.run.app/docs
+- **Health check** (open in browser): <https://mlops-crew-api-1043076962701.us-central1.run.app/health>
+- **Interactive docs** (open in browser): <https://mlops-crew-api-1043076962701.us-central1.run.app/docs>
 - **Predict** (POST only, use curl):
 
 ```bash
@@ -214,6 +214,7 @@ The serving image is code-only like the Phase 2 images. Local Docker runs mount
 
 For complete setup and usage instructions for every tool integrated into this project,
 see [docs/TOOL_DOCUMENTATION.md](./docs/TOOL_DOCUMENTATION.md). This guide covers:
+
 - Purpose and setup for each tool
 - How to use tools in the project
 - Integration summary and quick reference
@@ -275,7 +276,7 @@ sample + source_manifest + train -> divergence
 
 See **§6 Setup → Data access** for `dvc pull`. Key paths:
 
-```
+```markdown
 configs/config.yaml                 single source of truth for the pipeline
 configs/hydra/                      Hydra experiment overrides
 dvc.yaml                            DVC stages (sample → … → train → monitoring)
@@ -312,5 +313,5 @@ docs/windows_setup.md               Windows reproduction guide
 ## 9. References
 
 - Dataset: Phishing Email Dataset (SpamAssassin, Enron, Nazario, Ling, CEAS, Nigerian)
-- Source: https://www.kaggle.com/datasets/naserabdullahalam/phishing-email-dataset?select=SpamAssasin.csv
+- Source: <https://www.kaggle.com/datasets/naserabdullahalam/phishing-email-dataset?select=SpamAssasin.csv>
 - Use: Primary training & evaluation data

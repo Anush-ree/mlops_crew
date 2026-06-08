@@ -4,47 +4,60 @@ A reproducible MLOps pipeline for classifying emails as phishing or legitimate.
 
 ## Overview
 
-Phase 2 trains on an 80% DVC-tracked sample, keeps the remaining 20% reserved
-for Phase 3, compares multiple TF-IDF classifiers, logs experiments to MLflow,
-and writes monitoring, profiling, and divergence reports.
+| Phase | Focus |
+| --- | --- |
+| [Phase 1](PHASE1.md) | 60% baseline, DVC pipeline, TF-IDF + logistic regression |
+| [Phase 2](PHASE2.md) | 80% data, MLflow, monitoring, Hydra, Docker images |
+| [Phase 3](PHASE3.md) | CI/CD, CML, GCP + FastAPI, HF Spaces, holdout eval |
 
-## Quick Start
+**Live demo:** [Hugging Face Space](https://huggingface.co/spaces/mlops-crew-depaul/phishing-email-detector)
 
-### Installation
+Full submission write-ups live at the repository root:
+
+- [PHASE1.md](../PHASE1.md)
+- [PHASE2.md](../PHASE2.md)
+- [PHASE3.md](../PHASE3.md)
+
+## Quick start
 
 ```bash
-# Using pip
-pip install -r requirements.txt
-
-# Install the package in editable mode
+pip install -r requirements.txt -r requirements_dev.txt
 pip install -e .
+
+aws configure          # teammates provide S3 credentials; region us-east-2
+dvc pull
+
+make repro             # full DVC pipeline
+pytest tests/          # CI-equivalent tests (no full dataset required)
 ```
 
-### Running the Pipeline
+Windows graders: `.\scripts\verify_phase2.ps1` after `dvc pull`.
+
+## Phase 3 serving (local)
 
 ```bash
-# Prepare data locally
-make data
-
-# Train configured models
-make train
-
-# Generate predictions
-make predict
-
-# Reproduce the full DVC pipeline
-make repro
+uvicorn api.main:app --host 0.0.0.0 --port 8080
+curl http://localhost:8080/health
 ```
+
+Or: `make docker-serve` with `models/best_model.joblib` mounted.
 
 ## Documentation
 
-- [Getting Started](getting_started.md)
-- [API Reference](api.md)
-- [Phase 3 Environment Setup](phase3_environment_setup.md)
+| Doc | Contents |
+| --- | --- |
+| [Getting Started](getting_started.md) | Install, pipeline, troubleshooting |
+| [API Reference](api.md) | Package modules + FastAPI `/health` and `/predict` |
+| [Windows setup](windows_setup.md) | PowerShell, Git Bash, WSL |
+| [Phase 2 reproduction](phase2_reproduction_commands.md) | Grader command sequence |
+| [GCP cleanup](cleanup.md) | Teardown commands after demos |
+| [Phase 1 summary](PHASE1.md) | Brief Phase 1 overview |
+| [Phase 2 summary](PHASE2.md) | Brief Phase 2 overview |
+| [Phase 3 summary](PHASE3.md) | Brief Phase 3 overview |
 
-## Project Structure
+## Project structure
 
-```
+```markdown
 mlops_crew/                  # Repository root
 ├── src/
 │   └── mlops_crew/          # Importable package (src/ layout)
@@ -70,4 +83,4 @@ mlops_crew/                  # Repository root
 
 ## License
 
-This project is licensed under the MIT License. See LICENSE for details.
+MIT — see [LICENSE](../LICENSE).
