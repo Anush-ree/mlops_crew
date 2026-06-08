@@ -235,3 +235,4 @@ The model generalizes well — F2 drops only 0.6 points from test (99.1%) to hol
 | CI, Docker, CML workflows                               | Kirtan           | Anushree |
 | GCP infrastructure, Cloud Run, Cloud Functions, FastAPI | Krishna (Kirtan) | Anushree |
 | Gradio UI, Hugging Face Spaces                          | Anas             | —        |
+| Holdout evaluation, model comparison plot, PHASE3.md, README, cleanup docs, evidence screenshots | Anushree | — |
