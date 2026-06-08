@@ -34,6 +34,7 @@ jobs:
           echo '```' >> report.md
           echo "" >> report.md
           echo "### Best model metrics" >> report.md
+          echo "" >> report.md
           echo '```json' >> report.md
           cat reports/metrics/best_model_metrics.json >> report.md
           echo '```' >> report.md
