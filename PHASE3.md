@@ -11,7 +11,7 @@ Phase 3 productionizes the phishing email detector built in Phases 1–2. It add
 
 ## 1. Continuous Integration & Testing
 
-### 1.2 GitHub Actions CI Workflow
+### 1.1 GitHub Actions CI Workflow
 
 - **File/dir reference:** [`.github/workflows/ci.yml`](.github/workflows/ci.yml)
 - **Screenshot:**
@@ -192,7 +192,7 @@ Reports mean latency and p95 latency across N requests.
 
 ## 4. Hugging Face Spaces Demo
 
-**Live demo:** [https://huggingface.co/spaces/manas01AI/phishing-email-detector](https://huggingface.co/spaces/mlops-crew-depaul/phishing-email-detector)
+**Live demo:** [https://huggingface.co/spaces/mlops-crew-depaul/phishing-email-detector](https://huggingface.co/spaces/mlops-crew-depaul/phishing-email-detector)
 
 **Code:** [`hf_space/app.py`](hf_space/app.py) — Gradio interface
 **Auto-deploy workflow:** [`.github/workflows/deploy_hf_space.yml`](.github/workflows/deploy_hf_space.yml)
