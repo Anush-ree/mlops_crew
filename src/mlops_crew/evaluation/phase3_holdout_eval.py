@@ -12,7 +12,7 @@ from pathlib import Path
 import joblib
 import pandas as pd
 
-from mlops_crew.config import CONFIG_PATH, load_project_config, resolve_project_path
+from mlops_crew.config import CONFIG_PATH, PROJECT_ROOT, load_project_config, resolve_project_path
 from mlops_crew.data import LABEL_COLUMN, TEXT_COLUMN
 from mlops_crew.data.clean import clean_text
 from mlops_crew.evaluation.metrics import binary_classification_report
@@ -20,6 +20,13 @@ from mlops_crew.logging_config import get_logger, setup_logging_from_config
 from mlops_crew.utils.io import save_json
 
 logger = get_logger(__name__)
+
+
+def _project_relative(path: Path) -> str:
+    try:
+        return path.relative_to(PROJECT_ROOT).as_posix()
+    except ValueError:
+        return path.as_posix()
 
 
 def evaluate_holdout(config: dict) -> dict:
@@ -68,8 +75,8 @@ def evaluate_holdout(config: dict) -> dict:
     )
 
     result = {
-        "model_path": str(model_path),
-        "holdout_path": str(holdout_path),
+        "model_path": _project_relative(model_path),
+        "holdout_path": _project_relative(holdout_path),
         "holdout_rows": len(df),
         "metrics": metrics,
     }
