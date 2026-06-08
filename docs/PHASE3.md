@@ -1,85 +1,71 @@
-# Phase 3: Evaluation and Deployment
+# Phase 3: Continuous ML & Deployment
 
-## Overview
-This phase covers final evaluation, testing, and deployment preparation of the model.
+Phase 3 productionizes the Phase 2 **LinearSVC** TF-IDF pipeline: CI/CD,
+containerized serving, GCP deployment, a Hugging Face Gradio demo, and a
+one-time evaluation on the **20% holdout** reserved since Phase 2.
 
-## Objectives
+**Best model:** LinearSVC (saved `models/best_model.joblib`)
+**Phase 3 holdout F2:** **98.6%** on 16,496 unseen emails (see root report for
+full metrics)
 
-- [ ] Final model evaluation on test set
-- [ ] Production readiness assessment
-- [ ] Documentation and knowledge transfer
-- [ ] Deployment pipeline setup
-- [ ] Monitoring and maintenance plan
+## CI & testing
 
-## Deliverables
+- Workflow: [`.github/workflows/ci.yml`](../.github/workflows/ci.yml)
+- Runs on push/PR to `main`: `ruff check`, `ruff format --check`, `mypy src`,
+  `pytest tests/ --cov=mlops_crew`
+- Phase 3 tests: `test_api.py`, `test_serving.py`, `test_hf_space_app.py` plus
+  Phase 1/2 suites
+- Evidence: [`docs/phase3_evidence/ci_green.png`](phase3_evidence/ci_green.png)
 
-### 1. Final Evaluation Report
-- Test set performance
-- Model robustness analysis
-- Edge case testing
-- Performance summary
+CI does **not** run `dvc pull` — unit tests use fixtures; graders restore data
+locally with `dvc pull` (see root PHASE3.md).
 
-### 2. Deployment Artifacts
-- Docker image created and tested
-- API/inference server ready
-- Configuration files documented
+## Docker & CML
 
-### 3. Documentation
-- User guide for running predictions
-- API documentation
-- Deployment instructions
-- Troubleshooting guide
-- Model card
+- **Serving image:** [`serve.dockerfile`](../serve.dockerfile) — Cloud Run / local
+  FastAPI
+- **Publish workflow:** [`.github/workflows/docker-publish.yml`](../.github/workflows/docker-publish.yml)
+- **CML:** [`.github/workflows/cml.yml`](../.github/workflows/cml.yml) posts model
+  comparison tables on PRs
+- Local: `make docker-serve`, `make load-test-api`
 
-### 4. Monitoring and Maintenance
-- Performance monitoring plan
-- Model update strategy
-- Data drift detection approach
-- Feedback loop design
+## FastAPI & GCP
 
-## Test Results
+| Endpoint | Method | Purpose |
+| --- | --- | --- |
+| `/health` | GET | Readiness + model load status |
+| `/predict` | POST | Classify one email body |
 
-*To be filled in during Phase 3*
+- **Code:** [`api/main.py`](../api/main.py), [`api/schemas.py`](../api/schemas.py)
+- **Cloud Run:** live inference API (URL in root [PHASE3.md](../PHASE3.md))
+- **Cloud Function:** HTTP wrapper in [`functions/predict/`](../functions/predict/)
+- **GCP evidence:** [`reports/gcp/`](../reports/gcp/)
 
-### Final Performance Metrics
-- Test Accuracy: 
-- Test Loss: 
-- Other Metrics: 
+## Hugging Face Spaces
 
-## Deployment Plan
+- **Live demo:** [mlops-crew-depaul/phishing-email-detector](https://huggingface.co/spaces/mlops-crew-depaul/phishing-email-detector)
+- **UI code:** [`hf_space/app.py`](../hf_space/app.py)
+- **Deploy workflow:** [`.github/workflows/deploy_hf_space.yml`](../.github/workflows/deploy_hf_space.yml)
 
-*To be filled in during Phase 3*
+## Holdout evaluation
 
-### Deployment Environment
-- Platform: 
-- Configuration: 
-- Expected Latency: 
-- Resource Requirements: 
+Script: [`src/mlops_crew/evaluation/phase3_holdout_eval.py`](../src/mlops_crew/evaluation/phase3_holdout_eval.py)
 
-## Known Limitations
+| Metric | Value |
+| --- | ---: |
+| Holdout rows | 16,496 |
+| F2 | **98.6%** |
+| Recall | 98.7% |
+| False-negative rate | 1.28% |
+| ROC-AUC | 99.84% |
 
-*To be filled in during Phase 3*
+F2 drops only ~0.6 points from the Phase 2 test split (99.1%) to holdout (98.6%).
 
-## Future Improvements
+## Documentation & cleanup
 
-- [ ] Improvement 1
-- [ ] Improvement 2
-- [ ] Improvement 3
+- Full deliverable + screenshots: root [PHASE3.md](../PHASE3.md)
+- API usage: [api.md](api.md)
+- GCP teardown: [cleanup.md](cleanup.md)
 
-## Handoff Checklist
-
-- [ ] All code documented and commented
-- [ ] Tests passing (100% coverage)
-- [ ] Docker image tested
-- [ ] Documentation complete
-- [ ] Model versioning implemented
-- [ ] Performance monitoring set up
-- [ ] Deployment runbook created
-- [ ] Team training completed
-
-## Status
-
-- Start Date: 
-- Estimated Completion: 
-- Actual Completion: 
-- Status: Not Started
+See the root [PHASE3.md](../PHASE3.md) for workflow explanations, live URLs,
+and team contribution table.
