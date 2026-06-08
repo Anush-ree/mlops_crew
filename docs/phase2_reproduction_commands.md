@@ -138,6 +138,5 @@ After `dvc repro`, these are the key files a grader should inspect:
 - local regenerated MLflow runs under `mlruns/` when training executes or
   `scripts/verify_phase2.sh --replay-mlflow` is used
 
-The transformer files are dataset exports only. Phase 2 and Phase 3 do not
-fine-tune or train a transformer/LLM model; Phase 3 deploys the Phase 2 best
-TF-IDF model instead.
+The transformer files are dataset exports only. This branch does not fine-tune
+or train a transformer/LLM model.

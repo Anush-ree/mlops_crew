@@ -5,9 +5,8 @@ A reproducible MLOps pipeline for classifying emails as phishing or legitimate.
 ## Overview
 
 Phase 2 trains on an 80% DVC-tracked sample, keeps the remaining 20% reserved
-for Phase 3 holdout evaluation, compares multiple TF-IDF classifiers, logs
-experiments to MLflow, and writes monitoring, profiling, and divergence reports.
-Phase 3 deploys the Phase 2 best model and does not retrain or fine-tune a new model.
+for Phase 3, compares multiple TF-IDF classifiers, logs experiments to MLflow,
+and writes monitoring, profiling, and divergence reports.
 
 ## Quick Start
 
@@ -45,7 +44,7 @@ make repro
 
 ## Project Structure
 
-```markdown
+```
 mlops_crew/                  # Repository root
 ├── src/
 │   └── mlops_crew/          # Importable package (src/ layout)

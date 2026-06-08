@@ -76,12 +76,10 @@ class ResourceMonitor:
             virtual_memory = psutil.virtual_memory()
             sample = ResourceSample(
                 timestamp=time.time(),
-                process_cpu_percent=float(
-                    self._process.cpu_percent(interval=None)),
+                process_cpu_percent=float(self._process.cpu_percent(interval=None)),
                 system_cpu_percent=float(psutil.cpu_percent(interval=None)),
                 rss_mb=float(memory.rss / (1024 * 1024)),
-                available_memory_mb=float(
-                    virtual_memory.available / (1024 * 1024)),
+                available_memory_mb=float(virtual_memory.available / (1024 * 1024)),
             )
             with self._lock:
                 self._samples.append(sample)

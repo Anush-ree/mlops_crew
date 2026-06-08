@@ -52,8 +52,7 @@ def build_source_manifest(config: dict[str, Any]) -> pd.DataFrame:
     """Create a row-index to source mapping matching `phishing_email.csv` order."""
     paths = source_manifest_paths(config)
     if not paths["combined"].exists():
-        raise FileNotFoundError(
-            f"Combined raw data not found: {paths['combined']}")
+        raise FileNotFoundError(f"Combined raw data not found: {paths['combined']}")
 
     combined_labels = _read_labels(paths["combined"])
     frames = []
@@ -66,8 +65,7 @@ def build_source_manifest(config: dict[str, Any]) -> pd.DataFrame:
 
         labels = _read_labels(source_path)
         row_count = len(labels)
-        combined_segment = combined_labels.iloc[start: start +
-                                                row_count].reset_index(drop=True)
+        combined_segment = combined_labels.iloc[start : start + row_count].reset_index(drop=True)
         source_distribution = labels.value_counts().sort_index().to_dict()
         combined_distribution = combined_segment.value_counts().sort_index().to_dict()
         if combined_distribution != source_distribution:
@@ -122,8 +120,7 @@ def run(config: dict[str, Any]) -> pd.DataFrame:
 
 def main() -> None:
     """CLI entrypoint for the DVC ``source_manifest`` stage."""
-    parser = argparse.ArgumentParser(
-        description="Build source metadata for raw rows")
+    parser = argparse.ArgumentParser(description="Build source metadata for raw rows")
     parser.add_argument("--config", type=Path, default=CONFIG_PATH)
     args = parser.parse_args()
     config = load_project_config(args.config)

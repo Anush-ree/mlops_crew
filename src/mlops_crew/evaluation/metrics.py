@@ -20,18 +20,15 @@ def binary_classification_report(
     positive_label: int = 1,
 ) -> dict[str, float]:
     """Threshold metrics, confusion-matrix counts, and (optional) score metrics."""
-    tn, fp, fn, tp = sk_metrics.confusion_matrix(
-        y_true, y_pred, labels=[0, 1]).ravel()
+    tn, fp, fn, tp = sk_metrics.confusion_matrix(y_true, y_pred, labels=[0, 1]).ravel()
 
     report = {
         "accuracy": float(sk_metrics.accuracy_score(y_true, y_pred)),
         "precision": float(
-            sk_metrics.precision_score(
-                y_true, y_pred, pos_label=positive_label, zero_division=0)
+            sk_metrics.precision_score(y_true, y_pred, pos_label=positive_label, zero_division=0)
         ),
         "recall": float(
-            sk_metrics.recall_score(
-                y_true, y_pred, pos_label=positive_label, zero_division=0)
+            sk_metrics.recall_score(y_true, y_pred, pos_label=positive_label, zero_division=0)
         ),
         "f1": float(sk_metrics.f1_score(y_true, y_pred, pos_label=positive_label, zero_division=0)),
         "f2": float(
@@ -49,6 +46,5 @@ def binary_classification_report(
 
     if y_score is not None:
         report["roc_auc"] = float(sk_metrics.roc_auc_score(y_true, y_score))
-        report["average_precision"] = float(
-            sk_metrics.average_precision_score(y_true, y_score))
+        report["average_precision"] = float(sk_metrics.average_precision_score(y_true, y_score))
     return report

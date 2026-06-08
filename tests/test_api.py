@@ -32,8 +32,7 @@ class FakeService:
         )
 
 
-# type: ignore[no-untyped-def]
-def test_health_reports_loaded_model(monkeypatch) -> None:
+def test_health_reports_loaded_model(monkeypatch) -> None:  # type: ignore[no-untyped-def]
     monkeypatch.setattr(api_main, "get_model_service", lambda: FakeService())
     client = TestClient(api_main.app)
 
@@ -44,8 +43,7 @@ def test_health_reports_loaded_model(monkeypatch) -> None:
     assert response.json()["model_loaded"] is True
 
 
-# type: ignore[no-untyped-def]
-def test_health_returns_503_without_internal_details(monkeypatch) -> None:
+def test_health_returns_503_without_internal_details(monkeypatch) -> None:  # type: ignore[no-untyped-def]
     def fail_to_load_model() -> None:
         raise FileNotFoundError("/internal/path/model.joblib")
 
@@ -58,20 +56,17 @@ def test_health_returns_503_without_internal_details(monkeypatch) -> None:
     assert response.json() == {"detail": "Service unavailable"}
 
 
-# type: ignore[no-untyped-def]
-def test_predict_returns_schema(monkeypatch) -> None:
+def test_predict_returns_schema(monkeypatch) -> None:  # type: ignore[no-untyped-def]
     monkeypatch.setattr(api_main, "get_model_service", lambda: FakeService())
     client = TestClient(api_main.app)
 
-    response = client.post(
-        "/predict", json={"text": "Verify your account now"})
+    response = client.post("/predict", json={"text": "Verify your account now"})
 
     assert response.status_code == 200
     assert response.json() == asdict(FakeService().predict("Verify your account now"))
 
 
-# type: ignore[no-untyped-def]
-def test_predict_rejects_blank_text(monkeypatch) -> None:
+def test_predict_rejects_blank_text(monkeypatch) -> None:  # type: ignore[no-untyped-def]
     monkeypatch.setattr(api_main, "get_model_service", lambda: FakeService())
     client = TestClient(api_main.app)
 

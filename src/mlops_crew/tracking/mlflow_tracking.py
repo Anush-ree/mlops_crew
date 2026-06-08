@@ -27,8 +27,7 @@ def setup_mlflow(config: dict[str, Any]) -> None:
     """Configure tracking URI and experiment name from config."""
     tracking = config.get("tracking", {})
     mlflow.set_tracking_uri(tracking.get("tracking_uri", "file:./mlruns"))
-    mlflow.set_experiment(tracking.get(
-        "experiment_name", config["project"]["name"]))
+    mlflow.set_experiment(tracking.get("experiment_name", config["project"]["name"]))
 
 
 def _log_tracking_tags(config: dict[str, Any]) -> None:
@@ -39,8 +38,7 @@ def _log_tracking_tags(config: dict[str, Any]) -> None:
 
 def _log_config_artifacts(config: dict[str, Any]) -> None:
     paths = [PROJECT_ROOT / "configs" / "config.yaml"]
-    effective_config_path = config.get(
-        "tracking", {}).get("effective_config_path")
+    effective_config_path = config.get("tracking", {}).get("effective_config_path")
     if effective_config_path:
         paths.append(Path(effective_config_path))
     for path in paths:
@@ -58,8 +56,7 @@ def training_run(config: dict[str, Any]) -> Iterator[Any]:
 
     setup_mlflow(config)
     tracking = config.get("tracking", {})
-    run_name = tracking.get(
-        "run_name", f"phase{config['project'].get('phase', 2)}-training")
+    run_name = tracking.get("run_name", f"phase{config['project'].get('phase', 2)}-training")
     with mlflow.start_run(run_name=run_name) as run:
         _log_tracking_tags(config)
         params = {

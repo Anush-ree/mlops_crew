@@ -74,8 +74,7 @@ def run(config: dict[str, Any]) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFram
     """Split cleaned data into train, validation, and test CSVs."""
     paths = split_paths(config)
     if not paths["cleaned"].exists():
-        raise FileNotFoundError(
-            f"Cleaned data not found at {paths['cleaned']}. Run `make data`.")
+        raise FileNotFoundError(f"Cleaned data not found at {paths['cleaned']}. Run `make data`.")
 
     logger.info("Loading cleaned data from %s", paths["cleaned"])
     cleaned = pd.read_csv(paths["cleaned"])
@@ -85,8 +84,7 @@ def run(config: dict[str, Any]) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFram
     train.to_csv(paths["train"], index=False)
     val.to_csv(paths["val"], index=False)
     test.to_csv(paths["test"], index=False)
-    logger.info("Split sizes: train=%d val=%d test=%d",
-                len(train), len(val), len(test))
+    logger.info("Split sizes: train=%d val=%d test=%d", len(train), len(val), len(test))
 
     summary = {
         name: {
@@ -104,8 +102,7 @@ def run(config: dict[str, Any]) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFram
 
 def main() -> None:
     """CLI entrypoint for the DVC ``split`` stage."""
-    parser = argparse.ArgumentParser(
-        description="Create train/val/test splits")
+    parser = argparse.ArgumentParser(description="Create train/val/test splits")
     parser.add_argument("--config", type=Path, default=CONFIG_PATH)
     args = parser.parse_args()
     config = load_project_config(args.config)

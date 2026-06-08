@@ -23,8 +23,7 @@ def test_setup_logging_writes_rotating_file_without_duplicate_handlers(tmp_path:
 
     assert first_handler_count == 2
     assert len(logging.getLogger().handlers) == first_handler_count
-    assert "structured logging smoke test" in (
-        tmp_path / log_file).read_text(encoding="utf-8")
+    assert "structured logging smoke test" in (tmp_path / log_file).read_text(encoding="utf-8")
 
 
 def test_deep_merge_preserves_base_config_sections() -> None:
@@ -63,8 +62,7 @@ def test_hydra_effective_config_routes_artifacts_to_output_dir(tmp_path: Path) -
     assert config["features"]["tfidf"]["ngram_range"] == [1, 3]
     assert config["features"]["tfidf"]["min_df"] == 2
     assert config["modeling"]["logistic_regression"]["C"] == 0.5
-    assert Path(config["modeling"]["output_dir"]
-                ).parent == tmp_path / "artifacts"
+    assert Path(config["modeling"]["output_dir"]).parent == tmp_path / "artifacts"
     assert config["tracking"]["run_name"] == "hydra-phase2_experimental"
     assert config["tracking"]["tags"]["config_source"] == "hydra"
     assert config["tracking"]["tags"]["hydra_experiment"] == "phase2_experimental"

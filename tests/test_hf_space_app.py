@@ -7,17 +7,14 @@ from typing import Any
 from hf_space import app as hf_app
 
 
-# type: ignore[no-untyped-def]
-def test_backend_url_accepts_service_root(monkeypatch) -> None:
+def test_backend_url_accepts_service_root(monkeypatch) -> None:  # type: ignore[no-untyped-def]
     monkeypatch.setenv("BACKEND_PREDICT_URL", "https://example.run.app")
 
     assert hf_app.backend_url() == "https://example.run.app/predict"
 
 
-# type: ignore[no-untyped-def]
-def test_backend_url_accepts_predict_endpoint(monkeypatch) -> None:
-    monkeypatch.setenv("BACKEND_PREDICT_URL",
-                       "https://example.run.app/predict")
+def test_backend_url_accepts_predict_endpoint(monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    monkeypatch.setenv("BACKEND_PREDICT_URL", "https://example.run.app/predict")
 
     assert hf_app.backend_url() == "https://example.run.app/predict"
 
@@ -37,13 +34,10 @@ class FakeResponse:
         }
 
 
-# type: ignore[no-untyped-def]
-def test_classify_email_formats_numeric_response(monkeypatch) -> None:
-    monkeypatch.setattr(hf_app.requests, "post",
-                        lambda *args, **kwargs: FakeResponse())
+def test_classify_email_formats_numeric_response(monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    monkeypatch.setattr(hf_app.requests, "post", lambda *args, **kwargs: FakeResponse())
 
-    verdict, score_text, latency_text, payload = hf_app.classify_email(
-        "Verify account now")
+    verdict, score_text, latency_text, payload = hf_app.classify_email("Verify account now")
 
     assert verdict == "Phishing"
     assert score_text == "77.5%"

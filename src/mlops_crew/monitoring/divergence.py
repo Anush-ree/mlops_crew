@@ -130,10 +130,8 @@ def build_divergence_report(config: dict[str, Any]) -> dict[str, Any]:
 
     label_phase1 = _distribution(phase1[LABEL_COLUMN])
     label_phase2 = _distribution(phase2_increment[LABEL_COLUMN])
-    source_phase1 = _source_distribution(
-        phase1, manifest) if not manifest.empty else {}
-    source_phase2 = _source_distribution(
-        phase2_increment, manifest) if not manifest.empty else {}
+    source_phase1 = _source_distribution(phase1, manifest) if not manifest.empty else {}
+    source_phase2 = _source_distribution(phase2_increment, manifest) if not manifest.empty else {}
 
     lengths_phase1 = phase1[TEXT_COLUMN].astype(str).str.len()
     lengths_phase2 = phase2_increment[TEXT_COLUMN].astype(str).str.len()
@@ -226,8 +224,7 @@ def run(config: dict[str, Any]) -> dict[str, Any]:
 
 def main() -> None:
     """CLI entrypoint for the DVC ``divergence`` stage."""
-    parser = argparse.ArgumentParser(
-        description="Build Phase 2 divergence report")
+    parser = argparse.ArgumentParser(description="Build Phase 2 divergence report")
     parser.add_argument("--config", type=Path, default=CONFIG_PATH)
     args = parser.parse_args()
     config = load_project_config(args.config)

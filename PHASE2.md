@@ -18,7 +18,6 @@ restore data, build the containers, and reproduce the Phase 2 outputs without
 needing any internal team context.
 
 ## Data Versioning
-
 - deterministic DVC data partitions for Phase 1 reference, Phase 2 increment,
   Phase 2 sample, and Phase 3 holdout
 - split validation and source-manifest generation
@@ -150,6 +149,8 @@ docker run --rm \
 
 If you prefer the wrappers used by the rest of the project, run
 `make docker-train` and `make docker-predict` instead.
+
+
 
 Expected summary:
 
@@ -311,4 +312,5 @@ for future use.
 | Validation | 9,861 | `data/processed/transformer/val.jsonl` |
 | Test | 9,862 | `data/processed/transformer/test.jsonl` |
 
-The JSONL records contain `text` and `label` fields.
+The JSONL records contain `text` and `label` fields and will be used with
+Hugging Face Datasets in a next transformer experiment.

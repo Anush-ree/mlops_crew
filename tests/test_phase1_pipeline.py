@@ -146,12 +146,9 @@ def test_build_source_manifest_uses_combined_file_source_blocks(tmp_path: Path) 
     interim_dir = tmp_path / "interim"
     raw_dir.mkdir()
 
-    pd.DataFrame({LABEL_COLUMN: [0, 1, 1]}).to_csv(
-        raw_dir / "phishing_email.csv", index=False)
-    pd.DataFrame({LABEL_COLUMN: [1, 0]}).to_csv(
-        raw_dir / "source_a.csv", index=False)
-    pd.DataFrame({LABEL_COLUMN: [1]}).to_csv(
-        raw_dir / "source_b.csv", index=False)
+    pd.DataFrame({LABEL_COLUMN: [0, 1, 1]}).to_csv(raw_dir / "phishing_email.csv", index=False)
+    pd.DataFrame({LABEL_COLUMN: [1, 0]}).to_csv(raw_dir / "source_a.csv", index=False)
+    pd.DataFrame({LABEL_COLUMN: [1]}).to_csv(raw_dir / "source_b.csv", index=False)
     config = {
         "data": {
             "raw_dir": str(raw_dir),
@@ -195,8 +192,7 @@ def test_export_transformer_dataset_writes_jsonl_splits(tmp_path: Path) -> None:
 
     train_jsonl = processed_dir / "transformer" / "train.jsonl"
     assert train_jsonl.exists()
-    assert train_jsonl.read_text(
-        encoding="utf-8").strip() == ('{"text":"train email","label":1}')
+    assert train_jsonl.read_text(encoding="utf-8").strip() == ('{"text":"train email","label":1}')
     assert summary["splits"]["train"]["rows"] == 1
 
 

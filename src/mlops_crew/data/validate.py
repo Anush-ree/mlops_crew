@@ -66,14 +66,12 @@ def validate_dataset(path: Path, name: str, min_text_length: int) -> bool:
         return False
     missing_labels = VALID_LABELS - set(data[LABEL_COLUMN].unique())
     if missing_labels:
-        logger.error("[%s] missing expected labels: %s",
-                     name, sorted(missing_labels))
+        logger.error("[%s] missing expected labels: %s", name, sorted(missing_labels))
         return False
 
     short_count = int((data[TEXT_COLUMN].str.len() < min_text_length).sum())
     if short_count:
-        logger.error("[%s] %d rows shorter than %d chars",
-                     name, short_count, min_text_length)
+        logger.error("[%s] %d rows shorter than %d chars", name, short_count, min_text_length)
         return False
 
     counts = data[LABEL_COLUMN].value_counts()
@@ -117,20 +115,16 @@ def run(config: dict[str, Any]) -> bool:
     """Validate splits; on success write ``validation_report.json`` for DVC."""
     min_length = int(config.get("cleaning", {}).get("min_text_length", 3))
     paths = dataset_paths(config)
-    passed = all(validate_dataset(path, name, min_length)
-                 for name, path in paths.items())
+    passed = all(validate_dataset(path, name, min_length) for name, path in paths.items())
     if passed:
-        save_json(_build_validation_report(config),
-                  validation_report_path(config))
-        logger.info("Wrote validation report to %s",
-                    validation_report_path(config))
+        save_json(_build_validation_report(config), validation_report_path(config))
+        logger.info("Wrote validation report to %s", validation_report_path(config))
     return passed
 
 
 def main() -> None:
     """CLI entrypoint for the DVC ``validate`` stage."""
-    parser = argparse.ArgumentParser(
-        description="Validate cleaned and split datasets")
+    parser = argparse.ArgumentParser(description="Validate cleaned and split datasets")
     parser.add_argument("--config", type=Path, default=CONFIG_PATH)
     args = parser.parse_args()
     config = load_project_config(args.config)
