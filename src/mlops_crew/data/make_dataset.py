@@ -37,7 +37,8 @@ def process_data(config_path: Path = CONFIG_PATH) -> None:
 
 def main() -> None:
     """CLI entrypoint for ``make data``."""
-    parser = argparse.ArgumentParser(description="Run the full data preparation pipeline")
+    parser = argparse.ArgumentParser(
+        description="Run the full data preparation pipeline")
     parser.add_argument("--config", type=Path, default=CONFIG_PATH)
     args = parser.parse_args()
     setup_logging_from_config(load_project_config(args.config))

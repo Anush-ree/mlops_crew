@@ -58,7 +58,8 @@ def setup_logging(
         show_path=True,
         markup=False,
     )
-    console_handler.setFormatter(logging.Formatter("%(message)s", datefmt="[%X]"))
+    console_handler.setFormatter(
+        logging.Formatter("%(message)s", datefmt="[%X]"))
 
     file_handler = logging.handlers.RotatingFileHandler(
         log_path / log_file,
@@ -67,7 +68,8 @@ def setup_logging(
         encoding="utf-8",
     )
     file_handler.setLevel(parsed_level)
-    file_handler.setFormatter(logging.Formatter(_FILE_FORMAT, datefmt=_DATEFMT))
+    file_handler.setFormatter(
+        logging.Formatter(_FILE_FORMAT, datefmt=_DATEFMT))
 
     root.addHandler(console_handler)
     root.addHandler(file_handler)

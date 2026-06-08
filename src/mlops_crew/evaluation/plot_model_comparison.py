@@ -35,7 +35,8 @@ def plot_model_comparison(config: dict[str, Any]) -> Path:
 
     fig, axes = plt.subplots(1, 2, figsize=(11, 4), constrained_layout=True)
     axes[0].bar(metrics["model_name"], metrics["val_f2"], label="validation")
-    axes[0].bar(metrics["model_name"], metrics["test_f2"], alpha=0.65, label="test")
+    axes[0].bar(metrics["model_name"], metrics["test_f2"],
+                alpha=0.65, label="test")
     axes[0].set_title("F2 Score")
     axes[0].set_ylim(0.80, 1.01)
     axes[0].tick_params(axis="x", rotation=25)
@@ -47,7 +48,8 @@ def plot_model_comparison(config: dict[str, Any]) -> Path:
         color="#c44e52",
     )
     axes[1].set_title("Test False Negative Rate")
-    axes[1].set_ylim(0, max(metrics["test_false_negative_rate"].max() * 1.25, 0.01))
+    axes[1].set_ylim(
+        0, max(metrics["test_false_negative_rate"].max() * 1.25, 0.01))
     axes[1].tick_params(axis="x", rotation=25)
 
     fig.suptitle("Phase 2 Phishing Classifier Comparison")
@@ -60,7 +62,8 @@ def plot_model_comparison(config: dict[str, Any]) -> Path:
 
 def main() -> None:
     """CLI entrypoint for the DVC ``plot_model_comparison`` stage."""
-    parser = argparse.ArgumentParser(description="Plot model comparison metrics")
+    parser = argparse.ArgumentParser(
+        description="Plot model comparison metrics")
     parser.add_argument("--config", type=Path, default=CONFIG_PATH)
     args = parser.parse_args()
     config = load_project_config(args.config)

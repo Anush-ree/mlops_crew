@@ -27,9 +27,11 @@ def test_model_service_normalizes_text_like_training(tmp_path: Path) -> None:
             "min_text_length": 3,
         }
     }
-    service = ModelService(model_path=model_path, config=config, model_version="test")
+    service = ModelService(model_path=model_path,
+                           config=config, model_version="test")
 
-    assert service.normalize_text("  CLICK   HTTP://Example.com  ") == "click http://example.com"
+    assert service.normalize_text(
+        "  CLICK   HTTP://Example.com  ") == "click http://example.com"
     result = service.predict("  CLICK   HTTP://Example.com  ")
 
     assert result.label == "phishing"

@@ -68,7 +68,8 @@ def clean_dataset(data: pd.DataFrame, config: dict[str, Any]) -> tuple[pd.DataFr
     label_source = data_config.get("label_column", LABEL_COLUMN)
     missing = {text_source, label_source} - set(data.columns)
     if missing:
-        raise ValueError(f"Input data missing required columns: {sorted(missing)}")
+        raise ValueError(
+            f"Input data missing required columns: {sorted(missing)}")
 
     cleaned = data[[text_source, label_source]].rename(
         columns={text_source: TEXT_COLUMN, label_source: LABEL_COLUMN}
@@ -118,13 +119,15 @@ def run(config: dict[str, Any]) -> pd.DataFrame:
     paths["cleaned"].parent.mkdir(parents=True, exist_ok=True)
     cleaned.to_csv(paths["cleaned"], index=False)
     save_json(summary, paths["summary"])
-    logger.info("Cleaned %s rows -> %s rows", summary["raw_rows"], summary["cleaned_rows"])
+    logger.info("Cleaned %s rows -> %s rows",
+                summary["raw_rows"], summary["cleaned_rows"])
     return cleaned
 
 
 def main() -> None:
     """CLI entrypoint for the DVC ``clean`` stage."""
-    parser = argparse.ArgumentParser(description="Clean the sampled phishing email CSV")
+    parser = argparse.ArgumentParser(
+        description="Clean the sampled phishing email CSV")
     parser.add_argument("--config", type=Path, default=CONFIG_PATH)
     args = parser.parse_args()
     config = load_project_config(args.config)

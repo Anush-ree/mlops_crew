@@ -64,11 +64,13 @@ class ModelService:
         normalized = clean_text(
             text,
             lowercase=bool(cleaning.get("lowercase", True)),
-            normalize_whitespace=bool(cleaning.get("normalize_whitespace", True)),
+            normalize_whitespace=bool(
+                cleaning.get("normalize_whitespace", True)),
         )
         min_length = int(cleaning.get("min_text_length", 3))
         if len(normalized) < min_length:
-            raise ValueError(f"Email text must be at least {min_length} characters after cleaning")
+            raise ValueError(
+                f"Email text must be at least {min_length} characters after cleaning")
         return normalized
 
     def predict(self, text: str) -> PredictionResult:
@@ -134,7 +136,8 @@ def resolve_model_path() -> Path:
     """Resolve the configured local or GCS model artifact path."""
     model_gcs_uri = os.getenv("MODEL_GCS_URI")
     if model_gcs_uri:
-        cache_dir = resolve_project_path(os.getenv("MODEL_CACHE_DIR", "/tmp/mlops_crew_models"))
+        cache_dir = resolve_project_path(
+            os.getenv("MODEL_CACHE_DIR", "/tmp/mlops_crew_models"))
         return _download_gcs_model(model_gcs_uri, cache_dir)
 
     configured = os.getenv("MODEL_PATH")
@@ -153,7 +156,8 @@ def get_model_service(*, force_reload: bool = False) -> ModelService:
         config = load_project_config(CONFIG_PATH)
         model_path = resolve_model_path()
         if not model_path.exists():
-            raise FileNotFoundError(f"Model artifact not found at {model_path}")
+            raise FileNotFoundError(
+                f"Model artifact not found at {model_path}")
         model_version = os.getenv("MODEL_VERSION", DEFAULT_MODEL_VERSION)
         _SERVICE_CACHE = ModelService(
             model_path=model_path, config=config, model_version=model_version

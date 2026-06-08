@@ -25,7 +25,8 @@ logger = get_logger(__name__)
 def sample_paths(config: dict[str, Any]) -> dict[str, Path]:
     """Resolve raw input, phase partition CSVs, and sample summary paths."""
     data_config = config["data"]
-    raw_path = resolve_project_path(data_config["raw_dir"]) / data_config["raw_file"]
+    raw_path = resolve_project_path(
+        data_config["raw_dir"]) / data_config["raw_file"]
     interim_dir = resolve_project_path(data_config["interim_dir"])
     return {
         "raw": raw_path,
@@ -49,7 +50,8 @@ def sample_dataset(data: pd.DataFrame, config: dict[str, Any]) -> pd.DataFrame:
 
     if sample_config.get("stratify", True):
         if label_column not in data.columns:
-            raise ValueError(f"Cannot stratify; missing label column `{label_column}`")
+            raise ValueError(
+                f"Cannot stratify; missing label column `{label_column}`")
         parts = [
             group.sample(frac=fraction, random_state=random_state)
             for _, group in data.groupby(label_column)
@@ -80,18 +82,24 @@ def partition_phase_data(data: pd.DataFrame, config: dict[str, Any]) -> dict[str
     label_column = config["data"].get("label_column", LABEL_COLUMN)
     random_state = int(sample_config["random_state"])
     phase1_fraction = float(sample_config.get("phase1_fraction", 0.60))
-    phase2_fraction = float(sample_config.get("phase2_increment_fraction", 0.20))
-    holdout_fraction = float(sample_config.get("phase3_holdout_fraction", 0.20))
-    sample_fraction = float(sample_config.get("fraction", phase1_fraction + phase2_fraction))
+    phase2_fraction = float(sample_config.get(
+        "phase2_increment_fraction", 0.20))
+    holdout_fraction = float(sample_config.get(
+        "phase3_holdout_fraction", 0.20))
+    sample_fraction = float(sample_config.get(
+        "fraction", phase1_fraction + phase2_fraction))
 
     if abs(phase1_fraction + phase2_fraction + holdout_fraction - 1.0) > 1e-8:
         raise ValueError("Phase partition fractions must sum to 1.0")
     if abs(sample_fraction - (phase1_fraction + phase2_fraction)) > 1e-8:
-        raise ValueError("Sample fraction must equal phase1_fraction + phase2_increment_fraction")
+        raise ValueError(
+            "Sample fraction must equal phase1_fraction + phase2_increment_fraction")
     if not sample_config.get("stratify", True):
-        raise ValueError("Phase partitioning must be stratified for reproducible class balance")
+        raise ValueError(
+            "Phase partitioning must be stratified for reproducible class balance")
     if label_column not in data.columns:
-        raise ValueError(f"Cannot partition; missing label column `{label_column}`")
+        raise ValueError(
+            f"Cannot partition; missing label column `{label_column}`")
 
     indexed = data.copy()
     indexed[RAW_INDEX_COLUMN] = indexed.index
@@ -106,8 +114,9 @@ def partition_phase_data(data: pd.DataFrame, config: dict[str, Any]) -> dict[str
         phase2_rows = total_sample_rows - phase1_rows
 
         phase1_parts.append(shuffled.iloc[:phase1_rows])
-        phase2_parts.append(shuffled.iloc[phase1_rows : phase1_rows + phase2_rows])
-        holdout_parts.append(shuffled.iloc[phase1_rows + phase2_rows :])
+        phase2_parts.append(
+            shuffled.iloc[phase1_rows: phase1_rows + phase2_rows])
+        holdout_parts.append(shuffled.iloc[phase1_rows + phase2_rows:])
 
     phase1 = pd.concat(phase1_parts, axis=0)
     phase2_increment = pd.concat(phase2_parts, axis=0)
@@ -148,8 +157,10 @@ def run(config: dict[str, Any]) -> pd.DataFrame:
     sampled.to_csv(paths["sampled"], index=False)
     logger.info("Saved sample (%s) to %s", sampled.shape, paths["sampled"])
 
-    partitions["phase1_reference"].to_csv(paths["phase1_reference"], index=False)
-    partitions["phase2_increment"].to_csv(paths["phase2_increment"], index=False)
+    partitions["phase1_reference"].to_csv(
+        paths["phase1_reference"], index=False)
+    partitions["phase2_increment"].to_csv(
+        paths["phase2_increment"], index=False)
     partitions["phase3_holdout"].to_csv(paths["phase3_holdout"], index=False)
     logger.info(
         "Saved phase partitions: phase1=%d phase2_increment=%d phase3_holdout=%d",
@@ -177,7 +188,8 @@ def run(config: dict[str, Any]) -> pd.DataFrame:
 
 def main() -> None:
     """CLI entrypoint for the DVC ``sample`` stage."""
-    parser = argparse.ArgumentParser(description="Sample the raw phishing email CSV")
+    parser = argparse.ArgumentParser(
+        description="Sample the raw phishing email CSV")
     parser.add_argument("--config", type=Path, default=CONFIG_PATH)
     args = parser.parse_args()
     config = load_project_config(args.config)

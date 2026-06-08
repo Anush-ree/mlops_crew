@@ -1,4 +1,4 @@
-"""Export processed splits as JSONL files for transformer fine-tuning."""
+"""Export processed splits as JSONL files for optional post-project transformer work."""
 
 from __future__ import annotations
 
@@ -20,7 +20,8 @@ def transformer_dataset_paths(config: dict[str, Any]) -> dict[str, Path]:
     """Resolve processed split inputs and JSONL export directory paths."""
     data_config = config["data"]
     processed_dir = resolve_project_path(data_config["processed_dir"])
-    transformer_dir = processed_dir / data_config.get("transformer_dir", "transformer")
+    transformer_dir = processed_dir / \
+        data_config.get("transformer_dir", "transformer")
     return {
         "processed_dir": processed_dir,
         "transformer_dir": transformer_dir,
@@ -36,11 +37,14 @@ def _write_jsonl(input_path: Path, output_path: Path) -> dict[str, Any]:
     frame = pd.read_csv(input_path)
     missing = {TEXT_COLUMN, LABEL_COLUMN} - set(frame.columns)
     if missing:
-        raise ValueError(f"{input_path} is missing required columns: {sorted(missing)}")
+        raise ValueError(
+            f"{input_path} is missing required columns: {sorted(missing)}")
 
-    output = frame[[TEXT_COLUMN, LABEL_COLUMN]].rename(columns={TEXT_COLUMN: "text"})
+    output = frame[[TEXT_COLUMN, LABEL_COLUMN]].rename(
+        columns={TEXT_COLUMN: "text"})
     output[LABEL_COLUMN] = output[LABEL_COLUMN].astype("int64")
-    output.to_json(output_path, orient="records", lines=True, force_ascii=False)
+    output.to_json(output_path, orient="records",
+                   lines=True, force_ascii=False)
     return {
         "rows": int(len(output)),
         "label_distribution": {
@@ -74,7 +78,8 @@ def export_transformer_dataset(config: dict[str, Any]) -> dict[str, Any]:
             "path": _project_relative(output_path),
             **_write_jsonl(input_path, output_path),
         }
-        logger.info("Saved %s transformer split to %s", split_name, output_path)
+        logger.info("Saved %s transformer split to %s",
+                    split_name, output_path)
 
     save_json(summary, paths["summary"])
     return summary
@@ -82,7 +87,8 @@ def export_transformer_dataset(config: dict[str, Any]) -> dict[str, Any]:
 
 def main() -> None:
     """CLI entrypoint for the DVC ``transformer_dataset`` stage."""
-    parser = argparse.ArgumentParser(description="Export HF-compatible JSONL splits")
+    parser = argparse.ArgumentParser(
+        description="Export HF-compatible JSONL splits")
     parser.add_argument("--config", type=Path, default=CONFIG_PATH)
     args = parser.parse_args()
     config = load_project_config(args.config)

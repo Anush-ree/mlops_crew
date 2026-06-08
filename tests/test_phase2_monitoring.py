@@ -62,7 +62,8 @@ def test_measure_latency_reports_each_batch_and_repeat() -> None:
 
     data = pd.DataFrame({TEXT_COLUMN: ["a", "b", "c", "d"]})
 
-    report = measure_latency(ConstantModel(), data, batch_sizes=[1, 3, 10], repeats=2)
+    report = measure_latency(ConstantModel(), data,
+                             batch_sizes=[1, 3, 10], repeats=2)
 
     assert report["batch_size"].tolist() == [1, 1, 3, 3, 4, 4]
     assert report["repeat"].tolist() == [1, 2, 1, 2, 1, 2]

@@ -49,7 +49,8 @@ def main() -> None:
     setup_logging_from_config(config)
     processed_dir = resolve_project_path(config["data"]["processed_dir"])
     model_dir = resolve_project_path(config["modeling"]["output_dir"])
-    predictions_dir = resolve_project_path(config["reports"]["predictions_dir"])
+    predictions_dir = resolve_project_path(
+        config["reports"]["predictions_dir"])
 
     model_path = args.model_path or model_dir / "best_model.joblib"
     input_path = args.input or processed_dir / config["data"]["test_file"]

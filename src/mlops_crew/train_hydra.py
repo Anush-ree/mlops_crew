@@ -76,7 +76,8 @@ def build_effective_config(
 ) -> dict[str, Any]:
     """Load the base project config and apply Hydra overrides."""
     hydra_dict = _to_plain_dict(hydra_config)
-    base_config_path = hydra_dict.get("base_config_path", "configs/config.yaml")
+    base_config_path = hydra_dict.get(
+        "base_config_path", "configs/config.yaml")
     base_config = load_project_config(str(base_config_path))
 
     effective_config = deep_merge(base_config, hydra_dict)
@@ -86,7 +87,8 @@ def build_effective_config(
 
     tracking = effective_config.setdefault("tracking", {})
     tracking["run_name"] = f"hydra-{experiment_name}"
-    tracking["effective_config_path"] = str(output_dir / "effective_config.yaml")
+    tracking["effective_config_path"] = str(
+        output_dir / "effective_config.yaml")
     tags = tracking.setdefault("tags", {})
     tags.update(
         {

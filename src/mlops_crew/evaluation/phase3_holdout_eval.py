@@ -30,16 +30,20 @@ def _project_relative(path: Path) -> str:
 
 
 def evaluate_holdout(config: dict) -> dict:
-    model_path = resolve_project_path(config["modeling"]["output_dir"]) / "best_model.joblib"
+    model_path = resolve_project_path(
+        config["modeling"]["output_dir"]) / "best_model.joblib"
     holdout_path = (
-        resolve_project_path(config["data"]["interim_dir"]) / config["data"]["phase3_holdout_file"]
+        resolve_project_path(config["data"]["interim_dir"]) /
+        config["data"]["phase3_holdout_file"]
     )
     output_path = (
-        resolve_project_path(config["reports"]["metrics_dir"]) / "phase3_holdout_metrics.json"
+        resolve_project_path(
+            config["reports"]["metrics_dir"]) / "phase3_holdout_metrics.json"
     )
 
     if not model_path.exists():
-        raise FileNotFoundError(f"Model not found: {model_path}. Run `make train` first.")
+        raise FileNotFoundError(
+            f"Model not found: {model_path}. Run `make train` first.")
     if not holdout_path.exists():
         raise FileNotFoundError(
             f"Holdout data not found: {holdout_path}. Run `python -m mlops_crew.data.sample`."
@@ -56,10 +60,12 @@ def evaluate_holdout(config: dict) -> dict:
         lambda t: clean_text(
             t,
             lowercase=bool(cleaning.get("lowercase", True)),
-            normalize_whitespace=bool(cleaning.get("normalize_whitespace", True)),
+            normalize_whitespace=bool(
+                cleaning.get("normalize_whitespace", True)),
         )
     )
-    df = df[df[TEXT_COLUMN].str.len() >= int(cleaning.get("min_text_length", 3))]
+    df = df[df[TEXT_COLUMN].str.len() >= int(
+        cleaning.get("min_text_length", 3))]
     logger.info("Holdout rows after cleaning: %d", len(df))
 
     predictions = model.predict(df[TEXT_COLUMN])
@@ -93,7 +99,8 @@ def evaluate_holdout(config: dict) -> dict:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Evaluate best model on Phase 3 holdout set")
+    parser = argparse.ArgumentParser(
+        description="Evaluate best model on Phase 3 holdout set")
     parser.add_argument("--config", type=Path, default=CONFIG_PATH)
     args = parser.parse_args()
     config = load_project_config(args.config)
