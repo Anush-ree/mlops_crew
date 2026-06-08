@@ -11,7 +11,7 @@ Phase 3 productionizes the phishing email detector built in Phases 1–2. It add
 
 ## 1. Continuous Integration & Testing
 
-### 1.2 GitHub Actions CI Workflow
+### 1.1 GitHub Actions CI Workflow
 
 - **File/dir reference:** [`.github/workflows/ci.yml`](.github/workflows/ci.yml)
 - **Screenshot:**
@@ -192,7 +192,7 @@ Reports mean latency and p95 latency across N requests.
 
 ## 4. Hugging Face Spaces Demo
 
-**Live demo:** [https://huggingface.co/spaces/manas01AI/phishing-email-detector](https://huggingface.co/spaces/manas01AI/phishing-email-detector)
+**Live demo:** [https://huggingface.co/spaces/mlops-crew-depaul/phishing-email-detector](https://huggingface.co/spaces/mlops-crew-depaul/phishing-email-detector)
 
 **Code:** [`hf_space/app.py`](hf_space/app.py) — Gradio interface
 **Auto-deploy workflow:** [`.github/workflows/deploy_hf_space.yml`](.github/workflows/deploy_hf_space.yml)
@@ -230,9 +230,9 @@ The model generalizes well — F2 drops only 0.6 points from test (99.1%) to hol
 
 ## 6. Team Contributions
 
-| Workstream                                              | Primary          | Support  |
-| ------------------------------------------------------- | ---------------- | -------- |
-| CI, Docker, CML workflows                               | Kirtan           | Anushree |
-| GCP infrastructure, Cloud Run, Cloud Functions, FastAPI | Krishna (Kirtan) | Anushree |
-| Gradio UI, Hugging Face Spaces                          | Anas             | —        |
-| Holdout evaluation, model comparison plot, PHASE3.md, README, cleanup docs, evidence screenshots | Anushree | — |
+| Workstream                                                                                       | Primary          | Support  |
+| ------------------------------------------------------------------------------------------------ | ---------------- | -------- |
+| CI, Docker, CML workflows                                                                        | Kirtan           | Anushree |
+| GCP infrastructure, Cloud Run, Cloud Functions, FastAPI                                          | Krishna (Kirtan) | Anushree |
+| Gradio UI, Hugging Face Spaces                                                                   | Anas             | —        |
+| Holdout evaluation, model comparison plot, PHASE3.md, README, cleanup docs, evidence screenshots | Anushree         | —        |

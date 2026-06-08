@@ -1,39 +1,48 @@
 # Phase 2: Model Development and Operations
 
-Phase 2 trains on an 80% reproducible sample, tracks experiments with MLflow,
-adds divergence and latency monitoring, and exports JSONL splits for later
-transformer fine-tuning.
+Phase 2 extends the Phase 1 60% baseline to an **80%** reproducible modeling run.
+The final **20%** is reserved as the Phase 3 holdout. This phase adds monitoring,
+profiling, MLflow tracking, Rich logging, Hydra experiment overlays, and
+Docker-ready training/serving images.
 
 ## Implemented
 
-- Deterministic 60/20/20 phase partitioning.
-- Source-block manifest for source-level divergence reporting.
-- TF-IDF experiments: dummy, Logistic Regression, Linear SVC, Complement NB.
-- MLflow tracking for params, metrics, models, and prediction artifacts.
-- Resource usage, inference latency, and divergence reports.
-- cProfile scripts for training and prediction.
-- Model comparison CSV/JSON plus a generated comparison chart.
-- Transformer-ready JSONL train/validation/test export.
+- Deterministic 60/20/20 phase partitions (Phase 1 ref / Phase 2 increment /
+  Phase 3 holdout)
+- DVC stages: sample → clean → split → **validate** → transformer export → train
+  → latency → plot → divergence
+- Source-block manifest for source-level divergence
+- Four TF-IDF models: dummy, logistic regression, linear SVC, complement NB
+- MLflow experiment tracking (params, metrics, models, predictions)
+- Resource usage, inference latency, and divergence reports
+- cProfile scripts for training and prediction
+- Rich console + rotating file logs (`logs/pipeline.log`)
+- Hydra demos via `conf/` and `train_hydra.py` (DVC still uses `configs/config.yaml`)
+- Transformer-ready JSONL export (no LLM training in this phase)
+- Code-only Docker images (`train.dockerfile`, `predict.dockerfile`, `serve.dockerfile`)
 
-## Best Model
+## Best model
 
-`linear_svc` is selected by validation F2.
+`linear_svc` selected by validation F2.
 
 | Metric | Validation | Test |
 | --- | ---: | ---: |
 | F2 | 0.9924 | 0.9912 |
 | Recall | 0.9930 | 0.9922 |
-| False negative rate | 0.0070 | 0.0078 |
+| False-negative rate | 0.0070 | 0.0078 |
 
-## Commands
+## Common commands
 
 ```bash
+dvc pull
 make repro
+scripts/verify_phase2.ps1    # Windows
+scripts/verify_phase2.sh     # Bash
 make mlflow-ui
+make hydra-demo
 make divergence
-make latency
 make profile-train
-make profile-predict
 ```
 
-See the root [PHASE2.md](../PHASE2.md) for the full deliverable details.
+See the root [PHASE2.md](../PHASE2.md) for reproduction steps, MLflow wiring,
+profiling notes, and evidence screenshots.
